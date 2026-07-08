@@ -537,6 +537,131 @@ img {
   background: var(--gold);
 }
 
+.checkout-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.checkout-email-label {
+  display: block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.checkout-email-input {
+  width: 100%;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+  background: #fff;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  color: var(--text-dark);
+}
+
+.checkout-email-input:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+
+.cart-total-row {
+  margin-bottom: 16px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.cart-total-row .subtotal-value {
+  font-size: 1.4rem;
+}
+
+.checkout-error {
+  font-size: 0.85rem;
+  color: #c94c4c;
+  margin-bottom: 12px;
+}
+
+.checkout-success {
+  min-height: calc(100vh - var(--header-h) - var(--announce-h));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+  background: var(--bg);
+}
+
+.checkout-success-inner {
+  max-width: 520px;
+  text-align: center;
+}
+
+.checkout-success-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(196, 151, 58, 0.15);
+  color: var(--gold);
+  font-size: 1.75rem;
+  margin-bottom: 24px;
+}
+
+.checkout-success-title {
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  margin-bottom: 12px;
+}
+
+.checkout-success-text {
+  color: var(--muted);
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+.checkout-success-order {
+  margin-bottom: 28px;
+}
+
+.checkout-success-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-primary {
+  display: inline-block;
+  padding: 14px 28px;
+  background: var(--dark);
+  color: #fff;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+}
+
+.btn-primary:hover {
+  background: var(--gold);
+}
+
+.btn-outline-dark {
+  display: inline-block;
+  padding: 14px 28px;
+  border: 1px solid var(--dark);
+  color: var(--dark);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+}
+
+.btn-outline-dark:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
 /* ========== Layout helpers ========== */
 .ui1-section {
   padding: 88px 0;

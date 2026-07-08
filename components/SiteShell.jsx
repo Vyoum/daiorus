@@ -2,15 +2,22 @@
 
 import { useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { CATEGORIES, COLLECTIONS, formatINR } from '../lib/data';
+import { calculateCartTotals } from '../lib/checkout';
+import { openRazorpayCheckout } from '../lib/razorpay-checkout';
 
 export default function SiteShell({ children, showNewsletter = true }) {
+  const router = useRouter();
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [email, setEmail] = useState('');
+  const [checkoutEmail, setCheckoutEmail] = useState('');
+  const [checkoutError, setCheckoutError] = useState('');
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [subscribed, setSubscribed] = useState(false);
   const searchCloseTimer = useRef(null);
   const catCloseTimer = useRef(null);
@@ -46,6 +53,84 @@ export default function SiteShell({ children, showNewsletter = true }) {
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
   const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
+  const { shippingInr, totalInr } = calculateCartTotals(cart);
+
+  const handleCheckout = async () => {
+    if (cart.length === 0 || isCheckingOut) return;
+
+    const emailToUse = checkoutEmail.trim();
+    if (!emailToUse || !emailToUse.includes('@')) {
+      setCheckoutError('Please enter a valid email to continue.');
+      return;
+    }
+
+    setCheckoutError('');
+    setIsCheckingOut(true);
+
+    try {
+      const createRes = await fetch('/api/razorpay/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: emailToUse,
+          items: cart.map((item) => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            qty: item.qty,
+            image: item.image,
+            material: item.material,
+          })),
+        }),
+      });
+
+      const createData = await createRes.json();
+      if (!createRes.ok) {
+        throw new Error(createData.error || 'Could not start checkout');
+      }
+
+      await openRazorpayCheckout({
+        keyId: createData.keyId,
+        amount: createData.amount,
+        currency: createData.currency,
+        orderId: createData.orderId,
+        razorpayOrderId: createData.razorpayOrderId,
+        email: emailToUse,
+        orderNumber: createData.orderNumber,
+        onSuccess: async (response) => {
+          const verifyRes = await fetch('/api/razorpay/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              orderId: createData.orderId,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            }),
+          });
+
+          const verifyData = await verifyRes.json();
+          if (!verifyRes.ok) {
+            throw new Error(verifyData.error || 'Payment verification failed');
+          }
+
+          setCart([]);
+          setIsCartOpen(false);
+          router.push(`/checkout/success?order=${encodeURIComponent(verifyData.orderNumber)}`);
+          return verifyData;
+        },
+        onDismiss: () => {
+          setCheckoutError('Payment was cancelled.');
+        },
+      });
+    } catch (err) {
+      if (err.message !== 'Payment cancelled') {
+        setCheckoutError(err.message || 'Checkout failed. Please try again.');
+      }
+    } finally {
+      setIsCheckingOut(false);
+    }
+  };
 
   const openSearch = () => {
     if (searchCloseTimer.current) clearTimeout(searchCloseTimer.current);
@@ -283,12 +368,43 @@ export default function SiteShell({ children, showNewsletter = true }) {
 
           {cart.length > 0 && (
             <div className="cart-footer">
+              <label className="checkout-email-label" htmlFor="checkout-email">
+                Email for order confirmation
+              </label>
+              <input
+                id="checkout-email"
+                type="email"
+                className="checkout-email-input"
+                placeholder="you@example.com"
+                value={checkoutEmail}
+                onChange={(e) => {
+                  setCheckoutEmail(e.target.value);
+                  if (checkoutError) setCheckoutError('');
+                }}
+                disabled={isCheckingOut}
+              />
               <div className="cart-subtotal-row">
                 <span className="subtotal-label">Subtotal</span>
                 <span className="subtotal-value">{formatINR(subtotal)}</span>
               </div>
-              <button type="button" className="checkout-btn" onClick={() => alert('Proceeding to Checkout')}>
-                Checkout
+              <div className="cart-subtotal-row">
+                <span className="subtotal-label">Shipping</span>
+                <span className="subtotal-value">
+                  {shippingInr === 0 ? 'Free' : formatINR(shippingInr)}
+                </span>
+              </div>
+              <div className="cart-subtotal-row cart-total-row">
+                <span className="subtotal-label">Total</span>
+                <span className="subtotal-value">{formatINR(totalInr)}</span>
+              </div>
+              {checkoutError && <p className="checkout-error">{checkoutError}</p>}
+              <button
+                type="button"
+                className="checkout-btn"
+                onClick={handleCheckout}
+                disabled={isCheckingOut}
+              >
+                {isCheckingOut ? 'Processing…' : 'Pay with Razorpay'}
               </button>
             </div>
           )}
