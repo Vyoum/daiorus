@@ -1,7 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Image from 'next/image';
+
+const CATEGORIES = [
+  { name: 'Earrings', href: '#earrings', image: '/images/vermeil-1.png' },
+  { name: 'Necklaces', href: '#necklaces', image: '/images/everyday-edit.png' },
+  { name: 'Rings', href: '#rings', image: '/images/crafted-rings.png' },
+  { name: 'Bracelets', href: '#bracelets', image: '/images/vermeil-1.png' },
+];
+
+const COLLECTIONS = [
+  { name: 'The Everyday Edit', href: '#shop-everyday', image: '/images/everyday-edit.png' },
+  { name: 'Just Married', href: '#shop-bridal', image: '/images/just-married.png' },
+  { name: 'Fine 18k Gold', href: '#shop-gold', image: '/images/fine-gold.png' },
+];
 
 const BEST_SELLERS = [
   {
@@ -37,6 +50,9 @@ const BEST_SELLERS = [
 export default function HomePage() {
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const searchCloseTimer = useRef(null);
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
@@ -83,6 +99,21 @@ export default function HomePage() {
     }
   };
 
+  const openSearch = () => {
+    if (searchCloseTimer.current) clearTimeout(searchCloseTimer.current);
+    setIsSearchOpen(true);
+  };
+
+  const closeSearch = () => {
+    searchCloseTimer.current = setTimeout(() => setIsSearchOpen(false), 120);
+  };
+
+  const dismissSearch = () => {
+    if (searchCloseTimer.current) clearTimeout(searchCloseTimer.current);
+    setIsSearchOpen(false);
+    setSearchQuery('');
+  };
+
   return (
     <>
       {/* Navigation Header */}
@@ -94,18 +125,26 @@ export default function HomePage() {
             <a href="#about" className="nav-link">Our Story</a>
           </nav>
           
-          <div className="logo serif">
-            DAIORUS
-          </div>
+          <a href="/" className="logo" aria-label="DAIORUS Home">
+            <img src="/images/daiorus-mark.png" alt="" className="logo-mark" />
+            <span className="logo-wordmark">DAIORUS</span>
+          </a>
 
           <div className="header-icons">
-            {/* Search Icon */}
-            <button className="icon-btn" aria-label="Search">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-              </svg>
-            </button>
+            {/* Search */}
+            <div
+              className="search-trigger"
+              onMouseEnter={openSearch}
+              onMouseLeave={closeSearch}
+            >
+              <button className="icon-btn search-btn" aria-label="Search" aria-expanded={isSearchOpen}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <span className="search-label">Search</span>
+              </button>
+            </div>
             
             {/* Profile Icon */}
             <button className="icon-btn" aria-label="Account">
@@ -124,6 +163,77 @@ export default function HomePage() {
               </svg>
               {totalItems > 0 && <span className="cart-badge">{totalItems}</span>}
             </button>
+          </div>
+        </div>
+
+        {/* Search Dropdown */}
+        <div
+          className={`search-dropdown ${isSearchOpen ? 'open' : ''}`}
+          onMouseEnter={openSearch}
+          onMouseLeave={closeSearch}
+        >
+          <div className="search-dropdown-inner">
+            <div className="search-input-row">
+              <svg className="search-input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input
+                type="text"
+                className="search-input"
+                placeholder="Search creations, collections, categories..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <button
+                className="search-close-btn"
+                aria-label="Close search"
+                onClick={dismissSearch}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+
+            <div className="search-columns">
+              <div className="search-column">
+                <h3 className="search-column-title">Categories</h3>
+                <ul className="search-links">
+                  {CATEGORIES.map((category) => (
+                    <li key={category.name}>
+                      <a href={category.href} className="search-link">{category.name}</a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="search-column">
+                <h3 className="search-column-title">Collections</h3>
+                <ul className="search-links">
+                  {COLLECTIONS.map((collection) => (
+                    <li key={collection.name}>
+                      <a href={collection.href} className="search-link">{collection.name}</a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="search-column search-creations-column">
+                <h3 className="search-column-title">Creations</h3>
+                <div className="search-creations-grid">
+                  {BEST_SELLERS.map((product) => (
+                    <a key={product.id} href="#all-best-sellers" className="search-creation-card">
+                      <div className="search-creation-img-wrapper">
+                        <img src={product.image} alt={product.name} className="search-creation-img" />
+                      </div>
+                      <span className="search-creation-name">{product.name}</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </header>
@@ -516,7 +626,10 @@ export default function HomePage() {
         <div className="footer-inner">
           <div className="footer-top">
             <div className="footer-brand">
-              <span className="footer-logo serif">DAIORUS</span>
+              <a href="/" className="footer-logo" aria-label="DAIORUS Home">
+                <img src="/images/daiorus-mark.png" alt="" className="footer-logo-mark" />
+                <span className="footer-logo-wordmark">DAIORUS</span>
+              </a>
               <p className="footer-brand-desc">
                 Creating luxurious, modern heirlooms that capture life’s beauty while respecting the earth. Designed with integrity, crafted with love.
               </p>
