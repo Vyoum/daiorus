@@ -1,8 +1,9 @@
 import './globals.css';
 
 export const metadata = {
-  title: 'DAIORUS | Fine Jewelry & Engagement Rings',
-  description: 'Discover DAIORUS. Exquisite, ethically sourced gold and diamond jewelry crafted with intention and worn with grace.',
+  title: 'DAIORUS | Fine Jewellery Worn With Grace',
+  description:
+    'Discover DAIORUS. BIS hallmarked gold jewellery crafted in India for everyday elegance — worn with grace.',
 };
 
 export const viewport = {
@@ -17,9 +18,7 @@ export default function RootLayout({ children }) {
         <link rel="icon" href="/images/daiorus-mark.png" type="image/png" />
         <link rel="apple-touch-icon" href="/images/daiorus-mark.png" />
       </head>
-      <body>
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
