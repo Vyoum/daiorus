@@ -27,7 +27,7 @@ const MARQUEE = [
 
 export default function HomePage() {
   return (
-    <SiteShell>
+    <SiteShell headerOverlay>
       {({ addToCart }) => (
         <>
           <section className="ui1-hero">

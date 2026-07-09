@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { CATEGORIES, COLLECTIONS } from '../lib/data';
@@ -8,7 +8,7 @@ import { calculateCartTotals } from '../lib/checkout';
 import { openRazorpayCheckout } from '../lib/razorpay-checkout';
 import { useCurrency } from './CurrencyProvider';
 
-export default function SiteShell({ children, showNewsletter = true }) {
+export default function SiteShell({ children, showNewsletter = true, headerOverlay = false }) {
   const router = useRouter();
   const { formatPrice, currencyCode, countryName, loading: currencyLoading, isLocalCurrency } =
     useCurrency();
@@ -22,6 +22,8 @@ export default function SiteShell({ children, showNewsletter = true }) {
   const [checkoutError, setCheckoutError] = useState('');
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [subscribed, setSubscribed] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const searchCloseTimer = useRef(null);
   const catCloseTimer = useRef(null);
 
@@ -148,6 +150,21 @@ export default function SiteShell({ children, showNewsletter = true }) {
     setSearchQuery('');
   };
 
+  const toggleSearch = () => {
+    if (searchCloseTimer.current) clearTimeout(searchCloseTimer.current);
+    setIsMobileMenuOpen(false);
+    setIsSearchOpen((prev) => !prev);
+  };
+
+  const toggleMobileMenu = () => {
+    setIsSearchOpen(false);
+    setIsMobileMenuOpen((prev) => !prev);
+  };
+
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
+  };
+
   const openCategories = () => {
     if (catCloseTimer.current) clearTimeout(catCloseTimer.current);
     setCategoriesOpen(true);
@@ -164,8 +181,41 @@ export default function SiteShell({ children, showNewsletter = true }) {
     setTimeout(() => setSubscribed(false), 5000);
   };
 
+  useEffect(() => {
+    const onScroll = () => {
+      setIsScrolled(window.scrollY > 16);
+    };
+
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = isMobileMenuOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMobileMenuOpen]);
+
+  const headerClassName = [
+    'ui1-header',
+    headerOverlay && 'is-overlay',
+    isScrolled && 'is-scrolled',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
-    <div className="site-shell">
+    <div
+      className={[
+        'site-shell',
+        headerOverlay && 'has-header-overlay',
+        isScrolled && 'is-scrolled',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
       <div className="announce-bar">
         <p className="announce-bar-text">
           Free shipping on orders above ₹2,000 ·{' '}
@@ -176,9 +226,11 @@ export default function SiteShell({ children, showNewsletter = true }) {
         </p>
       </div>
 
-      <header className="ui1-header">
+      <div className="announce-spacer" aria-hidden="true" />
+
+      <header className={headerClassName}>
         <div className="ui1-header-inner">
-          <nav className="ui1-nav-left">
+          <nav className="ui1-nav-left ui1-nav-desktop">
             <Link href="/shop" className="nav-link">
               Shop All
             </Link>
@@ -207,12 +259,40 @@ export default function SiteShell({ children, showNewsletter = true }) {
             </div>
           </nav>
 
+          <div className="ui1-nav-mobile-left">
+            <button
+              type="button"
+              className="icon-btn mobile-menu-btn"
+              aria-label="Open menu"
+              aria-expanded={isMobileMenuOpen}
+              onClick={toggleMobileMenu}
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <line x1="4" y1="7" x2="20" y2="7" />
+                <line x1="4" y1="12" x2="20" y2="12" />
+                <line x1="4" y1="17" x2="20" y2="17" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              className="icon-btn"
+              aria-label="Search"
+              aria-expanded={isSearchOpen}
+              onClick={toggleSearch}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+            </button>
+          </div>
+
           <Link href="/" className="logo" aria-label="DAIORUS Home">
             <img src="/images/daiorus-mark.png" alt="" className="logo-mark" />
             <span className="logo-wordmark">DAIORUS</span>
           </Link>
 
-          <div className="ui1-nav-right">
+          <div className="ui1-nav-right ui1-nav-desktop">
             {!currencyLoading && (
               <span className="header-locale" title={`Prices shown in ${currencyCode} for ${countryName}`}>
                 {currencyCode}
@@ -255,6 +335,69 @@ export default function SiteShell({ children, showNewsletter = true }) {
               </svg>
               {totalItems > 0 && <span className="cart-badge">{totalItems}</span>}
             </button>
+          </div>
+
+          <div className="ui1-nav-mobile-right">
+            <Link href="/contact" className="icon-btn" aria-label="Account" onClick={closeMobileMenu}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+            </Link>
+          </div>
+        </div>
+
+        <div
+          className={`mobile-nav-overlay ${isMobileMenuOpen ? 'open' : ''}`}
+          onClick={closeMobileMenu}
+          aria-hidden="true"
+        />
+
+        <div className={`mobile-nav-drawer ${isMobileMenuOpen ? 'open' : ''}`} aria-hidden={!isMobileMenuOpen}>
+          <div className="mobile-nav-header">
+            <span className="mobile-nav-title">Menu</span>
+            <button type="button" className="icon-btn" aria-label="Close menu" onClick={closeMobileMenu}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
+          <nav className="mobile-nav-links">
+            <Link href="/shop" className="mobile-nav-link" onClick={closeMobileMenu}>
+              Shop All
+            </Link>
+            {CATEGORIES.map((cat) => (
+              <Link key={cat.slug} href={cat.href} className="mobile-nav-link" onClick={closeMobileMenu}>
+                {cat.name}
+              </Link>
+            ))}
+            <Link href="/about" className="mobile-nav-link" onClick={closeMobileMenu}>
+              About
+            </Link>
+            <Link href="/contact" className="mobile-nav-link" onClick={closeMobileMenu}>
+              Contact
+            </Link>
+          </nav>
+          <div className="mobile-nav-actions">
+            <button
+              type="button"
+              className="mobile-nav-action"
+              onClick={() => {
+                closeMobileMenu();
+                setIsCartOpen(true);
+              }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <path d="M16 10a4 4 0 0 1-8 0" />
+              </svg>
+              Cart{totalItems > 0 ? ` (${totalItems})` : ''}
+            </button>
+            {!currencyLoading && (
+              <span className="mobile-nav-currency">{currencyCode} · {countryName}</span>
+            )}
           </div>
         </div>
 
@@ -423,6 +566,8 @@ export default function SiteShell({ children, showNewsletter = true }) {
           )}
         </div>
       </div>
+
+      <div className="header-spacer" aria-hidden="true" />
 
       <main className="site-main">{typeof children === 'function' ? children({ addToCart }) : children}</main>
 

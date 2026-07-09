@@ -31,7 +31,7 @@ export default async function CategoryPage({ params }) {
   const alsoExplore = CATEGORIES.filter((c) => c.slug !== slug).slice(0, 3);
 
   return (
-    <SiteShell>
+    <SiteShell headerOverlay>
       <section className="cat-hero" aria-label={category.name}>
         <img
           src={category.heroImage}
