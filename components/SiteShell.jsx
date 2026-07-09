@@ -3,12 +3,15 @@
 import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { CATEGORIES, COLLECTIONS, formatINR } from '../lib/data';
+import { CATEGORIES, COLLECTIONS } from '../lib/data';
 import { calculateCartTotals } from '../lib/checkout';
 import { openRazorpayCheckout } from '../lib/razorpay-checkout';
+import { useCurrency } from './CurrencyProvider';
 
 export default function SiteShell({ children, showNewsletter = true }) {
   const router = useRouter();
+  const { formatPrice, currencyCode, countryName, loading: currencyLoading, isLocalCurrency } =
+    useCurrency();
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -210,6 +213,11 @@ export default function SiteShell({ children, showNewsletter = true }) {
           </Link>
 
           <div className="ui1-nav-right">
+            {!currencyLoading && (
+              <span className="header-locale" title={`Prices shown in ${currencyCode} for ${countryName}`}>
+                {currencyCode}
+              </span>
+            )}
             <div
               className="search-trigger"
               onMouseEnter={openSearch}
@@ -343,7 +351,7 @@ export default function SiteShell({ children, showNewsletter = true }) {
                     <div className="cart-item-details">
                       <div className="cart-item-meta">
                         <h4 className="cart-item-name">{item.name}</h4>
-                        <span className="cart-item-price">{formatINR(item.price * item.qty)}</span>
+                        <span className="cart-item-price">{formatPrice(item.price * item.qty)}</span>
                       </div>
                       <div className="cart-item-qty-actions">
                         <div className="qty-selector">
@@ -385,18 +393,23 @@ export default function SiteShell({ children, showNewsletter = true }) {
               />
               <div className="cart-subtotal-row">
                 <span className="subtotal-label">Subtotal</span>
-                <span className="subtotal-value">{formatINR(subtotal)}</span>
+                <span className="subtotal-value">{formatPrice(subtotal)}</span>
               </div>
               <div className="cart-subtotal-row">
                 <span className="subtotal-label">Shipping</span>
                 <span className="subtotal-value">
-                  {shippingInr === 0 ? 'Free' : formatINR(shippingInr)}
+                  {shippingInr === 0 ? 'Free' : formatPrice(shippingInr)}
                 </span>
               </div>
               <div className="cart-subtotal-row cart-total-row">
                 <span className="subtotal-label">Total</span>
-                <span className="subtotal-value">{formatINR(totalInr)}</span>
+                <span className="subtotal-value">{formatPrice(totalInr)}</span>
               </div>
+              {!isLocalCurrency && (
+                <p className="checkout-currency-note">
+                  You will be charged in INR at checkout via Razorpay.
+                </p>
+              )}
               {checkoutError && <p className="checkout-error">{checkoutError}</p>}
               <button
                 type="button"

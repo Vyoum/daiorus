@@ -123,6 +123,23 @@ img {
   gap: 8px;
 }
 
+.header-locale {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  margin-right: 4px;
+}
+
+.checkout-currency-note {
+  font-size: 0.75rem;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
 .nav-link {
   font-size: 0.78rem;
   text-transform: uppercase;

@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from 'react';
 import SiteShell from '../../components/SiteShell';
-import { CATEGORIES, formatINR, getAllProducts } from '../../lib/data';
+import { CATEGORIES, getAllProducts } from '../../lib/data';
+import Price from '../../components/Price';
 
 const FILTERS = [
   { id: 'all', label: 'All' },
@@ -72,7 +73,9 @@ export default function ShopPage() {
                   {product.material && (
                     <p className="product-material">{product.material}</p>
                   )}
-                  <p className="product-price">{formatINR(product.price)}</p>
+                  <p className="product-price">
+                    <Price amount={product.price} />
+                  </p>
                 </article>
               ))}
             </div>

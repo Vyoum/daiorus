@@ -4,9 +4,9 @@ import SiteShell from '../../../components/SiteShell';
 import {
   CATEGORIES,
   PRODUCTS,
-  formatINR,
   getCategory,
 } from '../../../lib/data';
+import Price from '../../../components/Price';
 
 export function generateStaticParams() {
   return CATEGORIES.map((cat) => ({ slug: cat.slug }));
@@ -56,7 +56,9 @@ export default async function CategoryPage({ params }) {
               </div>
               <h3 className="cat-product-name">{product.name}</h3>
               <p className="cat-product-material">{product.material}</p>
-              <p className="cat-product-price">{formatINR(product.price)}</p>
+              <p className="cat-product-price">
+                <Price amount={product.price} />
+              </p>
             </article>
           ))}
         </div>

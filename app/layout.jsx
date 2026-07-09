@@ -1,4 +1,5 @@
 import './globals.css';
+import { CurrencyProvider } from '../components/CurrencyProvider';
 
 export const metadata = {
   title: 'DAIORUS | Fine Jewellery Worn With Grace',
@@ -18,7 +19,9 @@ export default function RootLayout({ children }) {
         <link rel="icon" href="/images/daiorus-mark.png" type="image/png" />
         <link rel="apple-touch-icon" href="/images/daiorus-mark.png" />
       </head>
-      <body>{children}</body>
+      <body>
+        <CurrencyProvider>{children}</CurrencyProvider>
+      </body>
     </html>
   );
 }

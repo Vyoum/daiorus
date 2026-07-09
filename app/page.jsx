@@ -6,8 +6,8 @@ import {
   BEST_SELLERS,
   CATEGORIES,
   COLLECTIONS,
-  formatINR,
 } from '../lib/data';
+import Price from '../components/Price';
 
 const IG_IMAGES = [
   '/images/ui1/ig-1.jpg',
@@ -149,7 +149,9 @@ export default function HomePage() {
                       </button>
                     </div>
                     <h3 className="product-name">{product.name}</h3>
-                    <p className="product-price">{formatINR(product.price)}</p>
+                    <p className="product-price">
+                      <Price amount={product.price} />
+                    </p>
                   </article>
                 ))}
               </div>
