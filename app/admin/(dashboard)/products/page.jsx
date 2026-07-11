@@ -28,8 +28,8 @@ export default async function ProductsPage() {
             <Download size={16} />
             Export CSV
           </button>
-          <Link href="/admin/inventory" className={styles.primaryBtn}>
-            View Inventory
+          <Link href="/admin/products/new" className={styles.primaryBtn}>
+            Add New Product
           </Link>
         </div>
       </header>

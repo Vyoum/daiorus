@@ -89,9 +89,9 @@ export default function AdminShell({ children, adminName = 'Admin', adminEmail =
         </nav>
 
         <div className={styles.sidebarFooter}>
-          <button type="button" className={styles.quickAddBtn}>
+          <Link href="/admin/products/new" className={styles.quickAddBtn}>
             + Quick Add Product
-          </button>
+          </Link>
         </div>
       </aside>
 
