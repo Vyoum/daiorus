@@ -1,0 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --admin-bg: #f4f5f8;
+  --admin-surface: #ffffff;
+  --admin-surface-hover: #f9fafb;
+  --admin-text-primary: #111827;
+  --admin-text-secondary: #6b7280;
+  --admin-text-muted: #9ca3af;
+  --admin-border: #e5e7eb;
+  --admin-accent: #000000;
+  --admin-accent-hover: #1f2937;
+  --admin-accent-text: #ffffff;
+  
+  --admin-danger: #ef4444;
+  --admin-danger-bg: #fef2f2;
+  --admin-success: #10b981;
+  --admin-success-bg: #ecfdf5;
+  --admin-warning: #f59e0b;
+  --admin-warning-bg: #fffbeb;
+
+  --admin-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  
+  --admin-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --admin-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --admin-shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --admin-shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  
+  --admin-radius-sm: 4px;
+  --admin-radius: 8px;
+  --admin-radius-lg: 12px;
+  --admin-radius-xl: 16px;
+}
+
+body {
+  background-color: var(--admin-bg);
+  color: var(--admin-text-primary);
+  font-family: var(--admin-font-family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Base resets for admin section */
+.admin-reset * {
+  box-sizing: border-box;
+}
+
+.admin-reset h1, 
+.admin-reset h2, 
+.admin-reset h3, 
+.admin-reset h4, 
+.admin-reset h5, 
+.admin-reset h6,
+.admin-reset p {
+  margin: 0;
+}
+
+.admin-reset a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.admin-reset button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.admin-reset ul,
+.admin-reset ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}

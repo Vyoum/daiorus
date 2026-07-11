@@ -1,0 +1,344 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 24px;
+}
+
+.pageTitle {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+
+.pageSubtitle {
+  color: var(--admin-text-secondary);
+  font-size: 15px;
+}
+
+.headerActions {
+  display: flex;
+  gap: 12px;
+}
+
+.secondaryBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background-color: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius);
+  font-weight: 600;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.secondaryBtn:hover {
+  background-color: var(--admin-surface-hover);
+}
+
+.primaryBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background-color: var(--admin-accent);
+  color: var(--admin-accent-text);
+  border: 1px solid var(--admin-accent);
+  border-radius: var(--admin-radius);
+  font-weight: 600;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.primaryBtn:hover {
+  background-color: var(--admin-accent-hover);
+}
+
+/* Filter Bar */
+.filterContainer {
+  background-color: var(--admin-surface);
+  border-top-left-radius: var(--admin-radius-lg);
+  border-top-right-radius: var(--admin-radius-lg);
+  border: 1px solid var(--admin-border);
+  border-bottom: none;
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.filterGroup {
+  display: flex;
+  gap: 12px;
+}
+
+.dropdownBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background-color: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--admin-text-primary);
+  transition: all 0.2s ease;
+}
+
+.dropdownBtn:hover {
+  background-color: var(--admin-surface-hover);
+}
+
+.dropdownBtn.activeFilter {
+  border-color: #d1d5db; /* Slight active styling if needed */
+}
+
+.bulkActions {
+  display: flex;
+  gap: 16px;
+}
+
+.bulkActionBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--admin-text-muted); /* Disabled state by default */
+  cursor: not-allowed;
+}
+
+/* Table */
+.tableContainer {
+  background-color: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-bottom-left-radius: var(--admin-radius-lg);
+  border-bottom-right-radius: var(--admin-radius-lg);
+  box-shadow: var(--admin-shadow-sm);
+  overflow: hidden;
+  margin-bottom: 32px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.th {
+  padding: 16px 24px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--admin-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--admin-border);
+  background-color: #f9fafb;
+}
+
+.td {
+  padding: 16px 24px;
+  font-size: 14px;
+  border-bottom: 1px solid var(--admin-border);
+  vertical-align: middle;
+}
+
+.tr:hover .td {
+  background-color: var(--admin-surface-hover);
+}
+
+.checkbox {
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--admin-border);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.orderId {
+  font-weight: 600;
+}
+
+.dateCell {
+  display: flex;
+  flex-direction: column;
+}
+
+.dateMain {
+  font-weight: 500;
+}
+
+.dateSub {
+  font-size: 12px;
+  color: var(--admin-text-secondary);
+}
+
+.customerCell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.customerAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--admin-text-secondary);
+  overflow: hidden;
+}
+
+.customerAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.customerInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.customerName {
+  font-weight: 600;
+}
+
+.customerEmail {
+  font-size: 12px;
+  color: var(--admin-text-secondary);
+}
+
+.productCell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.productImage {
+  width: 36px;
+  height: 36px;
+  background-color: var(--admin-bg);
+  border-radius: var(--admin-radius);
+  border: 1px solid var(--admin-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.productImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.productName {
+  font-weight: 500;
+}
+
+.price {
+  font-weight: 600;
+}
+
+.paymentBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background-color: #f3f4f6;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--admin-text-primary);
+}
+
+.paymentDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.paymentDot.paid { background-color: var(--admin-text-primary); }
+.paymentDot.pending { background-color: var(--admin-text-muted); }
+.paymentDot.refunded { background-color: transparent; }
+
+.fulfillBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background-color: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--admin-text-primary);
+}
+
+.fulfillIcon {
+  color: var(--admin-text-secondary);
+}
+
+.fulfillIcon.unfulfilled { color: var(--admin-danger); }
+.fulfillIcon.delivered { color: var(--admin-success); }
+
+.moreBtn {
+  color: var(--admin-text-secondary);
+  transition: color 0.2s ease;
+}
+
+.moreBtn:hover {
+  color: var(--admin-text-primary);
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background-color: var(--admin-surface);
+}
+
+.paginationText {
+  font-size: 13px;
+  color: var(--admin-text-secondary);
+}
+
+.paginationControls {
+  display: flex;
+  gap: 4px;
+}
+
+.pageBtn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-sm);
+  background-color: var(--admin-surface);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--admin-text-secondary);
+  transition: all 0.2s ease;
+}
+
+.pageBtn:hover {
+  background-color: var(--admin-surface-hover);
+}
+
+.pageBtn.active {
+  background-color: var(--admin-text-primary);
+  color: var(--admin-surface);
+  border-color: var(--admin-text-primary);
+}
