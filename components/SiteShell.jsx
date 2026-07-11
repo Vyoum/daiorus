@@ -8,6 +8,7 @@ import { calculateCartTotals } from '../lib/checkout';
 import { openRazorpayCheckout } from '../lib/razorpay-checkout';
 import { useCurrency } from './CurrencyProvider';
 import LoginDrawer from './LoginDrawer';
+import { CartProvider } from './CartProvider';
 
 export default function SiteShell({ children, showNewsletter = true, headerOverlay = false }) {
   const router = useRouter();
@@ -593,7 +594,11 @@ export default function SiteShell({ children, showNewsletter = true, headerOverl
 
       <div className="header-spacer" aria-hidden="true" />
 
-      <main className="site-main">{typeof children === 'function' ? children({ addToCart }) : children}</main>
+      <main className="site-main">
+        <CartProvider value={{ addToCart }}>
+          {typeof children === 'function' ? children({ addToCart }) : children}
+        </CartProvider>
+      </main>
 
       {showNewsletter && (
         <section className="newsletter-section">

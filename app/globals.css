@@ -1775,6 +1775,13 @@ img {
   bottom: 0;
 }
 
+@media (hover: none), (max-width: 768px) {
+  .product-action-btn {
+    bottom: 0;
+    opacity: 0.95;
+  }
+}
+
 .product-name {
   font-family: var(--font-serif);
   font-size: 1.05rem;
@@ -2917,10 +2924,5 @@ img {
 
   .auth-drawer-body {
     padding: 12px 28px 32px;
-  }
-
-  .product-action-btn {
-    bottom: 0;
-    opacity: 0.95;
   }
 }

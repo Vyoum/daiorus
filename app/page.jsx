@@ -2,12 +2,12 @@
 
 import Link from 'next/link';
 import SiteShell from '../components/SiteShell';
+import ProductCard from '../components/ProductCard';
 import {
   BEST_SELLERS,
   CATEGORIES,
   COLLECTIONS,
 } from '../lib/data';
-import Price from '../components/Price';
 
 const IG_IMAGES = [
   '/images/ui1/ig-1.jpg',
@@ -28,8 +28,7 @@ const MARQUEE = [
 export default function HomePage() {
   return (
     <SiteShell headerOverlay>
-      {({ addToCart }) => (
-        <>
+      <>
           <section className="ui1-hero">
             <img
               src="/images/ui1/hero-home.jpg"
@@ -128,31 +127,7 @@ export default function HomePage() {
               </div>
               <div className="ui1-product-grid">
                 {BEST_SELLERS.map((product) => (
-                  <article key={product.id} className="product-card">
-                    <div className="product-img-wrapper">
-                      {product.tag && (
-                        <span
-                          className={`product-tag ${
-                            product.tag.toLowerCase() === 'new' ? 'new' : ''
-                          }`}
-                        >
-                          {product.tag}
-                        </span>
-                      )}
-                      <img src={product.image} alt={product.name} className="product-img" />
-                      <button
-                        type="button"
-                        className="product-action-btn"
-                        onClick={() => addToCart(product)}
-                      >
-                        Add To Cart
-                      </button>
-                    </div>
-                    <h3 className="product-name">{product.name}</h3>
-                    <p className="product-price">
-                      <Price amount={product.price} />
-                    </p>
-                  </article>
+                  <ProductCard key={product.id} product={product} />
                 ))}
               </div>
             </div>
@@ -268,8 +243,7 @@ export default function HomePage() {
               </div>
             </div>
           </section>
-        </>
-      )}
+      </>
     </SiteShell>
   );
 }

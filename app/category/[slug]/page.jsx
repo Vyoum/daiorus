@@ -1,12 +1,12 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import SiteShell from '../../../components/SiteShell';
+import ProductCard from '../../../components/ProductCard';
 import {
   CATEGORIES,
   PRODUCTS,
   getCategory,
 } from '../../../lib/data';
-import Price from '../../../components/Price';
 
 export function generateStaticParams() {
   return CATEGORIES.map((cat) => ({ slug: cat.slug }));
@@ -50,16 +50,7 @@ export default async function CategoryPage({ params }) {
       <section className="cat-products">
         <div className="cat-products-inner">
           {products.map((product) => (
-            <article key={product.id} className="cat-product-card">
-              <div className="cat-product-img-wrap">
-                <img src={product.image} alt={product.name} className="cat-product-img" />
-              </div>
-              <h3 className="cat-product-name">{product.name}</h3>
-              <p className="cat-product-material">{product.material}</p>
-              <p className="cat-product-price">
-                <Price amount={product.price} />
-              </p>
-            </article>
+            <ProductCard key={product.id} product={product} showMaterial />
           ))}
         </div>
       </section>
