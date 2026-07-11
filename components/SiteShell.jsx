@@ -9,9 +9,11 @@ import { openRazorpayCheckout } from '../lib/razorpay-checkout';
 import { useCurrency } from './CurrencyProvider';
 import LoginDrawer from './LoginDrawer';
 import { CartProvider } from './CartProvider';
+import { useAuth } from './AuthProvider';
 
 export default function SiteShell({ children, showNewsletter = true, headerOverlay = false }) {
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   const { formatPrice, currencyCode, countryName, loading: currencyLoading, isLocalCurrency } =
     useCurrency();
   const [cart, setCart] = useState([]);
@@ -29,6 +31,26 @@ export default function SiteShell({ children, showNewsletter = true, headerOverl
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const searchCloseTimer = useRef(null);
   const catCloseTimer = useRef(null);
+
+  const openAccount = () => {
+    if (authLoading) return;
+    if (user) {
+      router.push('/account/profile');
+      return;
+    }
+    setIsAuthOpen(true);
+  };
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('login') === '1') {
+      setIsAuthOpen(true);
+      params.delete('login');
+      const next = `${window.location.pathname}${params.toString() ? `?${params}` : ''}`;
+      window.history.replaceState({}, '', next);
+    }
+  }, []);
 
   const addToCart = (product) => {
     setCart((prev) => {
@@ -329,7 +351,7 @@ export default function SiteShell({ children, showNewsletter = true, headerOverl
               type="button"
               className="icon-btn"
               aria-label="Account"
-              onClick={() => setIsAuthOpen(true)}
+              onClick={openAccount}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
@@ -345,7 +367,7 @@ export default function SiteShell({ children, showNewsletter = true, headerOverl
               aria-label="Account"
               onClick={() => {
                 closeMobileMenu();
-                setIsAuthOpen(true);
+                openAccount();
               }}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">

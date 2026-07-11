@@ -734,6 +734,25 @@ img {
   color: #fff;
 }
 
+.auth-outline-btn {
+  margin-top: 8px;
+  width: 100%;
+  padding: 14px 24px;
+  border: 1px solid var(--border-dark);
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.auth-outline-btn:hover {
+  color: var(--text-dark);
+  border-color: var(--text-dark);
+}
+
 .auth-google-btn {
   width: 100%;
   padding: 14px 24px;

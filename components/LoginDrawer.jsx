@@ -176,9 +176,17 @@ export default function LoginDrawer({ open, onClose }) {
                 <p className="auth-account-name">{user.user_metadata.full_name}</p>
               )}
               {error && <p className="auth-form-message auth-form-error">{error}</p>}
+              <Link
+                href="/account/profile"
+                className="auth-submit-btn"
+                onClick={handleClose}
+                style={{ display: 'block', textAlign: 'center', marginBottom: 12 }}
+              >
+                Manage Account
+              </Link>
               <button
                 type="button"
-                className="auth-submit-btn"
+                className="auth-outline-btn"
                 onClick={handleSignOut}
                 disabled={loading}
               >

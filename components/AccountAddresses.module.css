@@ -1,0 +1,261 @@
+.wrap {
+  max-width: 880px;
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 400;
+  color: var(--text-dark);
+  margin-bottom: 12px;
+  letter-spacing: -0.02em;
+}
+
+.lead {
+  color: var(--muted);
+  font-size: 0.98rem;
+  line-height: 1.65;
+  max-width: 52ch;
+}
+
+.addBtn {
+  padding: 12px 20px;
+  background: var(--text-dark);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.addBtn:hover {
+  opacity: 0.9;
+}
+
+.error,
+.success {
+  padding: 12px 14px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+  line-height: 1.45;
+}
+
+.error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+}
+
+.success {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid rgba(28, 24, 17, 0.08);
+  border-radius: 10px;
+  padding: 24px;
+  box-shadow: 0 1px 2px rgba(28, 24, 17, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 180px;
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.label {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  color: var(--text-dark);
+}
+
+.defaultBadge {
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #2f6b4a;
+  background: #eef6f0;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.addressText {
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.6;
+  flex: 1;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+.actionBtn {
+  padding: 8px 12px;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid rgba(28, 24, 17, 0.18);
+  background: transparent;
+  color: var(--text-dark);
+  cursor: pointer;
+}
+
+.actionBtn:hover:not(:disabled) {
+  border-color: var(--text-dark);
+}
+
+.actionBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.actionDanger {
+  color: #991b1b;
+  border-color: rgba(153, 27, 27, 0.25);
+}
+
+.empty {
+  grid-column: 1 / -1;
+  background: #fff;
+  border: 1px solid rgba(28, 24, 17, 0.08);
+  border-radius: 10px;
+  padding: 40px 28px;
+  text-align: center;
+}
+
+.emptyTitle {
+  font-family: var(--font-serif);
+  font-size: 1.4rem;
+  margin-bottom: 10px;
+}
+
+.emptyText {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.formCard {
+  background: #fff;
+  border: 1px solid rgba(28, 24, 17, 0.08);
+  border-radius: 10px;
+  padding: 28px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 2px rgba(28, 24, 17, 0.03);
+}
+
+.formTitle {
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  margin-bottom: 22px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.fieldLabel {
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.input,
+.select {
+  padding: 12px 14px;
+  border: 1px solid rgba(28, 24, 17, 0.15);
+  background: #fff;
+  font-size: 0.95rem;
+  color: var(--text-dark);
+  border-radius: 2px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.checkRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0 20px;
+  font-size: 0.92rem;
+  color: var(--text-dark);
+}
+
+.formActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.cancelBtn {
+  padding: 12px 20px;
+  border: 1px solid var(--border-dark);
+  background: transparent;
+  color: var(--text-dark);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.saveBtn {
+  padding: 12px 20px;
+  background: var(--text-dark);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.saveBtn:disabled,
+.cancelBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .row {
+    grid-template-columns: 1fr;
+  }
+}

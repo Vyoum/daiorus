@@ -1,0 +1,16 @@
+.wrap {
+  max-width: 640px;
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 4vw, 2.5rem);
+  font-weight: 400;
+  margin-bottom: 12px;
+}
+
+.text {
+  color: var(--muted);
+  line-height: 1.65;
+  font-size: 1rem;
+}

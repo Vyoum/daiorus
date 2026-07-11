@@ -15,11 +15,21 @@ const DEFAULT_CURRENCY = {
   rateFromInr: 1,
 };
 
+const CURRENCY_META = {
+  INR: { countryCode: 'IN', countryName: 'India', currencyName: 'Indian Rupee', currencySymbol: '₹' },
+  USD: { countryCode: 'US', countryName: 'United States', currencyName: 'US Dollar', currencySymbol: '$' },
+  GBP: { countryCode: 'GB', countryName: 'United Kingdom', currencyName: 'British Pound', currencySymbol: '£' },
+  AED: { countryCode: 'AE', countryName: 'United Arab Emirates', currencyName: 'UAE Dirham', currencySymbol: 'د.إ' },
+  AUD: { countryCode: 'AU', countryName: 'Australia', currencyName: 'Australian Dollar', currencySymbol: 'A$' },
+  SGD: { countryCode: 'SG', countryName: 'Singapore', currencyName: 'Singapore Dollar', currencySymbol: 'S$' },
+};
+
 const CurrencyContext = createContext({
   ...DEFAULT_CURRENCY,
   loading: true,
   formatPrice: (amount) => `₹${amount.toLocaleString('en-IN')}`,
   isLocalCurrency: true,
+  setPreferredCurrency: async () => {},
 });
 
 function readCachedCurrency() {
@@ -101,14 +111,40 @@ export function CurrencyProvider({ children }) {
     [currency.currencyCode, currency.rateFromInr]
   );
 
+  const setPreferredCurrency = useCallback(async (code) => {
+    const meta = CURRENCY_META[code] || CURRENCY_META.INR;
+    let rateFromInr = 1;
+
+    if (code !== BASE_CURRENCY) {
+      try {
+        const res = await fetch(`/api/exchange-rate?currency=${encodeURIComponent(code)}`);
+        if (res.ok) {
+          const data = await res.json();
+          rateFromInr = data.rateFromInr ?? 1;
+        }
+      } catch {
+        rateFromInr = currency.rateFromInr || 1;
+      }
+    }
+
+    const next = {
+      ...meta,
+      currencyCode: code,
+      rateFromInr,
+    };
+    setCurrency(next);
+    writeCachedCurrency(next);
+  }, [currency.rateFromInr]);
+
   const value = useMemo(
     () => ({
       ...currency,
       loading,
       formatPrice,
       isLocalCurrency: currency.currencyCode === BASE_CURRENCY,
+      setPreferredCurrency,
     }),
-    [currency, loading, formatPrice]
+    [currency, loading, formatPrice, setPreferredCurrency]
   );
 
   return (

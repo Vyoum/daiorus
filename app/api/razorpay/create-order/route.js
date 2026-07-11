@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '../../../../lib/prisma';
 import { getRazorpay, getRazorpayKeyId } from '../../../../lib/razorpay';
+import { getSessionUser } from '../../../../lib/admin/auth';
 import {
   calculateCartTotals,
   generateOrderNumber,
@@ -37,6 +38,14 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Order total is too low' }, { status: 400 });
     }
 
+    let userId = null;
+    try {
+      const session = await getSessionUser();
+      userId = session.dbUser?.id || null;
+    } catch {
+      userId = null;
+    }
+
     const razorpay = getRazorpay();
     const razorpayOrder = await razorpay.orders.create({
       amount: amountPaise,
@@ -51,6 +60,7 @@ export async function POST(request) {
     const order = await prisma.order.create({
       data: {
         orderNumber,
+        userId,
         guestEmail: email.trim().toLowerCase(),
         status: 'PENDING',
         subtotalInr,
