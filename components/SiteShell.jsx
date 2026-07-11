@@ -7,6 +7,7 @@ import { CATEGORIES, COLLECTIONS } from '../lib/data';
 import { calculateCartTotals } from '../lib/checkout';
 import { openRazorpayCheckout } from '../lib/razorpay-checkout';
 import { useCurrency } from './CurrencyProvider';
+import LoginDrawer from './LoginDrawer';
 
 export default function SiteShell({ children, showNewsletter = true, headerOverlay = false }) {
   const router = useRouter();
@@ -14,6 +15,7 @@ export default function SiteShell({ children, showNewsletter = true, headerOverl
     useCurrency();
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -325,25 +327,31 @@ export default function SiteShell({ children, showNewsletter = true, headerOverl
             <button
               type="button"
               className="icon-btn"
-              aria-label="Cart"
-              onClick={() => setIsCartOpen(true)}
+              aria-label="Account"
+              onClick={() => setIsAuthOpen(true)}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
-                <line x1="3" y1="6" x2="21" y2="6" />
-                <path d="M16 10a4 4 0 0 1-8 0" />
-              </svg>
-              {totalItems > 0 && <span className="cart-badge">{totalItems}</span>}
-            </button>
-          </div>
-
-          <div className="ui1-nav-mobile-right">
-            <Link href="/contact" className="icon-btn" aria-label="Account" onClick={closeMobileMenu}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                 <circle cx="12" cy="7" r="4" />
               </svg>
-            </Link>
+            </button>
+          </div>
+
+          <div className="ui1-nav-mobile-right">
+            <button
+              type="button"
+              className="icon-btn"
+              aria-label="Account"
+              onClick={() => {
+                closeMobileMenu();
+                setIsAuthOpen(true);
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+            </button>
           </div>
         </div>
 
@@ -456,6 +464,8 @@ export default function SiteShell({ children, showNewsletter = true, headerOverl
           </div>
         </div>
       </header>
+
+      <LoginDrawer open={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
 
       <div className={`cart-overlay ${isCartOpen ? 'open' : ''}`} onClick={() => setIsCartOpen(false)}>
         <div className="cart-drawer" onClick={(e) => e.stopPropagation()}>
