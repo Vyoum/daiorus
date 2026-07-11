@@ -764,6 +764,64 @@ img {
   color: var(--muted);
 }
 
+.auth-form-error {
+  color: #a33a3a;
+}
+
+.auth-form-success {
+  color: #3d6b4f;
+}
+
+.auth-account {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.auth-account-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.auth-account-email {
+  font-size: 1rem;
+  color: var(--text-dark);
+  word-break: break-all;
+}
+
+.auth-account-name {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.auth-page {
+  max-width: 420px;
+  margin: 0 auto;
+  padding: calc(var(--header-h) + var(--announce-h) + 64px) 24px 80px;
+}
+
+.auth-page-title {
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  font-weight: 400;
+  margin-bottom: 10px;
+}
+
+.auth-page-text {
+  color: var(--muted);
+  margin-bottom: 32px;
+}
+
+.auth-page-form {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
 .cart-header {
   padding: 24px 28px;
   border-bottom: 1px solid var(--border);

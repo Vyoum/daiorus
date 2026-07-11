@@ -1,4 +1,5 @@
 import './globals.css';
+import { AuthProvider } from '../components/AuthProvider';
 import { CurrencyProvider } from '../components/CurrencyProvider';
 
 export const metadata = {
@@ -20,7 +21,9 @@ export default function RootLayout({ children }) {
         <link rel="apple-touch-icon" href="/images/daiorus-mark.png" />
       </head>
       <body>
-        <CurrencyProvider>{children}</CurrencyProvider>
+        <AuthProvider>
+          <CurrencyProvider>{children}</CurrencyProvider>
+        </AuthProvider>
       </body>
     </html>
   );
