@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createClient } from '../../lib/supabase/client';
-import SiteShell from '../../components/SiteShell';
+import { createClient } from '@/lib/supabase/client';
+import SiteShell from '@/components/SiteShell';
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState('');
