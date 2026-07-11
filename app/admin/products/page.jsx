@@ -1,18 +1,21 @@
-import React from 'react';
-import { 
-  Search, 
-  Download, 
-  Plus, 
-  Filter, 
-  ChevronDown, 
+import {
+  Search,
+  Download,
+  Filter,
+  ChevronDown,
   Eye,
   ChevronLeft,
   ChevronRight,
-  MoreHorizontal
+  MoreHorizontal,
 } from 'lucide-react';
+import Link from 'next/link';
+import { getAdminProducts } from '../../../lib/admin/products';
+import { formatDateTime, formatINR, productStatusLabel } from '../../../lib/admin/format';
 import styles from './products.module.css';
 
-export default function ProductsPage() {
+export default async function ProductsPage() {
+  const { products, total } = await getAdminProducts();
+
   return (
     <div>
       <header className={styles.header}>
@@ -21,38 +24,30 @@ export default function ProductsPage() {
           <p className={styles.pageSubtitle}>Manage your inventory, pricing, and product visibility.</p>
         </div>
         <div className={styles.headerActions}>
-          <button className={styles.secondaryBtn}>
+          <button type="button" className={styles.secondaryBtn}>
             <Download size={16} />
             Export CSV
           </button>
-          <button className={styles.primaryBtn}>
-            <Plus size={16} />
-            Add Product
-          </button>
+          <Link href="/admin/inventory" className={styles.primaryBtn}>
+            View Inventory
+          </Link>
         </div>
       </header>
 
       <div className={styles.filterBar}>
         <div className={styles.searchContainer}>
           <Search className={styles.searchIcon} size={16} />
-          <input 
-            type="text" 
-            placeholder="Search products, SKU..." 
-            className={styles.searchInput}
-          />
+          <input type="text" placeholder="Search products, SKU..." className={styles.searchInput} disabled />
         </div>
-        
+
         <div className={styles.filterGroup}>
-          <button className={styles.dropdownBtn}>
+          <button type="button" className={styles.dropdownBtn}>
             Category <ChevronDown size={14} />
           </button>
-          <button className={styles.dropdownBtn}>
-            Price Range <ChevronDown size={14} />
-          </button>
-          <button className={styles.dropdownBtn}>
+          <button type="button" className={styles.dropdownBtn}>
             Stock Status <ChevronDown size={14} />
           </button>
-          <button className={styles.iconBtn}>
+          <button type="button" className={styles.iconBtn}>
             <Filter size={16} />
           </button>
         </div>
@@ -62,8 +57,8 @@ export default function ProductsPage() {
         <table className={styles.table}>
           <thead>
             <tr>
-              <th className={styles.th} style={{width: '40px'}}>
-                <input type="checkbox" className={styles.checkbox} />
+              <th className={styles.th} style={{ width: 40 }}>
+                <input type="checkbox" className={styles.checkbox} aria-label="Select all" />
               </th>
               <th className={styles.th}>Product</th>
               <th className={styles.th}>SKU</th>
@@ -76,65 +71,88 @@ export default function ProductsPage() {
             </tr>
           </thead>
           <tbody>
-            <tr className={styles.tr}>
-              <td className={styles.td}>
-                <input type="checkbox" className={styles.checkbox} />
-              </td>
-              <td className={styles.td}>
-                <div className={styles.productCell}>
-                  <div className={styles.productImage}>
-                    {/* Placeholder for Product Image */}
-                    <div style={{width: '24px', height: '24px', borderRadius: '50%', backgroundColor: '#000'}}></div>
-                  </div>
-                  <div className={styles.productInfo}>
-                    <span className={styles.productName}>Daiorus Smart Hub Pro</span>
-                    <span className={styles.productDesc}>Core Control Unit</span>
-                  </div>
-                </div>
-              </td>
-              <td className={styles.td}>DSH-PRO-BLK</td>
-              <td className={styles.td}>Smart Home</td>
-              <td className={styles.td}><span className={styles.price}>$299.00</span></td>
-              <td className={styles.td}>
-                <div className={styles.stockCell}>
-                  <span className={styles.stockValue}>145</span>
-                  <div className={styles.stockBarBg}>
-                    <div className={styles.stockBarFill} style={{width: '60%'}}></div>
-                  </div>
-                </div>
-              </td>
-              <td className={styles.td}>
-                <span className={styles.badge}>
-                  <span className={styles.badgeDot}></span>
-                  Published
-                </span>
-              </td>
-              <td className={styles.td}>
-                <Eye className={styles.visibilityIcon} size={18} />
-              </td>
-              <td className={styles.td}>
-                <div className={styles.lastUpdated}>
-                  Today, 09:41<br/>AM
-                </div>
-              </td>
-            </tr>
-            {/* Can add more placeholder rows here if needed, but Image 4 only shows one row populated */}
+            {products.length === 0 ? (
+              <tr className={styles.tr}>
+                <td className={styles.td} colSpan={9} style={{ textAlign: 'center', padding: 40 }}>
+                  No products in the database yet.
+                </td>
+              </tr>
+            ) : (
+              products.map((product) => (
+                <tr key={product.id} className={styles.tr}>
+                  <td className={styles.td}>
+                    <input type="checkbox" className={styles.checkbox} aria-label={`Select ${product.name}`} />
+                  </td>
+                  <td className={styles.td}>
+                    <div className={styles.productCell}>
+                      <div className={styles.productImage}>
+                        {product.imageUrl ? (
+                          <img
+                            src={product.imageUrl}
+                            alt=""
+                            style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 6 }}
+                          />
+                        ) : null}
+                      </div>
+                      <div className={styles.productInfo}>
+                        <span className={styles.productName}>{product.name}</span>
+                        <span className={styles.productDesc}>{product.material || product.slug}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td className={styles.td}>{product.sku}</td>
+                  <td className={styles.td}>{product.category}</td>
+                  <td className={styles.td}>
+                    <span className={styles.price}>{formatINR(product.priceInr)}</span>
+                  </td>
+                  <td className={styles.td}>
+                    <div className={styles.stockCell}>
+                      <span className={styles.stockValue} style={product.isLow ? { color: 'var(--admin-danger)' } : undefined}>
+                        {product.quantity}
+                      </span>
+                      <div className={styles.stockBarBg}>
+                        <div className={styles.stockBarFill} style={{ width: `${product.stockPct}%` }} />
+                      </div>
+                    </div>
+                  </td>
+                  <td className={styles.td}>
+                    <span className={styles.badge}>
+                      <span className={styles.badgeDot} />
+                      {productStatusLabel(product.status)}
+                    </span>
+                  </td>
+                  <td className={styles.td}>
+                    <Eye className={styles.visibilityIcon} size={18} />
+                  </td>
+                  <td className={styles.td}>
+                    <div className={styles.lastUpdated}>{formatDateTime(product.updatedAt)}</div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
-        
+
         <div className={styles.pagination}>
-          <span className={styles.paginationText}>Showing 1 to 10 of 245 products</span>
+          <span className={styles.paginationText}>
+            Showing {products.length === 0 ? 0 : 1} to {products.length} of {total} products
+          </span>
           <div className={styles.paginationControls}>
-            <button className={styles.pageBtn}><ChevronLeft size={16} /></button>
-            <button className={`${styles.pageBtn} ${styles.active}`}>1</button>
-            <button className={styles.pageBtn}>2</button>
-            <button className={styles.pageBtn}>3</button>
-            <button className={styles.pageBtn} style={{border: 'none', background: 'transparent'}}><MoreHorizontal size={16} /></button>
-            <button className={styles.pageBtn}><ChevronRight size={16} /></button>
+            <button type="button" className={styles.pageBtn} disabled>
+              <ChevronLeft size={16} />
+            </button>
+            <button type="button" className={`${styles.pageBtn} ${styles.active}`}>
+              1
+            </button>
+            <button type="button" className={styles.pageBtn} disabled>
+              <ChevronRight size={16} />
+            </button>
+            <button type="button" className={styles.pageBtn} style={{ border: 'none', background: 'transparent' }}>
+              <MoreHorizontal size={16} />
+            </button>
           </div>
         </div>
       </div>
-
     </div>
   );
 }

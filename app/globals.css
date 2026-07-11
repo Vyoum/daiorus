@@ -2839,9 +2839,13 @@ img {
   .categories-grid,
   .ui1-product-grid,
   .products-grid,
-  .cat-products-inner,
+  .cat-products-inner {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
   .instagram-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
   }
 
   .cart-drawer,

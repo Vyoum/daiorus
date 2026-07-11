@@ -423,3 +423,57 @@
   color: var(--admin-text-secondary);
   font-family: monospace;
 }
+
+.roleControl {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 120px;
+}
+
+.roleSelect {
+  appearance: none;
+  border: 1px solid var(--admin-border);
+  border-radius: 999px;
+  padding: 6px 28px 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background-color: #f9fafb;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  cursor: pointer;
+  color: var(--admin-text-primary);
+}
+
+.roleSelect:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.roleAdmin {
+  background-color: #111827;
+  color: #fff;
+  border-color: #111827;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+}
+
+.roleCustomer {
+  background-color: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+}
+
+.roleSaving {
+  font-size: 11px;
+  color: var(--admin-text-muted);
+}
+
+.roleError {
+  font-size: 11px;
+  color: var(--admin-danger);
+  max-width: 160px;
+  line-height: 1.3;
+}

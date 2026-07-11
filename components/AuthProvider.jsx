@@ -18,6 +18,14 @@ function isSupabaseConfigured() {
   );
 }
 
+async function ensureUserProfile() {
+  try {
+    await fetch('/api/auth/ensure-user', { method: 'POST' });
+  } catch {
+    // Non-blocking — admin sync can still pick users up later
+  }
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -36,13 +44,20 @@ export function AuthProvider({ children }) {
       if (!mounted) return;
       setUser(currentUser ?? null);
       setLoading(false);
+      if (currentUser) ensureUserProfile();
     });
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
       setLoading(false);
+      if (
+        session?.user &&
+        (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED')
+      ) {
+        ensureUserProfile();
+      }
     });
 
     return () => {
