@@ -9,8 +9,8 @@ import {
   MoreHorizontal,
 } from 'lucide-react';
 import Link from 'next/link';
-import { getAdminProducts } from '../../../lib/admin/products';
-import { formatDateTime, formatINR, productStatusLabel } from '../../../lib/admin/format';
+import { getAdminProducts } from '../../../../lib/admin/products';
+import { formatDateTime, formatINR, productStatusLabel } from '../../../../lib/admin/format';
 import styles from './products.module.css';
 
 export default async function ProductsPage() {

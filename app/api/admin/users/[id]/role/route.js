@@ -1,39 +1,11 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import prisma from '@/lib/prisma';
+import { requireAdminApi } from '@/lib/admin/auth';
 import { updateUserRole } from '@/lib/admin/users';
-
-async function requireAdmin() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user?.email) {
-    return { error: NextResponse.json({ error: 'Not authenticated' }, { status: 401 }) };
-  }
-
-  const dbUser = await prisma.user.findUnique({
-    where: { email: user.email.toLowerCase() },
-    select: { id: true, role: true },
-  });
-
-  // Allow role changes if caller is ADMIN, or if there are no admins yet (bootstrap).
-  if (dbUser?.role === 'ADMIN') {
-    return { user, dbUser };
-  }
-
-  const adminCount = await prisma.user.count({ where: { role: 'ADMIN' } });
-  if (adminCount === 0) {
-    return { user, dbUser, bootstrap: true };
-  }
-
-  return { error: NextResponse.json({ error: 'Admin access required' }, { status: 403 }) };
-}
+import prisma from '@/lib/prisma';
 
 export async function PATCH(request, { params }) {
   try {
-    const auth = await requireAdmin();
+    const auth = await requireAdminApi({ allowBootstrap: true });
     if (auth.error) return auth.error;
 
     const { id } = await params;
@@ -52,7 +24,7 @@ export async function PATCH(request, { params }) {
       });
       if (target?.role === 'ADMIN') {
         const adminCount = await prisma.user.count({ where: { role: 'ADMIN' } });
-        if (adminCount <= 1 && !auth.bootstrap) {
+        if (adminCount <= 1 && !auth.admin.bootstrap) {
           return NextResponse.json(
             { error: 'Cannot demote the last admin' },
             { status: 400 }

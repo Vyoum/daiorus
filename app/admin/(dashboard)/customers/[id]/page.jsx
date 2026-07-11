@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Star, Mail, Phone, Heart, MessageSquare } from 'lucide-react';
-import { getAdminCustomerDetail } from '../../../../lib/admin/customers';
-import { formatDate, formatINR } from '../../../../lib/admin/format';
+import { getAdminCustomerDetail } from '../../../../../lib/admin/customers';
+import { formatDate, formatINR } from '../../../../../lib/admin/format';
 import RoleSelect from '../RoleSelect';
 import styles from '../customers.module.css';
 

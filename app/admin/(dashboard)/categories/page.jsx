@@ -1,4 +1,4 @@
-import { getAdminCategories } from '../../../lib/admin/products';
+import { getAdminCategories } from '../../../../lib/admin/products';
 import styles from '../products/products.module.css';
 
 export default async function CategoriesPage() {

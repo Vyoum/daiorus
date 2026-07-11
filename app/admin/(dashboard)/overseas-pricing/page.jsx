@@ -1,6 +1,6 @@
 import { Flag, Pencil } from 'lucide-react';
-import { formatINR } from '../../../lib/admin/format';
-import { getOverseasPricingData } from '../../../lib/admin/overseas';
+import { formatINR } from '../../../../lib/admin/format';
+import { getOverseasPricingData } from '../../../../lib/admin/overseas';
 import PricingPreview from './PricingPreview';
 import styles from './pricing.module.css';
 

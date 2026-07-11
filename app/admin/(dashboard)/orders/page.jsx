@@ -10,7 +10,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
-import { getAdminOrders } from '../../../lib/admin/orders';
+import { getAdminOrders } from '../../../../lib/admin/orders';
 import {
   formatDate,
   formatTime,
@@ -18,7 +18,7 @@ import {
   initials,
   paymentLabel,
   fulfillmentLabel,
-} from '../../../lib/admin/format';
+} from '../../../../lib/admin/format';
 import styles from './orders.module.css';
 
 function FulfillIcon({ tone }) {

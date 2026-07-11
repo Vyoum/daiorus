@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import { getAdminCustomers } from '../../../lib/admin/customers';
-import { formatDate, formatINR, initials } from '../../../lib/admin/format';
+import { getAdminCustomers } from '../../../../lib/admin/customers';
+import { formatDate, formatINR, initials } from '../../../../lib/admin/format';
 import RoleSelect from './RoleSelect';
 import styles from './customers.module.css';
 

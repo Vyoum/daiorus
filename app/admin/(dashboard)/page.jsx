@@ -14,8 +14,8 @@ import {
   UserPlus,
   XCircle,
 } from 'lucide-react';
-import { getDashboardStats } from '../../lib/admin/stats';
-import { formatINR, relativeTime } from '../../lib/admin/format';
+import { getDashboardStats } from '../../../lib/admin/stats';
+import { formatINR, relativeTime } from '../../../lib/admin/format';
 import styles from './dashboard.module.css';
 
 function ActivityIcon({ type }) {

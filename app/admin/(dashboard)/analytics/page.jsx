@@ -1,7 +1,7 @@
 import Link from 'next/link';
-import { getDashboardStats } from '../../../lib/admin/stats';
-import { getAdminOrders } from '../../../lib/admin/orders';
-import { formatINR } from '../../../lib/admin/format';
+import { getDashboardStats } from '../../../../lib/admin/stats';
+import { getAdminOrders } from '../../../../lib/admin/orders';
+import { formatINR } from '../../../../lib/admin/format';
 import styles from '../dashboard.module.css';
 
 export default async function AnalyticsPage() {

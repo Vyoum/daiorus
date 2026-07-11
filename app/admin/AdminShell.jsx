@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useState } from 'react';
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -18,7 +19,9 @@ import {
   Search,
   Bell,
   ChevronDown,
+  LogOut,
 } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
 import styles from './layout.module.css';
 
 const NAV_ITEMS = [
@@ -36,8 +39,27 @@ const NAV_ITEMS = [
   { label: 'Settings', href: '/admin/settings', icon: Settings },
 ];
 
-export default function AdminShell({ children }) {
+export default function AdminShell({ children, adminName = 'Admin', adminEmail = '' }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+
+  const displayName = adminName || adminEmail?.split('@')[0] || 'Admin';
+  const avatarSeed = encodeURIComponent(adminEmail || displayName);
+
+  const handleSignOut = async () => {
+    if (signingOut) return;
+    setSigningOut(true);
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      router.replace('/admin/login');
+      router.refresh();
+    } catch {
+      setSigningOut(false);
+    }
+  };
 
   return (
     <div className={`admin-reset ${styles.adminContainer}`}>
@@ -85,17 +107,44 @@ export default function AdminShell({ children }) {
           </div>
 
           <div className={styles.topbarActions}>
-            <button type="button" className={styles.iconButton}>
+            <button type="button" className={styles.iconButton} aria-label="Notifications">
               <Bell size={20} strokeWidth={2} />
             </button>
 
-            <button type="button" className={styles.profileButton}>
-              <div className={styles.avatar}>
-                <img src="https://i.pravatar.cc/150?u=admin" alt="Admin" />
-              </div>
-              <span className={styles.profileName}>Admin</span>
-              <ChevronDown size={14} color="var(--admin-text-secondary)" />
-            </button>
+            <div className={styles.profileMenu}>
+              <button
+                type="button"
+                className={styles.profileButton}
+                onClick={() => setMenuOpen((open) => !open)}
+                aria-expanded={menuOpen}
+              >
+                <div className={styles.avatar}>
+                  <img
+                    src={`https://i.pravatar.cc/150?u=${avatarSeed}`}
+                    alt={displayName}
+                  />
+                </div>
+                <span className={styles.profileName}>{displayName}</span>
+                <ChevronDown size={14} color="var(--admin-text-secondary)" />
+              </button>
+
+              {menuOpen ? (
+                <div className={styles.profileDropdown}>
+                  {adminEmail ? (
+                    <p className={styles.profileEmail}>{adminEmail}</p>
+                  ) : null}
+                  <button
+                    type="button"
+                    className={styles.signOutBtn}
+                    onClick={handleSignOut}
+                    disabled={signingOut}
+                  >
+                    <LogOut size={14} />
+                    {signingOut ? 'Signing out…' : 'Sign out'}
+                  </button>
+                </div>
+              ) : null}
+            </div>
           </div>
         </header>
 

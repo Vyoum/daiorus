@@ -2,8 +2,8 @@
 
 import { useMemo, useState } from 'react';
 import { Calculator } from 'lucide-react';
-import { formatCurrency } from '../../../lib/currency';
-import { previewOverseasPrice } from '../../../lib/admin/pricing-calc';
+import { formatCurrency } from '../../../../lib/currency';
+import { previewOverseasPrice } from '../../../../lib/admin/pricing-calc';
 import styles from './pricing.module.css';
 
 export default function PricingPreview({ regions }) {

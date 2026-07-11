@@ -1,5 +1,5 @@
-import { getAdminInventory } from '../../../lib/admin/products';
-import { formatDateTime } from '../../../lib/admin/format';
+import { getAdminInventory } from '../../../../lib/admin/products';
+import { formatDateTime } from '../../../../lib/admin/format';
 import styles from '../products/products.module.css';
 
 export default async function InventoryPage() {
