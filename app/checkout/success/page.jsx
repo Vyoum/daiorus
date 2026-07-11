@@ -2,7 +2,7 @@ import Link from 'next/link';
 import SiteShell from '../../../components/SiteShell';
 import prisma from '../../../lib/prisma';
 import { formatINR } from '../../../lib/data';
-import { formatOrderDate, maskPaymentRef } from '../../../lib/orders';
+import { formatOrderDate } from '../../../lib/orders';
 
 export const metadata = {
   title: 'Order Confirmed | DAIORUS',
@@ -28,23 +28,31 @@ export default async function CheckoutSuccessPage({ searchParams }) {
   return (
     <SiteShell showNewsletter={false}>
       <section className="order-confirm">
+        <div className="order-confirm-watermark" aria-hidden="true">
+          Daiorus
+        </div>
         <div className="order-confirm-inner">
           <header className="order-confirm-header">
             <div className="order-confirm-icon" aria-hidden="true">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M20 6L9 17l-5-5" />
+              <svg width="20" height="15" viewBox="0 0 20 15" fill="none">
+                <path
+                  d="M1.5 7.5L7 13L18.5 1.5"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
             </div>
-            <span className="section-label">Order Confirmed</span>
-            <h1 className="order-confirm-title">Thank You</h1>
+            <h1 className="order-confirm-title">Thank You.</h1>
             <p className="order-confirm-lead">
               {email ? (
                 <>
-                  Your payment was successful. A confirmation email will be sent to{' '}
-                  <strong>{email}</strong> shortly.
+                  Your order has been placed successfully. A confirmation email has been
+                  sent to <strong>{email}</strong>.
                 </>
               ) : (
-                'Your payment was successful. We&apos;ll send a confirmation to your email shortly.'
+                'Your order has been placed successfully. A confirmation email has been sent to your inbox.'
               )}
             </p>
           </header>
@@ -54,54 +62,50 @@ export default async function CheckoutSuccessPage({ searchParams }) {
               <div className="order-confirm-meta">
                 <div className="order-confirm-meta-item">
                   <span className="order-confirm-meta-label">Order Number</span>
-                  <span className="order-confirm-meta-value">{order.orderNumber}</span>
+                  <span className="order-confirm-meta-value order-confirm-meta-value--order">
+                    #{order.orderNumber}
+                  </span>
                 </div>
-                <div className="order-confirm-meta-item">
+                <div className="order-confirm-meta-item order-confirm-meta-item--end">
                   <span className="order-confirm-meta-label">Date</span>
                   <span className="order-confirm-meta-value">{orderDate}</span>
                 </div>
-                <div className="order-confirm-meta-item">
-                  <span className="order-confirm-meta-label">Payment</span>
-                  <span className="order-confirm-meta-value">
-                    Paid · Razorpay {maskPaymentRef(order.paymentRef)}
-                  </span>
-                </div>
               </div>
 
-              <div className="order-confirm-divider" />
-
               <div className="order-confirm-items">
-                <h2 className="order-confirm-items-title">Your Order</h2>
                 <ul className="order-confirm-items-list">
-                  {order.items.map((item) => (
-                    <li key={item.id} className="order-confirm-item">
-                      <div className="order-confirm-item-img-wrap">
-                        {item.imageUrl ? (
-                          <img
-                            src={item.imageUrl}
-                            alt={item.productName}
-                            className="order-confirm-item-img"
-                          />
-                        ) : (
-                          <div className="order-confirm-item-img order-confirm-item-img--placeholder" />
-                        )}
+                  {order.items.map((item, index) => (
+                    <li key={item.id}>
+                      {index > 0 && <div className="order-confirm-item-divider" />}
+                      <div className="order-confirm-item">
+                        <div className="order-confirm-item-img-wrap">
+                          {item.imageUrl ? (
+                            <img
+                              src={item.imageUrl}
+                              alt={item.productName}
+                              className="order-confirm-item-img"
+                            />
+                          ) : (
+                            <div className="order-confirm-item-img order-confirm-item-img--placeholder" />
+                          )}
+                        </div>
+                        <div className="order-confirm-item-details">
+                          <h3 className="order-confirm-item-name">{item.productName}</h3>
+                          {item.material && (
+                            <p className="order-confirm-item-material">{item.material}</p>
+                          )}
+                          {item.quantity > 1 && (
+                            <p className="order-confirm-item-qty">Qty {item.quantity}</p>
+                          )}
+                        </div>
+                        <span className="order-confirm-item-price">
+                          {formatINR(item.lineTotalInr)}
+                        </span>
                       </div>
-                      <div className="order-confirm-item-details">
-                        <h3 className="order-confirm-item-name">{item.productName}</h3>
-                        {item.material && (
-                          <p className="order-confirm-item-material">{item.material}</p>
-                        )}
-                        <p className="order-confirm-item-qty">Qty {item.quantity}</p>
-                      </div>
-                      <span className="order-confirm-item-price">
-                        {formatINR(item.lineTotalInr)}
-                      </span>
                     </li>
                   ))}
                 </ul>
               </div>
-
-              <div className="order-confirm-divider" />
 
               <div className="order-confirm-totals">
                 <div className="order-confirm-total-row">
@@ -109,48 +113,50 @@ export default async function CheckoutSuccessPage({ searchParams }) {
                   <span>{formatINR(order.subtotalInr)}</span>
                 </div>
                 <div className="order-confirm-total-row">
-                  <span>Shipping</span>
                   <span>
-                    {order.shippingInr === 0 ? 'Free' : formatINR(order.shippingInr)}
+                    {order.shippingInr === 0 ? 'Complimentary Shipping' : 'Shipping'}
+                  </span>
+                  <span>
+                    {order.shippingInr === 0 ? formatINR(0) : formatINR(order.shippingInr)}
                   </span>
                 </div>
                 <div className="order-confirm-total-row order-confirm-total-row--grand">
-                  <span>Total Paid</span>
+                  <span>Total</span>
                   <span>{formatINR(order.totalInr)}</span>
                 </div>
               </div>
             </div>
           ) : orderNumber ? (
             <div className="order-confirm-card order-confirm-card--compact">
-              <p className="order-confirm-lead">
-                Order <strong>{orderNumber}</strong> is being processed. If you don&apos;t
-                receive a confirmation email within a few minutes, please contact us.
+              <div className="order-confirm-meta">
+                <div className="order-confirm-meta-item">
+                  <span className="order-confirm-meta-label">Order Number</span>
+                  <span className="order-confirm-meta-value order-confirm-meta-value--order">
+                    #{orderNumber}
+                  </span>
+                </div>
+              </div>
+              <p className="order-confirm-lead order-confirm-lead--card">
+                Your order is being processed. If you don&apos;t receive a confirmation
+                email within a few minutes, please contact us.
               </p>
             </div>
-          ) : null}
+          ) : (
+            <div className="order-confirm-card order-confirm-card--compact">
+              <p className="order-confirm-lead order-confirm-lead--card">
+                Your payment was successful. We&apos;ll send a confirmation to your email
+                shortly.
+              </p>
+            </div>
+          )}
 
           <div className="order-confirm-actions">
-            <Link href="/shop" className="btn-primary order-confirm-btn">
+            <Link href="/contact" className="btn-outline-dark order-confirm-btn">
+              Track Order
+            </Link>
+            <Link href="/shop" className="order-confirm-btn order-confirm-btn--primary">
               Continue Shopping
             </Link>
-            <Link href="/contact" className="order-confirm-help-link">
-              Need help with your order?
-            </Link>
-          </div>
-
-          <div className="order-confirm-trust">
-            <div className="order-confirm-trust-item">
-              <span className="order-confirm-trust-label">Free Shipping</span>
-              <span className="order-confirm-trust-text">On orders above ₹2,000</span>
-            </div>
-            <div className="order-confirm-trust-item">
-              <span className="order-confirm-trust-label">30-Day Returns</span>
-              <span className="order-confirm-trust-text">Hassle-free exchanges</span>
-            </div>
-            <div className="order-confirm-trust-item">
-              <span className="order-confirm-trust-label">BIS Hallmarked</span>
-              <span className="order-confirm-trust-text">Certified authentic gold</span>
-            </div>
           </div>
         </div>
       </section>

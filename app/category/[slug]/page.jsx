@@ -81,13 +81,13 @@ export default async function CategoryPage({ params }) {
               <circle cx="18.5" cy="18.5" r="2.5" />
             </svg>
             <h4 className="cat-trust-title">Free Shipping</h4>
-            <p className="cat-trust-desc">On orders above ₹2,000</p>
+            <p className="cat-trust-desc">On all orders across India</p>
           </div>
           <div className="cat-trust-item">
             <svg className="cat-trust-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38" />
             </svg>
-            <h4 className="cat-trust-title">30-Day Returns</h4>
+            <h4 className="cat-trust-title">7-Day Returns</h4>
             <p className="cat-trust-desc">Hassle-free exchanges</p>
           </div>
           <div className="cat-trust-item">

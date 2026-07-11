@@ -221,7 +221,7 @@ export default function SiteShell({ children, showNewsletter = true, headerOverl
     >
       <div className="announce-bar">
         <p className="announce-bar-text">
-          Free shipping on orders above ₹2,000 ·{' '}
+          Free shipping on all orders across India ·{' '}
           <Link href="/shop" className="announce-accent">
             New Collection: Worn With Grace
           </Link>{' '}

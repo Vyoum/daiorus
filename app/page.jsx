@@ -21,8 +21,8 @@ const IG_IMAGES = [
 const MARQUEE = [
   'BIS Hallmarked Gold',
   'Crafted in India',
-  'Free Shipping ₹2,000+',
-  '30-Day Returns',
+  'Free Shipping Across India',
+  '7-Day Returns',
 ];
 
 export default function HomePage() {
@@ -217,7 +217,7 @@ export default function HomePage() {
                   <circle cx="18.5" cy="18.5" r="2.5" />
                 </svg>
                 <h4 className="trust-title">Free Shipping</h4>
-                <p className="trust-desc">On orders above ₹2,000</p>
+                <p className="trust-desc">On all orders across India</p>
               </div>
               <div className="trust-item">
                 <svg className="trust-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -231,7 +231,7 @@ export default function HomePage() {
                 <svg className="trust-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38" />
                 </svg>
-                <h4 className="trust-title">30-Day Returns</h4>
+                <h4 className="trust-title">7-Day Returns</h4>
                 <p className="trust-desc">Hassle-free exchanges</p>
               </div>
               <div className="trust-item">

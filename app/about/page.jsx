@@ -130,10 +130,10 @@ export default function AboutPage() {
         <div className="trust-grid">
           <div className="trust-item">
             <h4 className="trust-title">Free Shipping</h4>
-            <p className="trust-desc">On orders above ₹2,000</p>
+            <p className="trust-desc">On all orders across India</p>
           </div>
           <div className="trust-item">
-            <h4 className="trust-title">30-Day Returns</h4>
+            <h4 className="trust-title">7-Day Returns</h4>
             <p className="trust-desc">Hassle-free exchanges</p>
           </div>
           <div className="trust-item">

@@ -31,6 +31,21 @@ export default async function AdminDashboard() {
 
   return (
     <div>
+      {stats.error ? (
+        <div
+          style={{
+            marginBottom: 20,
+            padding: '12px 16px',
+            borderRadius: 8,
+            background: '#fef2f2',
+            border: '1px solid #fecaca',
+            color: '#991b1b',
+            fontSize: 14,
+          }}
+        >
+          {stats.error}
+        </div>
+      ) : null}
       <header className={styles.header}>
         <div>
           <h1 className={styles.pageTitle}>Overview</h1>
