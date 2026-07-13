@@ -1966,6 +1966,11 @@ img {
   flex-direction: column;
 }
 
+.product-card-link {
+  display: block;
+  color: inherit;
+}
+
 .product-img-wrapper {
   aspect-ratio: 3 / 4;
   position: relative;

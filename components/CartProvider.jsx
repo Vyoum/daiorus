@@ -63,6 +63,7 @@ export function CartProvider({ children }) {
           price: product.price,
           image: product.image,
           material: product.material || null,
+          slug: product.slug || null,
           qty: 1,
         },
       ];

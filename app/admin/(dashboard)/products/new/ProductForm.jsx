@@ -101,7 +101,16 @@ export default function ProductForm({ categories = [], product = null }) {
   const initialMaterial = resolveMaterialSelection(product?.material);
   const [materialMode, setMaterialMode] = useState(initialMaterial.mode);
   const [customMaterial, setCustomMaterial] = useState(initialMaterial.custom);
-  const [imageUrl, setImageUrl] = useState(product?.imageUrl || '');
+  const [images, setImages] = useState(() => {
+    const list = Array.isArray(product?.images)
+      ? product.images.map((url) => String(url || '').trim()).filter(Boolean)
+      : [];
+    const primary = String(product?.imageUrl || '').trim();
+    if (primary && !list.includes(primary)) return [primary, ...list];
+    return list;
+  });
+  const [pasteUrl, setPasteUrl] = useState('');
+  const [dragOver, setDragOver] = useState(false);
   const [priceInr, setPriceInr] = useState(
     product?.priceInr != null ? String(product.priceInr) : '',
   );
@@ -122,7 +131,7 @@ export default function ProductForm({ categories = [], product = null }) {
   const [overseasEnabled, setOverseasEnabled] = useState(true);
   const [surchargeType, setSurchargeType] = useState('percentage');
   const [surchargeValue, setSurchargeValue] = useState('15');
-  const [dragOver, setDragOver] = useState(false);
+  const [tag, setTag] = useState(product?.tag || '');
 
   const basePrice = Number(priceInr) || 0;
   const surchargeNum = Number(surchargeValue) || 0;
@@ -193,13 +202,14 @@ export default function ProductForm({ categories = [], product = null }) {
             sku,
             categoryId: categoryId || null,
             material: materialValue,
-            imageUrl: imageUrl.startsWith('blob:') ? '' : imageUrl,
+            images: images.filter((url) => url && !url.startsWith('blob:')),
+            imageUrl: images.find((url) => url && !url.startsWith('blob:')) || '',
             priceInr: priceToSave,
             compareAtInr: compareToSave,
             quantity: Number(quantity) || 0,
             description: combinedDescription,
             status: nextStatus,
-            tag: product?.tag || null,
+            tag: tag || null,
           }),
         },
       );
@@ -225,38 +235,52 @@ export default function ProductForm({ categories = [], product = null }) {
     }
   };
 
-  const uploadImageFile = async (file) => {
-    if (!file) return;
+  const MAX_IMAGES = 8;
 
-    if (!file.type.startsWith('image/')) {
-      setError('Please choose a JPG, PNG, WEBP, or GIF image. Documents (PDF, DOC, etc.) are not supported for product media.');
+  const uploadImageFiles = async (fileList) => {
+    const files = Array.from(fileList || []).filter((file) => file?.type?.startsWith('image/'));
+    if (!files.length) {
+      setError(
+        'Please choose JPG, PNG, WEBP, or GIF images. Documents are not supported for product media.',
+      );
       return;
     }
 
+    const remaining = MAX_IMAGES - images.length;
+    if (remaining <= 0) {
+      setError(`You can upload up to ${MAX_IMAGES} images per product.`);
+      return;
+    }
+
+    const batch = files.slice(0, remaining);
     setUploading(true);
     setError('');
     setSuccess('');
 
-    // Instant local preview while upload runs
-    const previewUrl = URL.createObjectURL(file);
-    setImageUrl(previewUrl);
-
     try {
-      const body = new FormData();
-      body.append('file', file);
-      const res = await fetch('/api/admin/upload', {
-        method: 'POST',
-        body,
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Upload failed');
+      const uploaded = [];
+      for (const file of batch) {
+        const body = new FormData();
+        body.append('file', file);
+        const res = await fetch('/api/admin/upload', { method: 'POST', body });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Upload failed');
+        uploaded.push(data.url);
+      }
 
-      URL.revokeObjectURL(previewUrl);
-      setImageUrl(data.url);
-      setSuccess('Image uploaded. Save the product to publish it on the storefront.');
+      setImages((prev) => {
+        const next = [...prev];
+        for (const url of uploaded) {
+          if (!next.includes(url)) next.push(url);
+        }
+        return next.slice(0, MAX_IMAGES);
+      });
+      setSuccess(
+        uploaded.length > 1
+          ? `${uploaded.length} images uploaded. Save the product to publish them.`
+          : 'Image uploaded. Save the product to publish it on the storefront.',
+      );
     } catch (err) {
-      URL.revokeObjectURL(previewUrl);
-      setImageUrl('');
       setError(err.message || 'Could not upload image');
     } finally {
       setUploading(false);
@@ -267,11 +291,35 @@ export default function ProductForm({ categories = [], product = null }) {
   const onDrop = (e) => {
     e.preventDefault();
     setDragOver(false);
-    void uploadImageFile(e.dataTransfer.files?.[0]);
+    void uploadImageFiles(e.dataTransfer.files);
   };
 
   const onFilePick = (e) => {
-    void uploadImageFile(e.target.files?.[0]);
+    void uploadImageFiles(e.target.files);
+  };
+
+  const addPastedUrl = () => {
+    const url = pasteUrl.trim();
+    if (!url) return;
+    if (images.includes(url)) {
+      setError('That image is already in the gallery.');
+      return;
+    }
+    if (images.length >= MAX_IMAGES) {
+      setError(`You can upload up to ${MAX_IMAGES} images per product.`);
+      return;
+    }
+    setImages((prev) => [...prev, url]);
+    setPasteUrl('');
+    setError('');
+  };
+
+  const removeImage = (url) => {
+    setImages((prev) => prev.filter((item) => item !== url));
+  };
+
+  const makePrimary = (url) => {
+    setImages((prev) => [url, ...prev.filter((item) => item !== url)]);
   };
 
   return (
@@ -286,14 +334,22 @@ export default function ProductForm({ categories = [], product = null }) {
           </p>
         </div>
         <div className={styles.headerActions}>
-          <button type="button" className={styles.secondaryBtn} onClick={discard} disabled={saving}>
+          <button type="button" className={styles.secondaryBtn} onClick={discard} disabled={saving || uploading}>
             Discard
           </button>
           <button
             type="button"
+            className={styles.secondaryBtn}
+            onClick={() => saveProduct('DRAFT')}
+            disabled={saving || uploading}
+          >
+            {saving ? 'Saving…' : 'Save Draft'}
+          </button>
+          <button
+            type="button"
             className={styles.primaryBtn}
-            onClick={() => saveProduct(status)}
-            disabled={saving}
+            onClick={() => saveProduct('ACTIVE')}
+            disabled={saving || uploading}
           >
             {saving ? 'Saving…' : isEdit ? 'Save Changes' : 'Save Product'}
           </button>
@@ -390,6 +446,7 @@ export default function ProductForm({ categories = [], product = null }) {
               <input
                 ref={fileInputRef}
                 type="file"
+                multiple
                 accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif"
                 className={styles.hiddenFileInput}
                 onChange={onFilePick}
@@ -405,51 +462,78 @@ export default function ProductForm({ categories = [], product = null }) {
                 onDragLeave={() => setDragOver(false)}
                 onDrop={onDrop}
                 onClick={() => {
-                  if (!uploading) fileInputRef.current?.click();
+                  if (!uploading && images.length < MAX_IMAGES) fileInputRef.current?.click();
                 }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    if (!uploading) fileInputRef.current?.click();
+                    if (!uploading && images.length < MAX_IMAGES) fileInputRef.current?.click();
                   }
                 }}
               >
-                {imageUrl ? (
-                  <div className={styles.previewWrap}>
-                    <img src={imageUrl} alt="" className={styles.previewImg} />
-                    <button
-                      type="button"
-                      className={styles.clearPreview}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setImageUrl('');
-                      }}
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ) : (
-                  <>
-                    <Upload size={28} className={styles.uploadIcon} />
-                    <p className={styles.dropTitle}>
-                      {uploading ? 'Uploading…' : 'Upload Media'}
-                    </p>
-                    <p className={styles.dropText}>
-                      Click to browse, or drag and drop a product image.
-                      Supported formats: JPG, PNG, WEBP, GIF (max 5MB).
-                      Documents are not supported here.
-                    </p>
-                  </>
-                )}
+                <Upload size={28} className={styles.uploadIcon} />
+                <p className={styles.dropTitle}>
+                  {uploading ? 'Uploading…' : 'Upload product images'}
+                </p>
+                <p className={styles.dropText}>
+                  Click to browse or drag and drop multiple images.
+                  First image is the cover; all images appear as a carousel on the product page.
+                  JPG, PNG, WEBP, GIF · up to {MAX_IMAGES} images.
+                </p>
               </div>
-              <input
-                className={styles.input}
-                style={{ marginTop: 12 }}
-                value={imageUrl.startsWith('blob:') ? '' : imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                placeholder="Or paste an image URL /images/ui1/product.jpg"
-                disabled={uploading}
-              />
+
+              {images.length > 0 ? (
+                <div className={styles.galleryGrid}>
+                  {images.map((url, index) => (
+                    <div key={url} className={styles.galleryItem}>
+                      <img src={url} alt="" className={styles.galleryImg} />
+                      {index === 0 ? <span className={styles.coverBadge}>Cover</span> : null}
+                      <div className={styles.galleryActions}>
+                        {index !== 0 ? (
+                          <button
+                            type="button"
+                            className={styles.galleryBtn}
+                            onClick={() => makePrimary(url)}
+                          >
+                            Make cover
+                          </button>
+                        ) : null}
+                        <button
+                          type="button"
+                          className={`${styles.galleryBtn} ${styles.galleryDanger}`}
+                          onClick={() => removeImage(url)}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+
+              <div className={styles.urlRow}>
+                <input
+                  className={styles.input}
+                  value={pasteUrl}
+                  onChange={(e) => setPasteUrl(e.target.value)}
+                  placeholder="Or paste an image URL /images/ui1/product.jpg"
+                  disabled={uploading}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      addPastedUrl();
+                    }
+                  }}
+                />
+                <button
+                  type="button"
+                  className={styles.secondaryBtn}
+                  onClick={addPastedUrl}
+                  disabled={uploading || !pasteUrl.trim()}
+                >
+                  Add URL
+                </button>
+              </div>
             </div>
           </section>
 
@@ -641,11 +725,19 @@ export default function ProductForm({ categories = [], product = null }) {
             </div>
             <button
               type="button"
+              className={styles.secondaryBtnFull}
+              onClick={() => saveProduct('DRAFT')}
+              disabled={saving || uploading}
+            >
+              {saving ? 'Saving…' : 'Save Draft'}
+            </button>
+            <button
+              type="button"
               className={styles.primaryBtnFull}
               onClick={() => saveProduct('ACTIVE')}
-              disabled={saving}
+              disabled={saving || uploading}
             >
-              {saving ? 'Publishing…' : 'Publish Now'}
+              {saving ? 'Saving…' : isEdit ? 'Save Changes' : 'Save Product'}
             </button>
           </section>
 
@@ -709,6 +801,28 @@ export default function ProductForm({ categories = [], product = null }) {
             ← Back to catalog
           </Link>
         </aside>
+      </div>
+
+      <div className={styles.footerActions}>
+        <button type="button" className={styles.secondaryBtn} onClick={discard} disabled={saving || uploading}>
+          Discard
+        </button>
+        <button
+          type="button"
+          className={styles.secondaryBtn}
+          onClick={() => saveProduct('DRAFT')}
+          disabled={saving || uploading}
+        >
+          {saving ? 'Saving…' : 'Save Draft'}
+        </button>
+        <button
+          type="button"
+          className={styles.primaryBtn}
+          onClick={() => saveProduct('ACTIVE')}
+          disabled={saving || uploading}
+        >
+          {saving ? 'Saving…' : isEdit ? 'Save Changes' : 'Save Product'}
+        </button>
       </div>
     </div>
   );

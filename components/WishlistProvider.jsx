@@ -31,9 +31,11 @@ function toWishlistItem(product) {
     name: product.name,
     price: product.price,
     image: product.image,
+    images: Array.isArray(product.images) ? product.images : undefined,
     material: product.material || null,
     tag: product.tag || null,
     category: product.category || null,
+    slug: product.slug || null,
   };
 }
 
