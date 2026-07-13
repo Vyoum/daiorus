@@ -213,6 +213,18 @@
   box-shadow: none;
 }
 
+.hiddenFileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .dropzone {
   border: 1.5px dashed var(--admin-border);
   border-radius: var(--admin-radius-lg);
@@ -220,6 +232,7 @@
   text-align: center;
   background: #fafafa;
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .dropzoneActive {

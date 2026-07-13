@@ -14,7 +14,6 @@ import {
   Ticket,
   Star,
   Image as ImageIcon,
-  BarChart,
   Search,
   Bell,
   ChevronDown,
@@ -34,7 +33,6 @@ const NAV_ITEMS = [
   { label: 'Coupons & Discounts', href: '/admin/coupons', icon: Ticket },
   { label: 'Reviews', href: '/admin/reviews', icon: Star },
   { label: 'Media Library', href: '/admin/media', icon: ImageIcon },
-  { label: 'Analytics', href: '/admin/analytics', icon: BarChart },
 ];
 
 export default function AdminShell({ children, adminName = 'Admin', adminEmail = '' }) {

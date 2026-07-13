@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -86,8 +86,10 @@ function ChipList({ values, onChange, placeholder }) {
 
 export default function ProductForm({ categories = [], product = null }) {
   const router = useRouter();
+  const fileInputRef = useRef(null);
   const isEdit = Boolean(product?.id);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -223,21 +225,53 @@ export default function ProductForm({ categories = [], product = null }) {
     }
   };
 
+  const uploadImageFile = async (file) => {
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please choose a JPG, PNG, WEBP, or GIF image. Documents (PDF, DOC, etc.) are not supported for product media.');
+      return;
+    }
+
+    setUploading(true);
+    setError('');
+    setSuccess('');
+
+    // Instant local preview while upload runs
+    const previewUrl = URL.createObjectURL(file);
+    setImageUrl(previewUrl);
+
+    try {
+      const body = new FormData();
+      body.append('file', file);
+      const res = await fetch('/api/admin/upload', {
+        method: 'POST',
+        body,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Upload failed');
+
+      URL.revokeObjectURL(previewUrl);
+      setImageUrl(data.url);
+      setSuccess('Image uploaded. Save the product to publish it on the storefront.');
+    } catch (err) {
+      URL.revokeObjectURL(previewUrl);
+      setImageUrl('');
+      setError(err.message || 'Could not upload image');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   const onDrop = (e) => {
     e.preventDefault();
     setDragOver(false);
-    const file = e.dataTransfer.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      setError('Please drop a JPG, PNG, or WEBP image, or paste an image URL.');
-      return;
-    }
-    // Local preview via object URL until media library upload exists
-    const url = URL.createObjectURL(file);
-    setImageUrl(url);
-    setError(
-      'Preview only — paste a public image URL (or /images/... path) before saving so the storefront can load it.'
-    );
+    void uploadImageFile(e.dataTransfer.files?.[0]);
+  };
+
+  const onFilePick = (e) => {
+    void uploadImageFile(e.target.files?.[0]);
   };
 
   return (
@@ -353,7 +387,16 @@ export default function ProductForm({ categories = [], product = null }) {
 
             <div className={styles.field}>
               <span>Upload Media</span>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif"
+                className={styles.hiddenFileInput}
+                onChange={onFilePick}
+              />
               <div
+                role="button"
+                tabIndex={0}
                 className={`${styles.dropzone} ${dragOver ? styles.dropzoneActive : ''}`}
                 onDragOver={(e) => {
                   e.preventDefault();
@@ -361,6 +404,15 @@ export default function ProductForm({ categories = [], product = null }) {
                 }}
                 onDragLeave={() => setDragOver(false)}
                 onDrop={onDrop}
+                onClick={() => {
+                  if (!uploading) fileInputRef.current?.click();
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    if (!uploading) fileInputRef.current?.click();
+                  }
+                }}
               >
                 {imageUrl ? (
                   <div className={styles.previewWrap}>
@@ -368,7 +420,10 @@ export default function ProductForm({ categories = [], product = null }) {
                     <button
                       type="button"
                       className={styles.clearPreview}
-                      onClick={() => setImageUrl('')}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setImageUrl('');
+                      }}
                     >
                       Remove
                     </button>
@@ -376,10 +431,13 @@ export default function ProductForm({ categories = [], product = null }) {
                 ) : (
                   <>
                     <Upload size={28} className={styles.uploadIcon} />
-                    <p className={styles.dropTitle}>Upload Media</p>
+                    <p className={styles.dropTitle}>
+                      {uploading ? 'Uploading…' : 'Upload Media'}
+                    </p>
                     <p className={styles.dropText}>
-                      Drag and drop high-resolution images here, or paste a public URL below.
-                      Supported formats: JPG, PNG, WEBP.
+                      Click to browse, or drag and drop a product image.
+                      Supported formats: JPG, PNG, WEBP, GIF (max 5MB).
+                      Documents are not supported here.
                     </p>
                   </>
                 )}
@@ -389,7 +447,8 @@ export default function ProductForm({ categories = [], product = null }) {
                 style={{ marginTop: 12 }}
                 value={imageUrl.startsWith('blob:') ? '' : imageUrl}
                 onChange={(e) => setImageUrl(e.target.value)}
-                placeholder="Image URL or /images/ui1/product.jpg"
+                placeholder="Or paste an image URL /images/ui1/product.jpg"
+                disabled={uploading}
               />
             </div>
           </section>
