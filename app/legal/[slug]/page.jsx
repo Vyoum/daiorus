@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import SiteShell from '../../../components/SiteShell';
 import { LEGAL_PAGES } from '../../../lib/data';
+import { INSTAGRAM_URL } from '../../../lib/social';
 
 const NAV = [
   { slug: 'shipping', label: 'Shipping Policy' },
@@ -21,10 +22,33 @@ function firstText(page) {
   return '';
 }
 
+function linkifyInstagramHandle(text) {
+  if (!text || typeof text !== 'string') return text;
+
+  const parts = text.split(/(@daiorus)/gi);
+  if (parts.length === 1) return text;
+
+  return parts.map((part, index) =>
+    part.toLowerCase() === '@daiorus' ? (
+      <a key={index} href={INSTAGRAM_URL} target="_blank" rel="noreferrer">
+        {part}
+      </a>
+    ) : (
+      part
+    ),
+  );
+}
+
 function Paragraphs({ text }) {
   if (!text) return null;
   const lines = Array.isArray(text) ? text : [text];
-  return lines.map((line, index) => <p key={index}>{line}</p>);
+  return lines.map((line, index) => <p key={index}>{linkifyInstagramHandle(line)}</p>);
+}
+
+function ListItems({ items }) {
+  return items.map((item) => (
+    <li key={item}>{linkifyInstagramHandle(item)}</li>
+  ));
 }
 
 export function generateStaticParams() {
@@ -73,16 +97,12 @@ export default async function LegalPage({ params }) {
               <Paragraphs text={section.body} />
               {section.items?.length > 0 && (
                 <ul className="legal-list">
-                  {section.items.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
+                  <ListItems items={section.items} />
                 </ul>
               )}
               {section.ordered?.length > 0 && (
                 <ol className="legal-list legal-list--ordered">
-                  {section.ordered.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
+                  <ListItems items={section.ordered} />
                 </ol>
               )}
               <Paragraphs text={section.after} />

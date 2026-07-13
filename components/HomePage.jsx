@@ -9,6 +9,7 @@ import {
   COLLECTIONS,
 } from '../lib/data';
 import { DEFAULT_HERO, DEFAULT_SIGNATURE } from '../lib/site-content-defaults';
+import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from '../lib/social';
 
 const IG_IMAGES = [
   '/images/ui1/ig-1.jpg',
@@ -185,13 +186,18 @@ export default function HomePage({ announce, hero, signature }) {
           <div className="ui1-container">
             <div className="instagram-header">
               <span className="section-label">Social</span>
-              <h2 className="section-title">Follow Us @daiorus</h2>
+              <h2 className="section-title">
+                Follow Us{' '}
+                <a href={INSTAGRAM_URL} target="_blank" rel="noreferrer">
+                  {INSTAGRAM_HANDLE}
+                </a>
+              </h2>
             </div>
             <div className="instagram-grid">
               {IG_IMAGES.map((src, idx) => (
                 <a
                   key={src}
-                  href="https://instagram.com/daiorus"
+                  href={INSTAGRAM_URL}
                   className="instagram-card"
                   target="_blank"
                   rel="noreferrer"

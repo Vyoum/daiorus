@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import SiteShell from '../../components/SiteShell';
+import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from '../../lib/social';
 
 export default function ContactPage() {
   const [sent, setSent] = useState(false);
@@ -98,7 +99,7 @@ export default function ContactPage() {
                 <p className="contact-v2-aside-label">Follow Us</p>
                 <div className="contact-v2-socials">
                   <a
-                    href="https://instagram.com/daiorus"
+                    href={INSTAGRAM_URL}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="contact-v2-social-btn"
@@ -108,7 +109,7 @@ export default function ContactPage() {
                       <circle cx="12" cy="12" r="4" />
                       <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
                     </svg>
-                    @daiorus
+                    {INSTAGRAM_HANDLE}
                   </a>
                   <a
                     href="https://facebook.com/daiorus"
