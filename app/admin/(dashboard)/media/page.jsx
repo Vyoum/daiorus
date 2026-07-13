@@ -1,10 +1,9 @@
-import AdminPlaceholder from '../_components/AdminPlaceholder';
+import { getMediaLibraryContent } from '../../../../lib/site-content';
+import MediaLibraryEditor from './MediaLibraryEditor';
 
-export default function MediaPage() {
-  return (
-    <AdminPlaceholder
-      title="Media Library"
-      subtitle="Media assets are currently served from /public/images."
-    />
-  );
+export const dynamic = 'force-dynamic';
+
+export default async function MediaPage() {
+  const content = await getMediaLibraryContent();
+  return <MediaLibraryEditor initialContent={content} />;
 }

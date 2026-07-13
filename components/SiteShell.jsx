@@ -6,12 +6,18 @@ import { useRouter } from 'next/navigation';
 import { CATEGORIES, COLLECTIONS } from '../lib/data';
 import { calculateCartTotals } from '../lib/checkout';
 import { openRazorpayCheckout } from '../lib/razorpay-checkout';
+import { DEFAULT_ANNOUNCE } from '../lib/site-content-defaults';
 import { useCurrency } from './CurrencyProvider';
 import LoginDrawer from './LoginDrawer';
 import { CartProvider } from './CartProvider';
 import { useAuth } from './AuthProvider';
 
-export default function SiteShell({ children, showNewsletter = true, headerOverlay = false }) {
+export default function SiteShell({
+  children,
+  showNewsletter = true,
+  headerOverlay = false,
+  announce: announceProp = null,
+}) {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const { formatPrice, currencyCode, countryName, loading: currencyLoading, isLocalCurrency } =
@@ -29,8 +35,28 @@ export default function SiteShell({ children, showNewsletter = true, headerOverl
   const [subscribed, setSubscribed] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [announce, setAnnounce] = useState(announceProp || DEFAULT_ANNOUNCE);
   const searchCloseTimer = useRef(null);
   const catCloseTimer = useRef(null);
+
+  useEffect(() => {
+    if (announceProp) {
+      setAnnounce(announceProp);
+      return undefined;
+    }
+
+    let cancelled = false;
+    fetch('/api/site-content/announce')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled && data?.announce) setAnnounce(data.announce);
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  }, [announceProp]);
 
   const openAccount = () => {
     if (authLoading) return;
@@ -252,11 +278,11 @@ export default function SiteShell({ children, showNewsletter = true, headerOverl
     >
       <div className="announce-bar">
         <p className="announce-bar-text">
-          Free shipping on all orders across India ·{' '}
-          <Link href="/shop" className="announce-accent">
-            New Collection: Worn With Grace
-          </Link>{' '}
-          · BIS Hallmarked Gold
+          {announce.prefix}
+          <Link href={announce.linkUrl || '/shop'} className="announce-accent">
+            {announce.linkText}
+          </Link>
+          {announce.suffix}
         </p>
       </div>
 
