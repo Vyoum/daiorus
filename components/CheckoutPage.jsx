@@ -9,6 +9,8 @@ import { useAuth } from './AuthProvider';
 import { useCurrency } from './CurrencyProvider';
 import { calculateCartTotals } from '../lib/checkout';
 import { applyCouponToTotals, normalizeCouponCode } from '../lib/coupons';
+import { applySurchargeInr } from '../lib/overseas-pricing-defaults';
+import { formatINR } from '../lib/data';
 import { openRazorpayCheckout } from '../lib/razorpay-checkout';
 import styles from './CheckoutPage.module.css';
 
@@ -33,6 +35,7 @@ export default function CheckoutPage() {
     countryCode,
     currencyCode,
     isLocalCurrency,
+    surchargePct,
   } = useCurrency();
 
   const [email, setEmail] = useState('');
@@ -65,12 +68,16 @@ export default function CheckoutPage() {
 
   const pricedItems = useMemo(
     () =>
-      cart.map((item) => ({
-        ...item,
-        price: Number(item.price) || 0,
-        qty: Number(item.qty) || 0,
-      })),
-    [cart],
+      cart.map((item) => {
+        const basePriceInr = Number(item.price) || 0;
+        return {
+          ...item,
+          basePriceInr,
+          price: applySurchargeInr(basePriceInr, surchargePct),
+          qty: Number(item.qty) || 0,
+        };
+      }),
+    [cart, surchargePct],
   );
 
   const baseTotals = useMemo(() => calculateCartTotals(pricedItems), [pricedItems]);
@@ -176,6 +183,10 @@ export default function CheckoutPage() {
         throw new Error(createData.error || 'Could not start checkout');
       }
 
+      if (!createData.keyId || !createData.razorpayOrderId || !createData.amount) {
+        throw new Error('Payment gateway is not configured');
+      }
+
       await openRazorpayCheckout({
         keyId: createData.keyId,
         amount: createData.amount,
@@ -183,6 +194,8 @@ export default function CheckoutPage() {
         orderId: createData.orderId,
         razorpayOrderId: createData.razorpayOrderId,
         email: emailToUse,
+        name: shipping.fullName.trim(),
+        phone: shipping.phone.trim(),
         orderNumber: createData.orderNumber,
         onSuccess: async (response) => {
           const verifyRes = await fetch('/api/razorpay/verify', {
@@ -359,7 +372,9 @@ export default function CheckoutPage() {
                   Continue shopping
                 </Link>
                 <button type="submit" className={styles.payBtn} disabled={isCheckingOut}>
-                  {isCheckingOut ? 'Processing…' : 'Checkout'}
+                  {isCheckingOut
+                    ? 'Creating order…'
+                    : `Pay ${formatINR(totals.totalInr)}`}
                 </button>
               </div>
             </form>
@@ -438,29 +453,29 @@ export default function CheckoutPage() {
               <div className={styles.totals}>
                 <div className={styles.totalRow}>
                   <span>Subtotal</span>
-                  <span>{formatPrice(totals.subtotalInr)}</span>
+                  <span>{formatINR(totals.subtotalInr)}</span>
                 </div>
                 <div className={styles.totalRow}>
                   <span>Shipping</span>
-                  <span>{totals.shippingInr === 0 ? 'Free' : formatPrice(totals.shippingInr)}</span>
+                  <span>{totals.shippingInr === 0 ? 'Free' : formatINR(totals.shippingInr)}</span>
                 </div>
                 {totals.discountInr > 0 ? (
                   <div className={`${styles.totalRow} ${styles.discountRow}`}>
                     <span>Discount{appliedCoupon ? ` (${appliedCoupon.code})` : ''}</span>
-                    <span>-{formatPrice(totals.discountInr)}</span>
+                    <span>-{formatINR(totals.discountInr)}</span>
                   </div>
                 ) : null}
                 <div className={`${styles.totalRow} ${styles.grandTotal}`}>
                   <span>Total</span>
-                  <span>{formatPrice(totals.totalInr)}</span>
+                  <span>{formatINR(totals.totalInr)}</span>
                 </div>
               </div>
 
-              {!isLocalCurrency ? (
-                <p className={styles.currencyNote}>
-                  Charged in INR via Razorpay. Display prices include any regional surcharge.
-                </p>
-              ) : null}
+              <p className={styles.currencyNote}>
+                {isLocalCurrency
+                  ? `Razorpay will charge ${formatINR(totals.totalInr)} for this order.`
+                  : `Charged in INR via Razorpay (${formatINR(totals.totalInr)}). Display prices include any regional surcharge.`}
+              </p>
             </aside>
           </div>
         </div>

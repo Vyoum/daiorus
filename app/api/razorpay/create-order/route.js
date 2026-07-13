@@ -27,10 +27,13 @@ export async function POST(request) {
     }
 
     for (const item of items) {
-      if (!item?.id || !item?.name || !item?.price || !item?.qty) {
+      const qty = Number(item?.qty);
+      const price = Number(item?.price);
+
+      if (!item?.id || !item?.name || !Number.isFinite(qty) || !Number.isFinite(price)) {
         return NextResponse.json({ error: 'Invalid cart item' }, { status: 400 });
       }
-      if (item.qty < 1 || item.price < 1) {
+      if (qty < 1 || price < 1) {
         return NextResponse.json({ error: 'Invalid quantity or price' }, { status: 400 });
       }
     }
@@ -65,9 +68,10 @@ export async function POST(request) {
     const surchargePct = await getSurchargePctForRegion(regionKey);
 
     const pricedItems = items.map((item) => {
-      const unitPriceInr = applySurchargeInr(item.price, surchargePct);
+      const unitPriceInr = applySurchargeInr(Number(item.price), surchargePct);
       return {
         ...item,
+        qty: Number(item.qty),
         basePriceInr: Math.round(Number(item.price) || 0),
         price: unitPriceInr,
       };
@@ -202,9 +206,14 @@ export async function POST(request) {
       orderNumber: order.orderNumber,
       razorpayOrderId: razorpayOrder.id,
       amount: amountPaise,
+      totalInr,
       currency: 'INR',
       keyId: getRazorpayKeyId(),
-      prefill: { email: email.trim() },
+      prefill: {
+        email: email.trim(),
+        name: address.fullName,
+        contact: address.phone,
+      },
       surchargePct,
     });
   } catch (error) {
