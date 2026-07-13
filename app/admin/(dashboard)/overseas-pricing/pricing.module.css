@@ -145,6 +145,15 @@
   border-bottom: 1px solid var(--admin-border);
 }
 
+.regionRowEditing {
+  flex-wrap: wrap;
+  background: var(--admin-bg);
+  margin: 0 -12px;
+  padding: 16px 12px;
+  border-radius: var(--admin-radius);
+  border-bottom-color: transparent;
+}
+
 .regionRow:last-of-type {
   border-bottom: none;
 }
@@ -156,7 +165,7 @@
   gap: 12px;
   font-size: 15px;
   font-weight: 600;
-  min-width: 0;
+  min-width: 160px;
 }
 
 .regionFlag {
@@ -176,34 +185,56 @@
   font-weight: 500;
 }
 
-.editInline {
-  display: inline-flex;
+.editBar {
+  flex: 1;
+  display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 10px;
   flex-wrap: wrap;
+  min-width: 0;
+}
+
+.editBarLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--admin-text-secondary);
+  white-space: nowrap;
 }
 
 .pctInput {
-  width: 72px;
-  padding: 6px 8px;
+  width: 88px;
+  padding: 10px 12px;
   border: 1px solid var(--admin-border);
   border-radius: var(--admin-radius);
-  font-size: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  background: #fff;
 }
 
 .inlineSave,
 .inlineCancel {
-  padding: 6px 10px;
+  padding: 10px 16px;
   border-radius: var(--admin-radius);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .inlineSave {
   background: var(--admin-text-primary);
   color: #fff;
   border: none;
+}
+
+.inlineSave:hover:not(:disabled) {
+  opacity: 0.92;
+}
+
+.inlineSave:disabled,
+.inlineCancel:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .inlineCancel {

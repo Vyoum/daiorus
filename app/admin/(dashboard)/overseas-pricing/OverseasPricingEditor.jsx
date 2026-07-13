@@ -144,76 +144,91 @@ export default function OverseasPricingEditor({ initialData }) {
             {regions.map((region) => {
               const isEditing = editingCode === region.code;
               return (
-                <div key={region.code} className={styles.regionRow}>
+                <div
+                  key={region.code}
+                  className={`${styles.regionRow} ${isEditing ? styles.regionRowEditing : ''}`}
+                >
                   <div className={styles.regionName}>
                     <Flag className={styles.regionFlag} size={16} />
                     {region.name}
                   </div>
 
-                  <div className={styles.regionStat}>
-                    Surcharge:{' '}
-                    {isEditing ? (
-                      <span className={styles.editInline}>
-                        <input
-                          className={styles.pctInput}
-                          type="number"
-                          min="0"
-                          step="0.1"
-                          value={draftPct}
-                          onChange={(e) => setDraftPct(e.target.value)}
-                          aria-label={`${region.name} surcharge percent`}
-                        />
-                        <span>%</span>
-                        <button
-                          type="button"
-                          className={styles.inlineSave}
-                          onClick={commitEdit}
-                          disabled={saving}
-                        >
-                          Save
-                        </button>
-                        <button
-                          type="button"
-                          className={styles.inlineCancel}
-                          onClick={cancelEdit}
-                          disabled={saving}
-                        >
-                          Cancel
-                        </button>
-                      </span>
-                    ) : (
-                      <span className={styles.regionStatValue}>
-                        {region.surchargePct === 0 ? 'None' : `+${region.surchargePct}%`}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className={styles.regionStat}>
-                    Free Ship:{' '}
-                    <span className={styles.regionStatValue}>{region.freeShippingLabel}</span>
-                  </div>
-
-                  <div className={styles.regionStat}>
-                    FX:{' '}
-                    <span className={styles.regionStatValue}>
-                      {region.rateFromInr == null
-                        ? '—'
-                        : Number(region.rateFromInr).toFixed(4)}
-                    </span>
-                  </div>
-
-                  {region.code === 'IN' ? (
-                    <span className={styles.regionLocked}>Domestic</span>
+                  {isEditing ? (
+                    <div className={styles.editBar}>
+                      <label className={styles.editBarLabel} htmlFor={`surcharge-${region.code}`}>
+                        Surcharge %
+                      </label>
+                      <input
+                        id={`surcharge-${region.code}`}
+                        className={styles.pctInput}
+                        type="number"
+                        min="0"
+                        step="0.1"
+                        value={draftPct}
+                        onChange={(e) => setDraftPct(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            commitEdit();
+                          }
+                          if (e.key === 'Escape') cancelEdit();
+                        }}
+                        autoFocus
+                      />
+                      <button
+                        type="button"
+                        className={styles.inlineSave}
+                        onClick={commitEdit}
+                        disabled={saving}
+                      >
+                        {saving ? 'Saving…' : 'Save'}
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.inlineCancel}
+                        onClick={cancelEdit}
+                        disabled={saving}
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   ) : (
-                    <button
-                      type="button"
-                      className={styles.regionAction}
-                      aria-label={`Edit ${region.name} surcharge`}
-                      onClick={() => startEdit(region)}
-                      disabled={saving || isEditing}
-                    >
-                      Edit
-                    </button>
+                    <>
+                      <div className={styles.regionStat}>
+                        Surcharge:{' '}
+                        <span className={styles.regionStatValue}>
+                          {region.surchargePct === 0 ? 'None' : `+${region.surchargePct}%`}
+                        </span>
+                      </div>
+
+                      <div className={styles.regionStat}>
+                        Free Ship:{' '}
+                        <span className={styles.regionStatValue}>{region.freeShippingLabel}</span>
+                      </div>
+
+                      <div className={styles.regionStat}>
+                        FX:{' '}
+                        <span className={styles.regionStatValue}>
+                          {region.rateFromInr == null
+                            ? '—'
+                            : Number(region.rateFromInr).toFixed(4)}
+                        </span>
+                      </div>
+
+                      {region.code === 'IN' ? (
+                        <span className={styles.regionLocked}>Domestic</span>
+                      ) : (
+                        <button
+                          type="button"
+                          className={styles.regionAction}
+                          aria-label={`Edit ${region.name} surcharge`}
+                          onClick={() => startEdit(region)}
+                          disabled={saving || Boolean(editingCode)}
+                        >
+                          Edit
+                        </button>
+                      )}
+                    </>
                   )}
                 </div>
               );
