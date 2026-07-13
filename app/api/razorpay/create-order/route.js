@@ -11,11 +11,12 @@ import {
   applySurchargeInr,
   getSurchargePctForRegion,
 } from '../../../../lib/overseas-pricing';
+import { applyCouponToTotals } from '../../../../lib/coupons';
 
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { items, email, countryCode, currencyCode, shippingAddress } = body;
+    const { items, email, countryCode, currencyCode, shippingAddress, couponCode } = body;
 
     if (!email || typeof email !== 'string' || !email.includes('@')) {
       return NextResponse.json({ error: 'A valid email is required' }, { status: 400 });
@@ -72,7 +73,16 @@ export async function POST(request) {
       };
     });
 
-    const { subtotalInr, shippingInr, totalInr } = calculateCartTotals(pricedItems);
+    const baseTotals = calculateCartTotals(pricedItems);
+    const couponResult = applyCouponToTotals({
+      subtotalInr: baseTotals.subtotalInr,
+      shippingInr: baseTotals.shippingInr,
+      couponCode,
+    });
+    const { subtotalInr, shippingInr, discountInr, totalInr } = calculateCartTotals(
+      pricedItems,
+      { discountInr: couponResult.discountInr },
+    );
     const orderNumber = generateOrderNumber();
     const amountPaise = inrToPaise(totalInr);
 
@@ -153,13 +163,15 @@ export async function POST(request) {
         status: 'PENDING',
         subtotalInr,
         shippingInr,
-        discountInr: 0,
+        discountInr,
         totalInr,
         currency: 'INR',
         notes: JSON.stringify({
           razorpayOrderId: razorpayOrder.id,
           countryCode: String(regionKey).toUpperCase(),
           surchargePct,
+          couponCode: couponResult.coupon?.code || null,
+          discountInr,
           shippingAddress: {
             fullName: address.fullName,
             phone: address.phone,

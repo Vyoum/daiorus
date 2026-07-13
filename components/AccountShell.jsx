@@ -4,7 +4,6 @@ import { createContext, useContext } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-  LayoutGrid,
   Package,
   Heart,
   User,
@@ -22,7 +21,6 @@ export function useAccountProfile() {
 }
 
 const NAV = [
-  { href: '/account', label: 'Overview', icon: LayoutGrid, exact: true },
   { href: '/account/orders', label: 'Orders', icon: Package },
   { href: '/account/wishlist', label: 'Wishlist', icon: Heart },
   { href: '/account/profile', label: 'Profile', icon: User },
@@ -58,9 +56,8 @@ export default function AccountShell({ children, profile }) {
 
           <nav className={styles.nav} aria-label="Account">
             {NAV.map((item) => {
-              const active = item.exact
-                ? pathname === item.href
-                : pathname === item.href || pathname.startsWith(`${item.href}/`);
+              const active =
+                pathname === item.href || pathname.startsWith(`${item.href}/`);
               const Icon = item.icon;
               return (
                 <Link

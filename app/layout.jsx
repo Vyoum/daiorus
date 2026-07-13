@@ -2,6 +2,7 @@ import './globals.css';
 import { AuthProvider } from '../components/AuthProvider';
 import { CurrencyProvider } from '../components/CurrencyProvider';
 import { WishlistProvider } from '../components/WishlistProvider';
+import { CartProvider } from '../components/CartProvider';
 
 export const metadata = {
   title: 'DAIORUS | Fine Jewellery Worn With Grace',
@@ -24,7 +25,9 @@ export default function RootLayout({ children }) {
       <body>
         <AuthProvider>
           <CurrencyProvider>
-            <WishlistProvider>{children}</WishlistProvider>
+            <WishlistProvider>
+              <CartProvider>{children}</CartProvider>
+            </WishlistProvider>
           </CurrencyProvider>
         </AuthProvider>
       </body>
