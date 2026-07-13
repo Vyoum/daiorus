@@ -1,19 +1,26 @@
 import Link from 'next/link';
 import { getSessionUser } from '../../../lib/admin/auth';
 import { getAccountOrders, orderStatusLabel } from '../../../lib/account/orders';
+import { getUserReviewMap } from '../../../lib/reviews';
 import { formatINR } from '../../../lib/data';
 import { formatOrderDate } from '../../../lib/orders';
+import WriteReviewButton from '../../../components/WriteReviewButton';
 import styles from '../../../components/AccountOrders.module.css';
 
 export const metadata = { title: 'Orders | DAIORUS' };
 
+const REVIEWABLE = new Set(['PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED']);
+
 export default async function AccountOrdersPage() {
   const session = await getSessionUser();
   const email = session.dbUser?.email || session.authUser?.email || '';
-  const orders = await getAccountOrders({
-    userId: session.dbUser?.id || null,
-    email,
-  });
+  const [orders, reviewMap] = await Promise.all([
+    getAccountOrders({
+      userId: session.dbUser?.id || null,
+      email,
+    }),
+    getUserReviewMap(session.dbUser?.id || null),
+  ]);
 
   return (
     <div className={styles.wrap}>
@@ -38,6 +45,7 @@ export default async function AccountOrdersPage() {
         <div className={styles.list}>
           {orders.map((order) => {
             const status = orderStatusLabel(order.status);
+            const canReview = REVIEWABLE.has(order.status);
             return (
               <article key={order.id} className={styles.card}>
                 <div className={styles.cardTop}>
@@ -51,28 +59,40 @@ export default async function AccountOrdersPage() {
                 </div>
 
                 <ul className={styles.items}>
-                  {order.items.map((item) => (
-                    <li key={item.id} className={styles.item}>
-                      {item.imageUrl ? (
-                        <img
-                          src={item.imageUrl}
-                          alt={item.productName}
-                          className={styles.thumb}
-                        />
-                      ) : (
-                        <div className={styles.thumbPlaceholder} aria-hidden="true" />
-                      )}
-                      <div>
-                        <p className={styles.itemName}>{item.productName}</p>
-                        <p className={styles.itemMeta}>
-                          {[item.material, item.quantity > 1 ? `Qty ${item.quantity}` : null]
-                            .filter(Boolean)
-                            .join(' · ') || '—'}
-                        </p>
-                      </div>
-                      <span className={styles.itemPrice}>{formatINR(item.lineTotalInr)}</span>
-                    </li>
-                  ))}
+                  {order.items.map((item) => {
+                    const existing = item.productId ? reviewMap[item.productId] : null;
+                    return (
+                      <li key={item.id} className={styles.item}>
+                        {item.imageUrl ? (
+                          <img
+                            src={item.imageUrl}
+                            alt={item.productName}
+                            className={styles.thumb}
+                          />
+                        ) : (
+                          <div className={styles.thumbPlaceholder} aria-hidden="true" />
+                        )}
+                        <div className={styles.itemMain}>
+                          <p className={styles.itemName}>{item.productName}</p>
+                          <p className={styles.itemMeta}>
+                            {[item.material, item.quantity > 1 ? `Qty ${item.quantity}` : null]
+                              .filter(Boolean)
+                              .join(' · ') || '—'}
+                          </p>
+                          {canReview && item.productId ? (
+                            <div className={styles.itemActions}>
+                              <WriteReviewButton
+                                productId={item.productId}
+                                productName={item.productName}
+                                existingRating={existing?.rating || null}
+                              />
+                            </div>
+                          ) : null}
+                        </div>
+                        <span className={styles.itemPrice}>{formatINR(item.lineTotalInr)}</span>
+                      </li>
+                    );
+                  })}
                 </ul>
 
                 <div className={styles.cardFooter}>

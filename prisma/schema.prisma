@@ -38,6 +38,12 @@ enum ContentType {
   SEO
 }
 
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  HIDDEN
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -51,6 +57,7 @@ model User {
   addresses Address[]
   wishlist  WishlistItem[]
   orders    Order[]
+  reviews   Review[]
 
   @@map("users")
 }
@@ -111,6 +118,7 @@ model Product {
   inventory  Inventory?
   wishlist   WishlistItem[]
   orderItems OrderItem[]
+  reviews    Review[]
 
   @@index([categoryId])
   @@index([status])
@@ -189,6 +197,29 @@ model OrderItem {
 
   @@index([orderId])
   @@map("order_items")
+}
+
+model Review {
+  id          String       @id @default(cuid())
+  productId   String
+  userId      String?
+  authorName  String
+  authorEmail String?
+  rating      Int
+  title       String?
+  body        String
+  status      ReviewStatus @default(APPROVED)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, productId])
+  @@index([productId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("reviews")
 }
 
 model SiteContent {
