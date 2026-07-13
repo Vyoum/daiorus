@@ -109,11 +109,21 @@ export default function MediaLibraryEditor({ initialContent }) {
   return (
     <div>
       <header className={styles.header}>
-        <h1 className={styles.pageTitle}>Media Library</h1>
-        <p className={styles.pageSubtitle}>
-          Manage the top announce banner, homepage hero, and Signature Line section.
-          Use image paths under <code>/images/…</code> or paste a full image URL.
-        </p>
+        <div>
+          <h1 className={styles.pageTitle}>Media Library</h1>
+          <p className={styles.pageSubtitle}>
+            Manage the top announce banner, homepage hero, and Signature Line section.
+            Use image paths under <code>/images/…</code> or paste a full image URL.
+          </p>
+        </div>
+        <div className={styles.headerActions}>
+          <button type="button" className={styles.resetBtn} onClick={handleReset} disabled={saving}>
+            Reset to defaults
+          </button>
+          <button type="button" className={styles.saveBtn} onClick={handleSave} disabled={saving}>
+            {saving ? 'Saving…' : 'Save changes'}
+          </button>
+        </div>
       </header>
 
       {error ? <div className={styles.bannerError}>{error}</div> : null}
@@ -302,7 +312,7 @@ export default function MediaLibraryEditor({ initialContent }) {
         </section>
       </div>
 
-      <div className={styles.actions}>
+      <div className={styles.footerActions}>
         <button type="button" className={styles.resetBtn} onClick={handleReset} disabled={saving}>
           Reset to defaults
         </button>

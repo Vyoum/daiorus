@@ -2,6 +2,10 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { BASE_CURRENCY, formatPriceFromInr } from '../lib/currency';
+import {
+  defaultSurchargeMap,
+  getSurchargePctFromMap,
+} from '../lib/overseas-pricing-defaults';
 
 const STORAGE_KEY = 'daiorus_currency';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
@@ -27,6 +31,7 @@ const CURRENCY_META = {
 const CurrencyContext = createContext({
   ...DEFAULT_CURRENCY,
   loading: true,
+  surchargePct: 0,
   formatPrice: (amount) => `₹${amount.toLocaleString('en-IN')}`,
   isLocalCurrency: true,
   setPreferredCurrency: async () => {},
@@ -64,17 +69,29 @@ function writeCachedCurrency(data) {
 
 export function CurrencyProvider({ children }) {
   const [currency, setCurrency] = useState(DEFAULT_CURRENCY);
+  const [surcharges, setSurcharges] = useState(defaultSurchargeMap);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
+
+    fetch('/api/overseas-surcharges')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled && data?.surcharges) {
+          setSurcharges(data.surcharges);
+        }
+      })
+      .catch(() => {});
+
     const cached = readCachedCurrency();
     if (cached) {
       setCurrency(cached);
       setLoading(false);
-      return;
+      return () => {
+        cancelled = true;
+      };
     }
-
-    let cancelled = false;
 
     fetch('/api/geoip')
       .then((res) => res.json())
@@ -105,10 +122,20 @@ export function CurrencyProvider({ children }) {
     };
   }, []);
 
+  const surchargePct = useMemo(
+    () => getSurchargePctFromMap(surcharges, currency.countryCode || currency.currencyCode),
+    [surcharges, currency.countryCode, currency.currencyCode],
+  );
+
   const formatPrice = useCallback(
     (amountInr) =>
-      formatPriceFromInr(amountInr, currency.currencyCode, currency.rateFromInr),
-    [currency.currencyCode, currency.rateFromInr]
+      formatPriceFromInr(
+        amountInr,
+        currency.currencyCode,
+        currency.rateFromInr,
+        surchargePct,
+      ),
+    [currency.currencyCode, currency.rateFromInr, surchargePct],
   );
 
   const setPreferredCurrency = useCallback(async (code) => {
@@ -140,11 +167,12 @@ export function CurrencyProvider({ children }) {
     () => ({
       ...currency,
       loading,
+      surchargePct,
       formatPrice,
       isLocalCurrency: currency.currencyCode === BASE_CURRENCY,
       setPreferredCurrency,
     }),
-    [currency, loading, formatPrice, setPreferredCurrency]
+    [currency, loading, surchargePct, formatPrice, setPreferredCurrency],
   );
 
   return (

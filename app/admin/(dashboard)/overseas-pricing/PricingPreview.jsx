@@ -77,8 +77,13 @@ export default function PricingPreview({ regions }) {
             <span className={styles.calcValue}>{formatCurrency(preview.basePriceInr, 'INR')}</span>
           </div>
           <div className={styles.calcRow}>
-            <span className={styles.calcLabel}>Regional Surcharge ({region.surchargePct}%)</span>
-            <span className={styles.calcValue}>+{formatCurrency(preview.surchargeInr, 'INR')}</span>
+            <span className={styles.calcLabel}>Included surcharge ({region.surchargePct}%)</span>
+            <span className={styles.calcValue}>{formatCurrency(preview.surchargeInr, 'INR')}</span>
+          </div>
+
+          <div className={styles.calcRow}>
+            <span className={styles.calcLabel}>Effective INR (single price base)</span>
+            <span className={styles.calcValue}>{formatCurrency(preview.totalInr, 'INR')}</span>
           </div>
 
           <div className={styles.calcDivider} />

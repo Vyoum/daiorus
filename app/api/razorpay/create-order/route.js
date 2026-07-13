@@ -7,11 +7,15 @@ import {
   generateOrderNumber,
   inrToPaise,
 } from '../../../../lib/checkout';
+import {
+  applySurchargeInr,
+  getSurchargePctForRegion,
+} from '../../../../lib/overseas-pricing';
 
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { items, email } = body;
+    const { items, email, countryCode, currencyCode } = body;
 
     if (!email || typeof email !== 'string' || !email.includes('@')) {
       return NextResponse.json({ error: 'A valid email is required' }, { status: 400 });
@@ -30,7 +34,19 @@ export async function POST(request) {
       }
     }
 
-    const { subtotalInr, shippingInr, totalInr } = calculateCartTotals(items);
+    const regionKey = countryCode || currencyCode || 'IN';
+    const surchargePct = await getSurchargePctForRegion(regionKey);
+
+    const pricedItems = items.map((item) => {
+      const unitPriceInr = applySurchargeInr(item.price, surchargePct);
+      return {
+        ...item,
+        basePriceInr: Math.round(Number(item.price) || 0),
+        price: unitPriceInr,
+      };
+    });
+
+    const { subtotalInr, shippingInr, totalInr } = calculateCartTotals(pricedItems);
     const orderNumber = generateOrderNumber();
     const amountPaise = inrToPaise(totalInr);
 
@@ -54,6 +70,8 @@ export async function POST(request) {
       notes: {
         email,
         orderNumber,
+        countryCode: String(regionKey).toUpperCase(),
+        surchargePct: String(surchargePct),
       },
     });
 
@@ -68,9 +86,13 @@ export async function POST(request) {
         discountInr: 0,
         totalInr,
         currency: 'INR',
-        notes: JSON.stringify({ razorpayOrderId: razorpayOrder.id }),
+        notes: JSON.stringify({
+          razorpayOrderId: razorpayOrder.id,
+          countryCode: String(regionKey).toUpperCase(),
+          surchargePct,
+        }),
         items: {
-          create: items.map((item) => ({
+          create: pricedItems.map((item) => ({
             productName: item.name,
             material: item.material || null,
             unitPriceInr: item.price,
@@ -91,6 +113,7 @@ export async function POST(request) {
       currency: 'INR',
       keyId: getRazorpayKeyId(),
       prefill: { email: email.trim() },
+      surchargePct,
     });
   } catch (error) {
     console.error('create-order error:', error);

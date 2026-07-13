@@ -20,7 +20,7 @@ export default function SiteShell({
 }) {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  const { formatPrice, currencyCode, countryName, loading: currencyLoading, isLocalCurrency } =
+  const { formatPrice, currencyCode, countryName, countryCode, loading: currencyLoading, isLocalCurrency } =
     useCurrency();
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -138,6 +138,8 @@ export default function SiteShell({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: emailToUse,
+          countryCode: countryCode || 'IN',
+          currencyCode: currencyCode || 'INR',
           items: cart.map((item) => ({
             id: item.id,
             name: item.name,
