@@ -20,6 +20,30 @@ function formatInr(n) {
   return `₹${value.toLocaleString('en-IN')}`;
 }
 
+const MATERIAL_PRESETS = ['14K', '18K', '20K', '22K', '24K'];
+
+function resolveMaterialSelection(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return { mode: '', custom: '' };
+
+  const normalized = raw.toUpperCase().replace(/\s+/g, '');
+  const preset = MATERIAL_PRESETS.find(
+    (item) => item === normalized || item === `${normalized}K` || normalized === `${item} GOLD`,
+  );
+  if (preset) return { mode: preset, custom: '' };
+
+  const match = normalized.match(/^(\d{1,2})K?$/);
+  if (match) {
+    const asPreset = `${match[1]}K`;
+    if (MATERIAL_PRESETS.includes(asPreset)) {
+      return { mode: asPreset, custom: '' };
+    }
+    return { mode: 'custom', custom: match[1] };
+  }
+
+  return { mode: 'custom', custom: raw.replace(/k$/i, '').trim() };
+}
+
 function ChipList({ values, onChange, placeholder }) {
   const [draft, setDraft] = useState('');
 
@@ -72,7 +96,9 @@ export default function ProductForm({ categories = [], product = null }) {
   const [categoryId, setCategoryId] = useState(
     product?.categoryId || categories[0]?.id || '',
   );
-  const [material, setMaterial] = useState(product?.material || '');
+  const initialMaterial = resolveMaterialSelection(product?.material);
+  const [materialMode, setMaterialMode] = useState(initialMaterial.mode);
+  const [customMaterial, setCustomMaterial] = useState(initialMaterial.custom);
   const [imageUrl, setImageUrl] = useState(product?.imageUrl || '');
   const [priceInr, setPriceInr] = useState(
     product?.priceInr != null ? String(product.priceInr) : '',
@@ -121,6 +147,16 @@ export default function ProductForm({ categories = [], product = null }) {
     .filter(Boolean)
     .join('\n\n');
 
+  const materialValue = useMemo(() => {
+    if (materialMode === 'custom') {
+      const custom = String(customMaterial || '').trim();
+      if (!custom) return '';
+      if (/^\d{1,2}$/.test(custom)) return `${custom}K`;
+      return custom;
+    }
+    return materialMode || '';
+  }, [materialMode, customMaterial]);
+
   const discard = () => {
     router.push('/admin/products');
   };
@@ -154,7 +190,7 @@ export default function ProductForm({ categories = [], product = null }) {
             name,
             sku,
             categoryId: categoryId || null,
-            material,
+            material: materialValue,
             imageUrl: imageUrl.startsWith('blob:') ? '' : imageUrl,
             priceInr: priceToSave,
             compareAtInr: compareToSave,
@@ -275,15 +311,45 @@ export default function ProductForm({ categories = [], product = null }) {
               </label>
             </div>
 
-            <label className={styles.field}>
-              <span>Material</span>
-              <input
-                className={styles.input}
-                value={material}
-                onChange={(e) => setMaterial(e.target.value)}
-                placeholder="e.g. 18K Gold"
-              />
-            </label>
+            <div className={styles.row2}>
+              <label className={styles.field}>
+                <span>Material</span>
+                <select
+                  className={styles.input}
+                  value={materialMode}
+                  onChange={(e) => {
+                    const next = e.target.value;
+                    setMaterialMode(next);
+                    if (next !== 'custom') setCustomMaterial('');
+                  }}
+                >
+                  <option value="">Select karat</option>
+                  {MATERIAL_PRESETS.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                  <option value="custom">Custom</option>
+                </select>
+              </label>
+              {materialMode === 'custom' ? (
+                <label className={styles.field}>
+                  <span>Custom karat</span>
+                  <input
+                    className={styles.input}
+                    type="number"
+                    min="1"
+                    max="99"
+                    inputMode="numeric"
+                    value={customMaterial}
+                    onChange={(e) => setCustomMaterial(e.target.value)}
+                    placeholder="e.g. 21"
+                  />
+                </label>
+              ) : (
+                <div className={styles.field} aria-hidden="true" />
+              )}
+            </div>
 
             <div className={styles.field}>
               <span>Upload Media</span>

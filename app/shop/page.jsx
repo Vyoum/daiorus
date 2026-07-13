@@ -5,7 +5,7 @@ import SiteShell from '../../components/SiteShell';
 import ProductCard from '../../components/ProductCard';
 import { CATEGORIES, getAllProducts } from '../../lib/data';
 
-const CARATS = ['14K', '18K', '22K', '24K'];
+const CARATS = ['14K', '18K', '20K', '22K', '24K'];
 const METALS = [
   { id: 'gold', label: 'Gold' },
   { id: 'diamond', label: 'Diamond' },
