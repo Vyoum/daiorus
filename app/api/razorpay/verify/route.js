@@ -48,11 +48,13 @@ export async function POST(request) {
     }
 
     let storedRazorpayOrderId = null;
+    let existingNotes = {};
     try {
-      const parsed = order.notes ? JSON.parse(order.notes) : null;
-      storedRazorpayOrderId = parsed?.razorpayOrderId ?? null;
+      existingNotes = order.notes ? JSON.parse(order.notes) || {} : {};
+      storedRazorpayOrderId = existingNotes.razorpayOrderId ?? null;
     } catch {
       storedRazorpayOrderId = null;
+      existingNotes = {};
     }
 
     if (storedRazorpayOrderId && storedRazorpayOrderId !== razorpay_order_id) {
@@ -65,6 +67,7 @@ export async function POST(request) {
         status: 'PAID',
         paymentRef: razorpay_payment_id,
         notes: JSON.stringify({
+          ...existingNotes,
           razorpayOrderId: razorpay_order_id,
           razorpayPaymentId: razorpay_payment_id,
         }),

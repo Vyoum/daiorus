@@ -30,6 +30,18 @@ export default function SiteShell({
   const [searchQuery, setSearchQuery] = useState('');
   const [email, setEmail] = useState('');
   const [checkoutEmail, setCheckoutEmail] = useState('');
+  const [checkoutDetailsOpen, setCheckoutDetailsOpen] = useState(false);
+  const [shippingDetails, setShippingDetails] = useState({
+    fullName: '',
+    phone: '',
+    line1: '',
+    line2: '',
+    city: '',
+    state: '',
+    postalCode: '',
+    country: 'IN',
+    saveAddress: true,
+  });
   const [checkoutError, setCheckoutError] = useState('');
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [subscribed, setSubscribed] = useState(false);
@@ -120,12 +132,36 @@ export default function SiteShell({
   const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
   const { shippingInr, totalInr } = calculateCartTotals(cart);
 
-  const handleCheckout = async () => {
+  const openCheckoutDetails = () => {
+    const emailToUse = checkoutEmail.trim() || user?.email || '';
+    if (!emailToUse || !emailToUse.includes('@')) {
+      setCheckoutError('Please enter a valid email to continue.');
+      return;
+    }
+
+    setCheckoutEmail(emailToUse);
+    setCheckoutError('');
+    setCheckoutDetailsOpen(true);
+  };
+
+  const updateShippingDetail = (key, value) => {
+    setShippingDetails((prev) => ({ ...prev, [key]: value }));
+    if (checkoutError) setCheckoutError('');
+  };
+
+  const handleCheckout = async (event) => {
+    event?.preventDefault();
     if (cart.length === 0 || isCheckingOut) return;
 
     const emailToUse = checkoutEmail.trim();
     if (!emailToUse || !emailToUse.includes('@')) {
       setCheckoutError('Please enter a valid email to continue.');
+      return;
+    }
+
+    const requiredAddressFields = ['fullName', 'phone', 'line1', 'city', 'state', 'postalCode'];
+    if (requiredAddressFields.some((key) => !String(shippingDetails[key] || '').trim())) {
+      setCheckoutError('Please complete your phone number and delivery address.');
       return;
     }
 
@@ -140,6 +176,10 @@ export default function SiteShell({
           email: emailToUse,
           countryCode: countryCode || 'IN',
           currencyCode: currencyCode || 'INR',
+          shippingAddress: {
+            ...shippingDetails,
+            country: shippingDetails.country || countryCode || 'IN',
+          },
           items: cart.map((item) => ({
             id: item.id,
             name: item.name,
@@ -183,6 +223,7 @@ export default function SiteShell({
 
           setCart([]);
           setIsCartOpen(false);
+          setCheckoutDetailsOpen(false);
           router.push(`/checkout/success?order=${encodeURIComponent(verifyData.orderNumber)}`);
           return verifyData;
         },
@@ -641,14 +682,175 @@ export default function SiteShell({
               <button
                 type="button"
                 className="checkout-btn"
-                onClick={handleCheckout}
+                onClick={openCheckoutDetails}
                 disabled={isCheckingOut}
               >
-                {isCheckingOut ? 'Processing…' : 'Pay with Razorpay'}
+                Continue to payment
               </button>
             </div>
           )}
         </div>
+      </div>
+
+      <div
+        className={`checkout-details-overlay ${checkoutDetailsOpen ? 'open' : ''}`}
+        onClick={() => !isCheckingOut && setCheckoutDetailsOpen(false)}
+      >
+        <section
+          className="checkout-details-dialog"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="checkout-details-title"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <header className="checkout-details-header">
+            <div>
+              <span className="checkout-details-kicker">Secure checkout</span>
+              <h2 id="checkout-details-title">Delivery details</h2>
+            </div>
+            <button
+              type="button"
+              className="close-btn"
+              aria-label="Close delivery details"
+              onClick={() => setCheckoutDetailsOpen(false)}
+              disabled={isCheckingOut}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </header>
+
+          <form className="checkout-details-form" onSubmit={handleCheckout}>
+            <p className="checkout-details-intro">
+              Add your phone number and delivery address before continuing securely to Razorpay.
+            </p>
+
+            <div className="checkout-details-grid">
+              <label className="checkout-field checkout-field-full">
+                <span>Full name</span>
+                <input
+                  value={shippingDetails.fullName}
+                  onChange={(event) => updateShippingDetail('fullName', event.target.value)}
+                  autoComplete="name"
+                  required
+                  disabled={isCheckingOut}
+                />
+              </label>
+              <label className="checkout-field">
+                <span>Phone number</span>
+                <input
+                  type="tel"
+                  value={shippingDetails.phone}
+                  onChange={(event) => updateShippingDetail('phone', event.target.value)}
+                  autoComplete="tel"
+                  required
+                  disabled={isCheckingOut}
+                />
+              </label>
+              <label className="checkout-field">
+                <span>Email</span>
+                <input
+                  type="email"
+                  value={checkoutEmail}
+                  onChange={(event) => setCheckoutEmail(event.target.value)}
+                  autoComplete="email"
+                  required
+                  disabled={isCheckingOut}
+                />
+              </label>
+              <label className="checkout-field checkout-field-full">
+                <span>Address line 1</span>
+                <input
+                  value={shippingDetails.line1}
+                  onChange={(event) => updateShippingDetail('line1', event.target.value)}
+                  autoComplete="address-line1"
+                  required
+                  disabled={isCheckingOut}
+                />
+              </label>
+              <label className="checkout-field checkout-field-full">
+                <span>Address line 2 <em>(optional)</em></span>
+                <input
+                  value={shippingDetails.line2}
+                  onChange={(event) => updateShippingDetail('line2', event.target.value)}
+                  autoComplete="address-line2"
+                  disabled={isCheckingOut}
+                />
+              </label>
+              <label className="checkout-field">
+                <span>City</span>
+                <input
+                  value={shippingDetails.city}
+                  onChange={(event) => updateShippingDetail('city', event.target.value)}
+                  autoComplete="address-level2"
+                  required
+                  disabled={isCheckingOut}
+                />
+              </label>
+              <label className="checkout-field">
+                <span>State</span>
+                <input
+                  value={shippingDetails.state}
+                  onChange={(event) => updateShippingDetail('state', event.target.value)}
+                  autoComplete="address-level1"
+                  required
+                  disabled={isCheckingOut}
+                />
+              </label>
+              <label className="checkout-field">
+                <span>Postal code</span>
+                <input
+                  value={shippingDetails.postalCode}
+                  onChange={(event) => updateShippingDetail('postalCode', event.target.value)}
+                  autoComplete="postal-code"
+                  required
+                  disabled={isCheckingOut}
+                />
+              </label>
+              <label className="checkout-field">
+                <span>Country code</span>
+                <input
+                  value={shippingDetails.country}
+                  onChange={(event) => updateShippingDetail('country', event.target.value.toUpperCase())}
+                  maxLength="2"
+                  autoComplete="country"
+                  required
+                  disabled={isCheckingOut}
+                />
+              </label>
+            </div>
+
+            {user ? (
+              <label className="checkout-save-address">
+                <input
+                  type="checkbox"
+                  checked={shippingDetails.saveAddress}
+                  onChange={(event) => updateShippingDetail('saveAddress', event.target.checked)}
+                  disabled={isCheckingOut}
+                />
+                Save this address to my account
+              </label>
+            ) : null}
+
+            {checkoutError ? <p className="checkout-error">{checkoutError}</p> : null}
+
+            <div className="checkout-details-actions">
+              <button
+                type="button"
+                className="checkout-back-btn"
+                onClick={() => setCheckoutDetailsOpen(false)}
+                disabled={isCheckingOut}
+              >
+                Back to cart
+              </button>
+              <button type="submit" className="checkout-btn" disabled={isCheckingOut}>
+                {isCheckingOut ? 'Processing…' : 'Checkout'}
+              </button>
+            </div>
+          </form>
+        </section>
       </div>
 
       <div className="header-spacer" aria-hidden="true" />

@@ -15,7 +15,7 @@ import {
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { items, email, countryCode, currencyCode } = body;
+    const { items, email, countryCode, currencyCode, shippingAddress } = body;
 
     if (!email || typeof email !== 'string' || !email.includes('@')) {
       return NextResponse.json({ error: 'A valid email is required' }, { status: 400 });
@@ -32,6 +32,32 @@ export async function POST(request) {
       if (item.qty < 1 || item.price < 1) {
         return NextResponse.json({ error: 'Invalid quantity or price' }, { status: 400 });
       }
+    }
+
+    const address = {
+      fullName: String(shippingAddress?.fullName || '').trim(),
+      phone: String(shippingAddress?.phone || '').trim(),
+      line1: String(shippingAddress?.line1 || '').trim(),
+      line2: String(shippingAddress?.line2 || '').trim() || null,
+      city: String(shippingAddress?.city || '').trim(),
+      state: String(shippingAddress?.state || '').trim(),
+      postalCode: String(shippingAddress?.postalCode || '').trim(),
+      country: String(shippingAddress?.country || countryCode || 'IN').trim().toUpperCase(),
+      saveAddress: Boolean(shippingAddress?.saveAddress),
+    };
+
+    if (
+      !address.fullName ||
+      !address.phone ||
+      !address.line1 ||
+      !address.city ||
+      !address.state ||
+      !address.postalCode
+    ) {
+      return NextResponse.json(
+        { error: 'A phone number and complete delivery address are required' },
+        { status: 400 },
+      );
     }
 
     const regionKey = countryCode || currencyCode || 'IN';
@@ -62,6 +88,49 @@ export async function POST(request) {
       userId = null;
     }
 
+    let shippingAddressId = null;
+    if (userId && address.saveAddress) {
+      const existingAddress = await prisma.address.findFirst({
+        where: {
+          userId,
+          line1: address.line1,
+          city: address.city,
+          state: address.state,
+          postalCode: address.postalCode,
+          country: address.country,
+        },
+        select: { id: true },
+      });
+
+      if (existingAddress) {
+        shippingAddressId = existingAddress.id;
+      } else {
+        const savedAddress = await prisma.address.create({
+          data: {
+            userId,
+            label: 'Shipping address',
+            line1: address.line1,
+            line2: address.line2,
+            city: address.city,
+            state: address.state,
+            postalCode: address.postalCode,
+            country: address.country,
+            isDefault: false,
+          },
+          select: { id: true },
+        });
+        shippingAddressId = savedAddress.id;
+      }
+
+      await prisma.user.update({
+        where: { id: userId },
+        data: {
+          name: address.fullName,
+          phone: address.phone,
+        },
+      });
+    }
+
     const razorpay = getRazorpay();
     const razorpayOrder = await razorpay.orders.create({
       amount: amountPaise,
@@ -80,6 +149,7 @@ export async function POST(request) {
         orderNumber,
         userId,
         guestEmail: email.trim().toLowerCase(),
+        shippingAddressId,
         status: 'PENDING',
         subtotalInr,
         shippingInr,
@@ -90,6 +160,16 @@ export async function POST(request) {
           razorpayOrderId: razorpayOrder.id,
           countryCode: String(regionKey).toUpperCase(),
           surchargePct,
+          shippingAddress: {
+            fullName: address.fullName,
+            phone: address.phone,
+            line1: address.line1,
+            line2: address.line2,
+            city: address.city,
+            state: address.state,
+            postalCode: address.postalCode,
+            country: address.country,
+          },
         }),
         items: {
           create: pricedItems.map((item) => ({
