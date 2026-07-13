@@ -7,6 +7,7 @@ import { CATEGORIES, COLLECTIONS } from '../lib/data';
 import { calculateCartTotals } from '../lib/checkout';
 import { DEFAULT_ANNOUNCE } from '../lib/site-content-defaults';
 import { useCurrency } from './CurrencyProvider';
+import { INSTAGRAM_URL } from '../lib/social';
 import LoginDrawer from './LoginDrawer';
 import { useCart } from './CartProvider';
 import { useAuth } from './AuthProvider';
@@ -581,7 +582,7 @@ export default function SiteShell({
                 Fine jewellery for the modern woman. Crafted with intention, worn with grace.
               </p>
               <div className="social-links">
-                <a href="https://instagram.com/daiorus" className="social-link" aria-label="Instagram" target="_blank" rel="noreferrer">
+                <a href={INSTAGRAM_URL} className="social-link" aria-label="Instagram" target="_blank" rel="noreferrer">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <rect x="2" y="2" width="20" height="20" rx="5" />
                     <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
