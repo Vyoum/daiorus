@@ -143,8 +143,8 @@
 }
 
 .primaryBtnSmall {
-  background-color: var(--admin-accent);
-  color: var(--admin-accent-text);
+  background-color: var(--admin-text-primary);
+  color: #ffffff !important;
   padding: 6px 12px;
   border-radius: var(--admin-radius);
   font-size: 12px;
@@ -152,7 +152,8 @@
 }
 
 .primaryBtnSmall:hover {
-  background-color: var(--admin-accent-hover);
+  background-color: #1f2937;
+  color: #ffffff !important;
 }
 
 /* Contact Info */

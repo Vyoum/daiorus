@@ -2,11 +2,10 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import SiteShell from '../../../components/SiteShell';
 import ProductCard from '../../../components/ProductCard';
-import {
-  CATEGORIES,
-  PRODUCTS,
-  getCategory,
-} from '../../../lib/data';
+import { CATEGORIES, getCategory } from '../../../lib/data';
+import { getStorefrontProductsByCategory } from '../../../lib/storefront/products';
+
+export const dynamic = 'force-dynamic';
 
 export function generateStaticParams() {
   return CATEGORIES.map((cat) => ({ slug: cat.slug }));
@@ -27,7 +26,7 @@ export default async function CategoryPage({ params }) {
   const category = getCategory(slug);
   if (!category) notFound();
 
-  const products = PRODUCTS[slug] || [];
+  const products = await getStorefrontProductsByCategory(slug);
   const alsoExplore = CATEGORIES.filter((c) => c.slug !== slug).slice(0, 3);
 
   return (
@@ -49,9 +48,15 @@ export default async function CategoryPage({ params }) {
 
       <section className="cat-products">
         <div className="cat-products-inner">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} showMaterial />
-          ))}
+          {products.length > 0 ? (
+            products.map((product) => (
+              <ProductCard key={product.id} product={product} showMaterial />
+            ))
+          ) : (
+            <p style={{ gridColumn: '1 / -1', color: 'var(--muted)', textAlign: 'center' }}>
+              No pieces in this category right now.
+            </p>
+          )}
         </div>
       </section>
 

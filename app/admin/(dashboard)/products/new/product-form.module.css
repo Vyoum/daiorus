@@ -44,14 +44,16 @@
 
 .primaryBtn,
 .primaryBtnFull {
-  background: var(--admin-accent);
-  color: var(--admin-accent-text);
-  border: 1px solid var(--admin-accent);
+  background: var(--admin-text-primary);
+  color: #ffffff !important;
+  border: 1px solid var(--admin-text-primary);
 }
 
 .primaryBtn:hover,
 .primaryBtnFull:hover {
-  background: var(--admin-accent-hover);
+  background: #1f2937;
+  border-color: #1f2937;
+  color: #ffffff !important;
 }
 
 .primaryBtn:disabled,

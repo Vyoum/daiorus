@@ -4,7 +4,6 @@ import Link from 'next/link';
 import SiteShell from './SiteShell';
 import ProductCard from './ProductCard';
 import {
-  BEST_SELLERS,
   CATEGORIES,
   COLLECTIONS,
 } from '../lib/data';
@@ -27,9 +26,10 @@ const MARQUEE = [
   '7-Day Returns',
 ];
 
-export default function HomePage({ announce, hero, signature }) {
+export default function HomePage({ announce, hero, signature, featuredProducts = [] }) {
   const heroContent = hero || DEFAULT_HERO;
   const signatureContent = signature || DEFAULT_SIGNATURE;
+  const bestSellers = featuredProducts;
 
   return (
     <SiteShell headerOverlay announce={announce}>
@@ -127,11 +127,17 @@ export default function HomePage({ announce, hero, signature }) {
                 Shop All
               </Link>
             </div>
-            <div className="ui1-product-grid">
-              {BEST_SELLERS.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
+              <div className="ui1-product-grid">
+                {bestSellers.length > 0 ? (
+                  bestSellers.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))
+                ) : (
+                  <p style={{ gridColumn: '1 / -1', color: 'var(--muted)' }}>
+                    New pieces are on the way.
+                  </p>
+                )}
+              </div>
           </div>
         </section>
 

@@ -274,8 +274,8 @@
 }
 
 .quickAddBtn {
-  background-color: var(--admin-accent);
-  color: var(--admin-accent-text);
+  background-color: var(--admin-text-primary);
+  color: #ffffff !important;
   width: 100%;
   padding: 12px;
   border-radius: var(--admin-radius);
@@ -291,6 +291,6 @@
 }
 
 .quickAddBtn:hover {
-  background-color: var(--admin-accent-hover);
-  color: var(--admin-accent-text);
+  background-color: #1f2937;
+  color: #ffffff !important;
 }
