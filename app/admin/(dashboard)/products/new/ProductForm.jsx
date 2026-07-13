@@ -60,23 +60,32 @@ function ChipList({ values, onChange, placeholder }) {
   );
 }
 
-export default function ProductForm({ categories = [] }) {
+export default function ProductForm({ categories = [], product = null }) {
   const router = useRouter();
+  const isEdit = Boolean(product?.id);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const [name, setName] = useState('');
-  const [sku, setSku] = useState('');
-  const [categoryId, setCategoryId] = useState(categories[0]?.id || '');
-  const [material, setMaterial] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
-  const [priceInr, setPriceInr] = useState('');
-  const [compareAtInr, setCompareAtInr] = useState('');
-  const [quantity, setQuantity] = useState('25');
+  const [name, setName] = useState(product?.name || '');
+  const [sku, setSku] = useState(product?.sku || '');
+  const [categoryId, setCategoryId] = useState(
+    product?.categoryId || categories[0]?.id || '',
+  );
+  const [material, setMaterial] = useState(product?.material || '');
+  const [imageUrl, setImageUrl] = useState(product?.imageUrl || '');
+  const [priceInr, setPriceInr] = useState(
+    product?.priceInr != null ? String(product.priceInr) : '',
+  );
+  const [compareAtInr, setCompareAtInr] = useState(
+    product?.compareAtInr != null ? String(product.compareAtInr) : '',
+  );
+  const [quantity, setQuantity] = useState(
+    product?.quantity != null ? String(product.quantity) : '25',
+  );
   const [shortDescription, setShortDescription] = useState('');
-  const [description, setDescription] = useState('');
-  const [status, setStatus] = useState('DRAFT');
+  const [description, setDescription] = useState(product?.description || '');
+  const [status, setStatus] = useState(product?.status || 'DRAFT');
   const [publishDate, setPublishDate] = useState('');
   const [seoTitle, setSeoTitle] = useState('');
   const [seoDescription, setSeoDescription] = useState('');
@@ -136,31 +145,38 @@ export default function ProductForm({ categories = [] }) {
         }
       }
 
-      const res = await fetch('/api/admin/products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          sku,
-          categoryId: categoryId || null,
-          material,
-          imageUrl: imageUrl.startsWith('blob:') ? '' : imageUrl,
-          priceInr: priceToSave,
-          compareAtInr: compareToSave,
-          quantity: Number(quantity) || 0,
-          description: combinedDescription,
-          status: nextStatus,
-          tag: null,
-        }),
-      });
+      const res = await fetch(
+        isEdit ? `/api/admin/products/${product.id}` : '/api/admin/products',
+        {
+          method: isEdit ? 'PATCH' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name,
+            sku,
+            categoryId: categoryId || null,
+            material,
+            imageUrl: imageUrl.startsWith('blob:') ? '' : imageUrl,
+            priceInr: priceToSave,
+            compareAtInr: compareToSave,
+            quantity: Number(quantity) || 0,
+            description: combinedDescription,
+            status: nextStatus,
+            tag: product?.tag || null,
+          }),
+        },
+      );
 
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Could not save product');
 
       setSuccess(
         nextStatus === 'ACTIVE'
-          ? 'Product published successfully.'
-          : 'Product saved as draft.'
+          ? isEdit
+            ? 'Product updated and published.'
+            : 'Product published successfully.'
+          : isEdit
+            ? 'Product updates saved as draft.'
+            : 'Product saved as draft.',
       );
       router.push('/admin/products');
       router.refresh();
@@ -192,9 +208,11 @@ export default function ProductForm({ categories = [] }) {
     <div className={styles.page}>
       <header className={styles.header}>
         <div>
-          <h1 className={styles.title}>Add New Product</h1>
+          <h1 className={styles.title}>{isEdit ? 'Edit Product' : 'Add New Product'}</h1>
           <p className={styles.subtitle}>
-            Configure product details, pricing, and media assets.
+            {isEdit
+              ? 'Update product details, pricing, and media assets.'
+              : 'Configure product details, pricing, and media assets.'}
           </p>
         </div>
         <div className={styles.headerActions}>
@@ -207,7 +225,7 @@ export default function ProductForm({ categories = [] }) {
             onClick={() => saveProduct(status)}
             disabled={saving}
           >
-            {saving ? 'Saving…' : 'Save Product'}
+            {saving ? 'Saving…' : isEdit ? 'Save Changes' : 'Save Product'}
           </button>
         </div>
       </header>

@@ -319,3 +319,50 @@
   color: var(--admin-surface);
   border-color: var(--admin-text-primary);
 }
+
+.rowActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.editBtn,
+.deleteBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  border-radius: var(--admin-radius);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.editBtn {
+  border: 1px solid var(--admin-border);
+  background: #fff;
+  color: var(--admin-text-primary);
+}
+
+.editBtn:hover {
+  background: var(--admin-surface-hover);
+}
+
+.deleteBtn {
+  border: 1px solid rgba(185, 28, 28, 0.25);
+  background: #fff;
+  color: #b91c1c;
+  cursor: pointer;
+}
+
+.deleteBtn:hover:not(:disabled) {
+  background: #fef2f2;
+}
+
+.deleteBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

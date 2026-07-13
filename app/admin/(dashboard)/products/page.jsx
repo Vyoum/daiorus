@@ -11,6 +11,7 @@ import {
 import Link from 'next/link';
 import { getAdminProducts } from '../../../../lib/admin/products';
 import { formatDateTime, formatINR, productStatusLabel } from '../../../../lib/admin/format';
+import ProductRowActions from './ProductRowActions';
 import styles from './products.module.css';
 
 export default async function ProductsPage() {
@@ -68,12 +69,13 @@ export default async function ProductsPage() {
               <th className={styles.th}>Status</th>
               <th className={styles.th}>Visibility</th>
               <th className={styles.th}>Last Updated</th>
+              <th className={styles.th}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {products.length === 0 ? (
               <tr className={styles.tr}>
-                <td className={styles.td} colSpan={9} style={{ textAlign: 'center', padding: 40 }}>
+                <td className={styles.td} colSpan={10} style={{ textAlign: 'center', padding: 40 }}>
                   No products in the database yet.
                 </td>
               </tr>
@@ -107,7 +109,10 @@ export default async function ProductsPage() {
                   </td>
                   <td className={styles.td}>
                     <div className={styles.stockCell}>
-                      <span className={styles.stockValue} style={product.isLow ? { color: 'var(--admin-danger)' } : undefined}>
+                      <span
+                        className={styles.stockValue}
+                        style={product.isLow ? { color: 'var(--admin-danger)' } : undefined}
+                      >
                         {product.quantity}
                       </span>
                       <div className={styles.stockBarBg}>
@@ -126,6 +131,9 @@ export default async function ProductsPage() {
                   </td>
                   <td className={styles.td}>
                     <div className={styles.lastUpdated}>{formatDateTime(product.updatedAt)}</div>
+                  </td>
+                  <td className={styles.td}>
+                    <ProductRowActions productId={product.id} productName={product.name} />
                   </td>
                 </tr>
               ))
