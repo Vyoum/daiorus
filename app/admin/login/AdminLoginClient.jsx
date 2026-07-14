@@ -8,7 +8,7 @@ import styles from './login.module.css';
 
 function errorMessage(code) {
   if (code === 'forbidden') {
-    return 'This account does not have admin access. Ask an existing admin to grant you the Admin role.';
+    return 'This account is signed in, but Access is Customer — not Admin. An existing admin can set your Access to Admin on Customers, then try again.';
   }
   if (code === 'config') {
     return 'Auth is not configured. Add Supabase environment variables and try again.';
@@ -38,47 +38,48 @@ export default function AdminLoginClient() {
 
     try {
       const supabase = createClient();
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      });
+      const { data: signInData, error: signInError } =
+        await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
       if (signInError) throw signInError;
+
+      // Ensure the browser session/cookies are ready before server calls
+      if (!signInData.session) {
+        const { data: sessionData, error: sessionError } =
+          await supabase.auth.getSession();
+        if (sessionError || !sessionData.session) {
+          throw new Error('Signed in, but session was not established. Try again.');
+        }
+      }
 
       await fetch('/api/auth/ensure-user', { method: 'POST' });
 
-      const meRes = await fetch('/api/admin/me');
-      if (meRes.status === 403) {
-        await supabase.auth.signOut();
-        setError(
-          'This account does not have admin access. Ask an existing admin to grant you the Admin role.'
-        );
-        return;
+      const meRes = await fetch('/api/admin/me', { cache: 'no-store' });
+      const me = await meRes.json().catch(() => ({}));
+
+      if (meRes.status === 401) {
+        throw new Error('Signed in, but the server could not read your session. Refresh and try again.');
       }
       if (!meRes.ok) {
-        const data = await meRes.json().catch(() => ({}));
-        throw new Error(data.error || 'Could not verify admin access');
+        throw new Error(me.error || 'Could not verify admin access');
       }
 
-      const me = await meRes.json();
-
-      if (me.bootstrap && me.role !== 'ADMIN') {
-        const promote = await fetch(`/api/admin/users/${me.id}/role`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ role: 'ADMIN' }),
-        });
-        if (!promote.ok) {
-          const data = await promote.json().catch(() => ({}));
-          throw new Error(data.error || 'Could not create the first admin');
-        }
+      if (!me.isAdmin && me.role !== 'ADMIN') {
+        await supabase.auth.signOut();
+        setError(
+          `Signed in as ${me.email || 'this account'}, but Access is Customer — not Admin. Ask an admin to set Access → Admin on the Customers page, then try again.`
+        );
+        return;
       }
 
       const safeNext =
         nextPath.startsWith('/admin') && !nextPath.startsWith('/admin/login')
           ? nextPath
           : '/admin';
-      router.replace(safeNext);
-      router.refresh();
+
+      window.location.assign(safeNext);
     } catch (err) {
       setError(err.message || 'Sign in failed. Please try again.');
     } finally {
@@ -93,7 +94,8 @@ export default function AdminLoginClient() {
           <p className={styles.eyebrow}>Daiorus</p>
           <h1 className={styles.title}>Admin sign in</h1>
           <p className={styles.subtitle}>
-            Only users with the Admin role can access the dashboard.
+            Use your store email and password. Accounts with Admin access open the dashboard after
+            sign-in.
           </p>
         </div>
 
