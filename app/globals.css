@@ -2688,6 +2688,8 @@ img {
 .shop-filters-desktop {
   position: sticky;
   top: calc(var(--header-h) + var(--announce-h) + 20px);
+  padding-right: 32px;
+  border-right: 1px solid var(--border-dark);
 }
 
 .shop-filter-panel-head {
