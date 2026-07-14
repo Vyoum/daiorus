@@ -7,6 +7,7 @@ import { CartProvider } from '../components/CartProvider';
 
 const gilda = Gilda_Display({
   subsets: ['latin'],
+  weight: '400',
   variable: '--font-gilda',
   display: 'swap',
 });
