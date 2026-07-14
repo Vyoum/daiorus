@@ -2592,7 +2592,7 @@ img {
 
 /* ========== Shop ========== */
 .shop-hero {
-  padding: 64px 40px 24px;
+  padding: 64px 20px 24px;
   max-width: var(--max-w);
   margin: 0 auto;
 }
@@ -2611,7 +2611,7 @@ img {
 .shop-toolbar {
   max-width: var(--max-w);
   margin: 0 auto;
-  padding: 0 40px 28px;
+  padding: 0 20px 28px;
   display: flex;
   align-items: center;
   gap: 20px;
@@ -2678,10 +2678,10 @@ img {
 .shop-layout {
   max-width: var(--max-w);
   margin: 0 auto;
-  padding: 36px 40px 80px;
+  padding: 36px 20px 80px;
   display: grid;
   grid-template-columns: 240px 1fr;
-  gap: 40px;
+  gap: 32px;
   align-items: start;
 }
 

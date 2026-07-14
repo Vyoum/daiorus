@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import SiteShell from './SiteShell';
 import ProductCard from './ProductCard';
 import { CATEGORIES } from '../lib/data';
@@ -49,6 +49,30 @@ function enrichProduct(product) {
   };
 }
 
+/** Mix categories so Shop All doesn’t open as a wall of one category. */
+function interleaveByCategory(list) {
+  const buckets = new Map();
+  for (const product of list) {
+    const key = product.category || '_';
+    if (!buckets.has(key)) buckets.set(key, []);
+    buckets.get(key).push(product);
+  }
+
+  const queues = [...buckets.values()];
+  const mixed = [];
+  let added = true;
+  while (added) {
+    added = false;
+    for (const queue of queues) {
+      if (queue.length > 0) {
+        mixed.push(queue.shift());
+        added = true;
+      }
+    }
+  }
+  return mixed;
+}
+
 function toggleValue(list, value) {
   return list.includes(value) ? list.filter((item) => item !== value) : [...list, value];
 }
@@ -65,6 +89,12 @@ export default function ShopPage({ initialProducts = [] }) {
   const [sort, setSort] = useState('featured');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filters, setFilters] = useState(EMPTY_FILTERS);
+
+  // Always start Shop All with no category filters selected
+  useEffect(() => {
+    setFilters(EMPTY_FILTERS);
+    setSort('featured');
+  }, []);
 
   const allProducts = useMemo(
     () => (initialProducts || []).map(enrichProduct),
@@ -90,7 +120,7 @@ export default function ShopPage({ initialProducts = [] }) {
     (filters.priceMin != null || filters.priceMax != null ? 1 : 0);
 
   const products = useMemo(() => {
-    let list = allProducts.filter((product) => {
+    const list = allProducts.filter((product) => {
       if (filters.categories.length && !filters.categories.includes(product.category)) {
         return false;
       }
@@ -113,20 +143,19 @@ export default function ShopPage({ initialProducts = [] }) {
     switch (sort) {
       case 'price-asc':
         sorted.sort((a, b) => a.price - b.price);
-        break;
+        return sorted;
       case 'price-desc':
         sorted.sort((a, b) => b.price - a.price);
-        break;
+        return sorted;
       case 'popularity':
         sorted.sort((a, b) => b.popularity - a.popularity);
-        break;
+        return sorted;
       case 'rating':
         sorted.sort((a, b) => b.rating - a.rating);
-        break;
+        return sorted;
       default:
-        break;
+        return interleaveByCategory(sorted);
     }
-    return sorted;
   }, [allProducts, filters, priceMin, priceMax, sort]);
 
   const clearFilters = () => setFilters(EMPTY_FILTERS);

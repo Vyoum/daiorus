@@ -1,7 +1,8 @@
 import ShopPage from '../../components/ShopPage';
 import { getStorefrontProducts } from '../../lib/storefront/products';
 
-export const revalidate = 60;
+// Always load the full live catalog for Shop All (avoid stale filtered caches)
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Shop All | DAIORUS',
