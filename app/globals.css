@@ -3701,11 +3701,6 @@ img {
   .trust-grid,
   .cat-trust-inner,
   .footer-inner,
-  .shop-hero,
-  .shop-filters,
-  .shop-toolbar,
-  .shop-layout,
-  .shop-grid-wrap,
   .contact-page,
   .legal-page,
   .about-quote,
@@ -3714,6 +3709,31 @@ img {
   .about-cta {
     padding-left: 20px;
     padding-right: 20px;
+  }
+
+  .shop-hero,
+  .shop-filters,
+  .shop-toolbar,
+  .shop-layout,
+  .shop-grid-wrap {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .shop-layout {
+    padding-top: 24px;
+    padding-bottom: 64px;
+    gap: 20px;
+  }
+
+  .shop-layout .ui1-product-grid {
+    gap: 10px;
+  }
+
+  .shop-layout .product-name,
+  .shop-layout .product-material,
+  .shop-layout .product-price {
+    text-align: center;
   }
 
   .shop-toolbar {
@@ -3960,6 +3980,18 @@ img {
   .cat-products-inner {
     grid-template-columns: 1fr 1fr;
     gap: 12px;
+  }
+
+  .shop-hero,
+  .shop-toolbar,
+  .shop-layout,
+  .shop-grid-wrap {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .shop-layout .ui1-product-grid {
+    gap: 8px;
   }
 
   .instagram-grid {
