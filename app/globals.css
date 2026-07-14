@@ -1,8 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Gilda+Display&family=Jost:wght@300;400;500;600&display=swap');
-
 :root {
-  --font-serif: 'Gilda Display', Georgia, serif;
-  --font-sans: 'Jost', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: var(--font-gilda), Georgia, serif;
+  --font-sans: var(--font-jost), -apple-system, BlinkMacSystemFont, sans-serif;
 
   --bg: #faf8f4;
   --bg-cream: #f2efe8;

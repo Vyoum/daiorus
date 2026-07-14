@@ -1,11 +1,44 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import Price from './Price';
 import { useCart } from './CartProvider';
 import { useWishlist } from './WishlistProvider';
 
-export default function ProductCard({ product, showMaterial = false, showRemove = false }) {
+function ProductMediaImage({ src, alt, priority = false }) {
+  const isLocal = typeof src === 'string' && src.startsWith('/');
+
+  if (isLocal) {
+    return (
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        sizes="(max-width: 768px) 50vw, 25vw"
+        className="product-img"
+        priority={priority}
+      />
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className="product-img"
+      loading={priority ? 'eager' : 'lazy'}
+      decoding="async"
+    />
+  );
+}
+
+export default function ProductCard({
+  product,
+  showMaterial = false,
+  showRemove = false,
+  priority = false,
+}) {
   const { addToCart } = useCart();
   const { isWished, toggle, remove } = useWishlist();
   const tag = product.tag ? String(product.tag) : '';
@@ -53,7 +86,7 @@ export default function ProductCard({ product, showMaterial = false, showRemove 
         </svg>
       </button>
 
-      <img src={product.image} alt={product.name} className="product-img" />
+      <ProductMediaImage src={product.image} alt={product.name} priority={priority} />
       <button
         type="button"
         className="product-action-btn"

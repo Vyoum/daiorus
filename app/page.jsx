@@ -2,7 +2,7 @@ import HomePage from '../components/HomePage';
 import { getLandingContent } from '../lib/site-content';
 import { getFeaturedStorefrontProducts } from '../lib/storefront/products';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export default async function Page() {
   const [{ announce, hero, signature }, featuredProducts] = await Promise.all([

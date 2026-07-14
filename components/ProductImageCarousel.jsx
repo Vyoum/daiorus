@@ -1,8 +1,21 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import styles from './ProductImageCarousel.module.css';
+
+function Chevron({ dir }) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d={dir === 'left' ? 'M15 18l-6-6 6-6' : 'M9 18l6-6-6-6'}
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
 
 export default function ProductImageCarousel({ images = [], alt = 'Product' }) {
   const gallery = images.filter(Boolean);
@@ -42,6 +55,8 @@ export default function ProductImageCarousel({ images = [], alt = 'Product' }) {
           src={current}
           alt={alt}
           className={styles.mainImage}
+          fetchPriority="high"
+          decoding="async"
         />
 
         {multi ? (
@@ -52,7 +67,7 @@ export default function ProductImageCarousel({ images = [], alt = 'Product' }) {
               onClick={() => go(-1)}
               aria-label="Previous image"
             >
-              <ChevronLeft size={20} />
+              <Chevron dir="left" />
             </button>
             <button
               type="button"
@@ -60,7 +75,7 @@ export default function ProductImageCarousel({ images = [], alt = 'Product' }) {
               onClick={() => go(1)}
               aria-label="Next image"
             >
-              <ChevronRight size={20} />
+              <Chevron dir="right" />
             </button>
             <div className={styles.dots} role="tablist" aria-label="Image slides">
               {gallery.map((url, i) => (
@@ -89,7 +104,7 @@ export default function ProductImageCarousel({ images = [], alt = 'Product' }) {
               onClick={() => setIndex(i)}
               aria-label={`Thumbnail ${i + 1}`}
             >
-              <img src={url} alt="" />
+              <img src={url} alt="" loading="lazy" decoding="async" />
             </button>
           ))}
         </div>

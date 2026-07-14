@@ -1,6 +1,5 @@
-'use client';
-
 import Link from 'next/link';
+import Image from 'next/image';
 import SiteShell from './SiteShell';
 import ProductCard from './ProductCard';
 import {
@@ -30,16 +29,31 @@ export default function HomePage({ announce, hero, signature, featuredProducts =
   const heroContent = hero || DEFAULT_HERO;
   const signatureContent = signature || DEFAULT_SIGNATURE;
   const bestSellers = featuredProducts;
+  const heroSrc = heroContent.imageUrl || DEFAULT_HERO.imageUrl;
+  const heroIsLocal = typeof heroSrc === 'string' && heroSrc.startsWith('/');
 
   return (
     <SiteShell headerOverlay announce={announce}>
       <>
         <section className="ui1-hero">
-          <img
-            src={heroContent.imageUrl}
-            alt={heroContent.imageAlt}
-            className="ui1-hero-bg"
-          />
+          {heroIsLocal ? (
+            <Image
+              src={heroSrc}
+              alt={heroContent.imageAlt}
+              fill
+              priority
+              sizes="100vw"
+              className="ui1-hero-bg"
+            />
+          ) : (
+            <img
+              src={heroSrc}
+              alt={heroContent.imageAlt}
+              className="ui1-hero-bg"
+              fetchPriority="high"
+              decoding="async"
+            />
+          )}
           <div className="ui1-hero-overlay" />
           <div className="ui1-hero-content">
             <div className="ui1-hero-inner">
@@ -59,7 +73,7 @@ export default function HomePage({ announce, hero, signature, featuredProducts =
 
         <div className="marquee-strip" aria-hidden="true">
           <div className="marquee-track">
-            {[...MARQUEE, ...MARQUEE, ...MARQUEE, ...MARQUEE].map((item, i) => (
+            {[...MARQUEE, ...MARQUEE].map((item, i) => (
               <span key={`${item}-${i}`} className="marquee-item">
                 {item}
               </span>
@@ -82,7 +96,13 @@ export default function HomePage({ announce, hero, signature, featuredProducts =
               {COLLECTIONS.map((col) => (
                 <article key={col.name} className="collection-card">
                   <div className="collection-img-wrapper">
-                    <img src={col.image} alt={col.name} className="collection-img" />
+                    <img
+                      src={col.image}
+                      alt={col.name}
+                      className="collection-img"
+                      loading="lazy"
+                      decoding="async"
+                    />
                   </div>
                   <h3 className="collection-name">{col.name}</h3>
                   <p className="collection-desc">{col.desc}</p>
@@ -107,7 +127,13 @@ export default function HomePage({ announce, hero, signature, featuredProducts =
               {CATEGORIES.map((cat) => (
                 <Link key={cat.slug} href={cat.href} className="category-card">
                   <div className="category-img-wrapper">
-                    <img src={cat.image} alt={cat.name} className="category-img" />
+                    <img
+                      src={cat.image}
+                      alt={cat.name}
+                      className="category-img"
+                      loading="lazy"
+                      decoding="async"
+                    />
                   </div>
                   <h3 className="category-name">{cat.name}</h3>
                 </Link>
@@ -129,8 +155,12 @@ export default function HomePage({ announce, hero, signature, featuredProducts =
             </div>
               <div className="ui1-product-grid">
                 {bestSellers.length > 0 ? (
-                  bestSellers.map((product) => (
-                    <ProductCard key={product.id} product={product} />
+                  bestSellers.map((product, index) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      priority={index < 2}
+                    />
                   ))
                 ) : (
                   <p style={{ gridColumn: '1 / -1', color: 'var(--muted)' }}>
@@ -159,6 +189,8 @@ export default function HomePage({ announce, hero, signature, featuredProducts =
               src="/images/ui1/brand-story.jpg"
               alt="Daiorus craftsmanship"
               className="editorial-img"
+              loading="lazy"
+              decoding="async"
             />
           </div>
         </section>
@@ -170,10 +202,14 @@ export default function HomePage({ announce, hero, signature, featuredProducts =
                 <img
                   src={signatureContent.imageUrl1}
                   alt={signatureContent.imageAlt1}
+                  loading="lazy"
+                  decoding="async"
                 />
                 <img
                   src={signatureContent.imageUrl2}
                   alt={signatureContent.imageAlt2}
+                  loading="lazy"
+                  decoding="async"
                 />
               </div>
               <div className="vermeil-copy">
@@ -208,7 +244,13 @@ export default function HomePage({ announce, hero, signature, featuredProducts =
                   target="_blank"
                   rel="noreferrer"
                 >
-                  <img src={src} alt={`Instagram look ${idx + 1}`} className="instagram-img" />
+                  <img
+                    src={src}
+                    alt={`Instagram look ${idx + 1}`}
+                    className="instagram-img"
+                    loading="lazy"
+                    decoding="async"
+                  />
                   <div className="instagram-overlay">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                       <rect x="2" y="2" width="20" height="20" rx="5" />

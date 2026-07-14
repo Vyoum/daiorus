@@ -5,7 +5,7 @@ import ProductCard from '../../../components/ProductCard';
 import { CATEGORIES, getCategory } from '../../../lib/data';
 import { getStorefrontProductsByCategory } from '../../../lib/storefront/products';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export function generateStaticParams() {
   return CATEGORIES.map((cat) => ({ slug: cat.slug }));

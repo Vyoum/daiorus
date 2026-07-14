@@ -6,11 +6,13 @@ import { useRouter } from 'next/navigation';
 import { CATEGORIES, COLLECTIONS } from '../lib/data';
 import { calculateCartTotals } from '../lib/checkout';
 import { DEFAULT_ANNOUNCE } from '../lib/site-content-defaults';
+import dynamic from 'next/dynamic';
 import { useCurrency } from './CurrencyProvider';
 import { INSTAGRAM_URL } from '../lib/social';
-import LoginDrawer from './LoginDrawer';
 import { useCart } from './CartProvider';
 import { useAuth } from './AuthProvider';
+
+const LoginDrawer = dynamic(() => import('./LoginDrawer'), { ssr: false });
 
 export default function SiteShell({
   children,

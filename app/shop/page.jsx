@@ -1,7 +1,7 @@
 import ShopPage from '../../components/ShopPage';
 import { getStorefrontProducts } from '../../lib/storefront/products';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export const metadata = {
   title: 'Shop All | DAIORUS',

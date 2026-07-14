@@ -3,7 +3,7 @@ import SiteShell from '../../../components/SiteShell';
 import ProductDetail from '../../../components/ProductDetail';
 import { getStorefrontProductBySlug } from '../../../lib/storefront/products';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
