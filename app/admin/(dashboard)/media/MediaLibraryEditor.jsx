@@ -10,6 +10,7 @@ import {
   MEDIA_PRESETS,
   MAX_HERO_CAROUSEL_IMAGES,
 } from '../../../../lib/site-content-defaults';
+import { isAllowedImageFile, uploadAdminImage } from '@/lib/admin/image-upload';
 import styles from './media.module.css';
 
 function Field({ label, children, full }) {
@@ -266,17 +267,19 @@ export default function MediaLibraryEditor({ initialContent }) {
   };
 
   const uploadFiles = async (fileList) => {
-    const files = Array.from(fileList || []).filter(Boolean);
-    if (!files.length) return [];
+    const picked = Array.from(fileList || []).filter(Boolean);
+    const files = picked.filter(isAllowedImageFile);
+    if (!files.length) {
+      throw new Error(
+        picked.length
+          ? 'Please choose JPG, PNG, WEBP, or GIF images (HEIC / Live Photos are not supported).'
+          : 'No image files selected.',
+      );
+    }
 
     const uploaded = [];
     for (const file of files) {
-      const body = new FormData();
-      body.append('file', file);
-      const res = await fetch('/api/admin/upload', { method: 'POST', body });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Upload failed');
-      uploaded.push(data.url);
+      uploaded.push(await uploadAdminImage(file));
     }
     return uploaded;
   };

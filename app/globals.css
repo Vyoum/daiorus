@@ -1965,7 +1965,7 @@ img {
   overflow: hidden;
   margin-bottom: 16px;
   background: var(--bg);
-  border-radius: 50%;
+  border-radius: 0;
   max-width: 220px;
 }
 

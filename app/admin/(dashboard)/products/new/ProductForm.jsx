@@ -13,6 +13,7 @@ import {
   Upload,
   X,
 } from 'lucide-react';
+import { isAllowedImageFile, uploadAdminImage } from '@/lib/admin/image-upload';
 import styles from './product-form.module.css';
 
 function formatInr(n) {
@@ -238,10 +239,13 @@ export default function ProductForm({ categories = [], product = null }) {
   const MAX_IMAGES = 8;
 
   const uploadImageFiles = async (fileList) => {
-    const files = Array.from(fileList || []).filter((file) => file?.type?.startsWith('image/'));
+    const picked = Array.from(fileList || []).filter(Boolean);
+    const files = picked.filter(isAllowedImageFile);
     if (!files.length) {
       setError(
-        'Please choose JPG, PNG, WEBP, or GIF images. Documents are not supported for product media.',
+        picked.length
+          ? 'Please choose JPG, PNG, WEBP, or GIF images (HEIC / Live Photos are not supported).'
+          : 'Please choose JPG, PNG, WEBP, or GIF images. Documents are not supported for product media.',
       );
       return;
     }
@@ -260,12 +264,7 @@ export default function ProductForm({ categories = [], product = null }) {
     try {
       const uploaded = [];
       for (const file of batch) {
-        const body = new FormData();
-        body.append('file', file);
-        const res = await fetch('/api/admin/upload', { method: 'POST', body });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Upload failed');
-        uploaded.push(data.url);
+        uploaded.push(await uploadAdminImage(file));
       }
 
       setImages((prev) => {
