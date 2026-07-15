@@ -317,6 +317,27 @@
   line-height: 1.5;
 }
 
+.inlineUploadError,
+.inlineUploadSuccess {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: var(--admin-radius);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.inlineUploadError {
+  color: #991b1b;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.inlineUploadSuccess {
+  color: #065f46;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+}
+
 .galleryGrid {
   margin-top: 16px;
   display: grid;

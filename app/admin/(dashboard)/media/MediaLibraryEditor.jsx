@@ -78,7 +78,14 @@ function ImagePicker({ value, onChange, presets, tall, uploading, onUpload }) {
   );
 }
 
-function CarouselUploader({ images, onChange, uploading, onUploadFiles }) {
+function CarouselUploader({
+  images,
+  onChange,
+  uploading,
+  onUploadFiles,
+  uploadError,
+  uploadSuccess,
+}) {
   const fileRef = useRef(null);
   const [dragOver, setDragOver] = useState(false);
   const [pasteUrl, setPasteUrl] = useState('');
@@ -141,6 +148,13 @@ function CarouselUploader({ images, onChange, uploading, onUploadFiles }) {
           JPG, PNG, WEBP, GIF · up to {MAX_HERO_CAROUSEL_IMAGES} images.
         </p>
       </div>
+
+      {uploadError ? (
+        <p className={styles.inlineUploadError} role="alert">
+          {uploadError}
+        </p>
+      ) : null}
+      {uploadSuccess ? <p className={styles.inlineUploadSuccess}>{uploadSuccess}</p> : null}
 
       {images.length > 0 ? (
         <div className={styles.galleryGrid}>
@@ -475,6 +489,8 @@ export default function MediaLibraryEditor({ initialContent }) {
               onChange={setCarouselImages}
               uploading={uploading}
               onUploadFiles={handleCarouselUpload}
+              uploadError={error}
+              uploadSuccess={success}
             />
           </Field>
           <Field label="Image alt text">
