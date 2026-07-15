@@ -294,3 +294,57 @@
   background-color: #1f2937;
   color: #ffffff !important;
 }
+
+@media (max-width: 900px) {
+  .adminContainer {
+    display: block;
+    min-height: 100dvh;
+    height: auto;
+    overflow: visible;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .mainContent {
+    min-height: 100dvh;
+    height: auto;
+    overflow: visible;
+  }
+
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    padding: 0 16px;
+  }
+
+  .searchContainer {
+    width: min(100%, 260px);
+  }
+
+  .profileName {
+    display: none;
+  }
+
+  .profileButton {
+    padding-right: 4px;
+  }
+
+  .pageContent {
+    overflow: visible;
+    padding: 16px 12px 32px;
+  }
+}
+
+@media (max-width: 480px) {
+  .searchContainer {
+    display: none;
+  }
+
+  .topbar {
+    justify-content: flex-end;
+    height: 56px;
+  }
+}

@@ -387,16 +387,18 @@
 
 .footerActions {
   position: sticky;
-  bottom: 0;
+  bottom: 12px;
   z-index: 6;
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 12px;
-  margin: 24px -32px -32px;
-  padding: 16px 32px;
+  margin: 24px 0 0;
+  padding: 12px 16px;
   background: rgba(249, 250, 251, 0.96);
-  border-top: 1px solid var(--admin-border);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+  box-shadow: var(--admin-shadow-sm);
   backdrop-filter: blur(8px);
 }
 
@@ -404,10 +406,22 @@
   .header {
     flex-direction: column;
     align-items: stretch;
+    top: 0;
+    margin-top: 0;
   }
 
   .headerActions {
-    justify-content: flex-end;
+    justify-content: stretch;
+  }
+
+  .headerActions > button,
+  .footerActions > button {
+    flex: 1;
+  }
+
+  .saveBtn,
+  .resetBtn {
+    min-height: 44px;
   }
 
   .grid2 {
@@ -420,9 +434,8 @@
   }
 
   .footerActions {
-    margin-left: -16px;
-    margin-right: -16px;
-    padding-left: 16px;
-    padding-right: 16px;
+    bottom: 8px;
+    margin-top: 16px;
+    padding: 12px;
   }
 }
