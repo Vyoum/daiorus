@@ -292,7 +292,7 @@ export default function ShopPage({ initialProducts = [] }) {
         <h1>All Jewellery</h1>
         <p>
           Explore the full Daiorus collection — earrings, pendants, bracelets,
-          and second piercing essentials.
+          and piercings.
         </p>
       </div>
 

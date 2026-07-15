@@ -537,7 +537,7 @@ export default function MediaLibraryEditor({ initialContent }) {
             <div>
               <h2 className={styles.cardTitle}>Signature Line</h2>
               <p className={styles.cardHint}>
-                Gold Vermeil block on the landing page — two images plus copy and CTA.
+                Evil Eye Collection block on the landing page — two images plus copy and CTA.
               </p>
             </div>
           </div>
