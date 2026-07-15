@@ -1,7 +1,7 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import SiteShell from './SiteShell';
 import ProductCard from './ProductCard';
+import HomeHeroCarousel from './HomeHeroCarousel';
 import {
   CATEGORIES,
   COLLECTIONS,
@@ -29,31 +29,16 @@ export default function HomePage({ announce, hero, signature, featuredProducts =
   const heroContent = hero || DEFAULT_HERO;
   const signatureContent = signature || DEFAULT_SIGNATURE;
   const bestSellers = featuredProducts;
-  const heroSrc = heroContent.imageUrl || DEFAULT_HERO.imageUrl;
-  const heroIsLocal = typeof heroSrc === 'string' && heroSrc.startsWith('/');
+  const heroSlides =
+    Array.isArray(heroContent.images) && heroContent.images.length
+      ? heroContent.images.filter(Boolean)
+      : [heroContent.imageUrl || DEFAULT_HERO.imageUrl].filter(Boolean);
 
   return (
     <SiteShell headerOverlay announce={announce}>
       <>
         <section className="ui1-hero">
-          {heroIsLocal ? (
-            <Image
-              src={heroSrc}
-              alt={heroContent.imageAlt}
-              fill
-              priority
-              sizes="100vw"
-              className="ui1-hero-bg"
-            />
-          ) : (
-            <img
-              src={heroSrc}
-              alt={heroContent.imageAlt}
-              className="ui1-hero-bg"
-              fetchPriority="high"
-              decoding="async"
-            />
-          )}
+          <HomeHeroCarousel images={heroSlides} alt={heroContent.imageAlt} />
           <div className="ui1-hero-overlay" />
           <div className="ui1-hero-content">
             <div className="ui1-hero-inner">
