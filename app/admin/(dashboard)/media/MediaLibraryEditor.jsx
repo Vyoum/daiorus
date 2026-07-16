@@ -649,48 +649,33 @@ export default function MediaLibraryEditor({ initialContent, products = [] }) {
 
           <div className={styles.grid2} style={{ alignItems: 'start' }}>
             <div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
+              <div className={styles.curatedList}>
                 {curatedProductIds.length ? (
                   curatedProductIds.map((pid) => {
                     const p = products.find((x) => x.id === pid);
                     if (!p) return null;
                     const img = p.imageUrl || (Array.isArray(p.images) ? p.images[0] : '') || '';
                     return (
-                      <button
-                        key={pid}
-                        type="button"
-                        className={styles.preset}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 10,
-                          padding: 6,
-                        }}
-                        title="Click to remove"
-                        onClick={() => {
-                          setCuratedProductIds((prev) => prev.filter((id) => id !== pid));
-                        }}
-                        disabled={saving || uploading}
-                      >
+                      <div key={pid} className={styles.curatedChip}>
                         {img ? (
-                          <img
-                            src={img}
-                            alt=""
-                            style={{
-                              width: 42,
-                              height: 42,
-                              borderRadius: 6,
-                              objectFit: 'cover',
-                            }}
-                          />
-                        ) : null}
-                        <span style={{ maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {p.name}
-                        </span>
-                        <span aria-hidden="true" style={{ marginLeft: 4 }}>
+                          <img src={img} alt="" className={styles.curatedThumb} />
+                        ) : (
+                          <div className={styles.curatedThumb} aria-hidden="true" />
+                        )}
+                        <span className={styles.curatedName}>{p.name}</span>
+                        <button
+                          type="button"
+                          className={styles.curatedRemoveBtn}
+                          aria-label={`Remove ${p.name} from curated selects`}
+                          title="Remove"
+                          onClick={() => {
+                            setCuratedProductIds((prev) => prev.filter((id) => id !== pid));
+                          }}
+                          disabled={saving || uploading}
+                        >
                           ×
-                        </span>
-                      </button>
+                        </button>
+                      </div>
                     );
                   })
                 ) : (
@@ -739,7 +724,7 @@ export default function MediaLibraryEditor({ initialContent, products = [] }) {
                 Selected order is preserved and determines the homepage card order.
               </p>
               <p className={styles.cardHint}>
-                Tip: click a selected product chip to remove it.
+                Use the × button on a product to remove it from Curated Selects.
               </p>
             </div>
           </div>
