@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { isAllowedImageFile, uploadAdminImage } from '../../../lib/admin/image-upload';
+import { isAllowedImageFile, uploadAdminImage } from '@/lib/admin/image-upload';
 import styles from './categories.module.css';
 
 const PRESETS = [
