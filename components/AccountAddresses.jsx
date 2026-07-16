@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import AddressRegionFields from './AddressRegionFields';
+import { useCurrency } from './CurrencyProvider';
 import styles from './AccountAddresses.module.css';
 
 const EMPTY_FORM = {
@@ -17,6 +19,7 @@ const EMPTY_FORM = {
 
 export default function AccountAddresses({ initialAddresses = [] }) {
   const router = useRouter();
+  const { countryCode } = useCurrency();
   const [addresses, setAddresses] = useState(initialAddresses);
 
   useEffect(() => {
@@ -36,7 +39,11 @@ export default function AccountAddresses({ initialAddresses = [] }) {
 
   const openCreate = () => {
     setEditingId(null);
-    setForm({ ...EMPTY_FORM, isDefault: addresses.length === 0 });
+    setForm({
+      ...EMPTY_FORM,
+      country: countryCode || 'IN',
+      isDefault: addresses.length === 0,
+    });
     setFormOpen(true);
     setError('');
     setSuccess('');
@@ -220,21 +227,6 @@ export default function AccountAddresses({ initialAddresses = [] }) {
               />
             </div>
             <div className={styles.field}>
-              <label className={styles.fieldLabel} htmlFor="addr-state">
-                State
-              </label>
-              <input
-                id="addr-state"
-                className={styles.input}
-                value={form.state}
-                onChange={(e) => updateField('state', e.target.value)}
-                required
-              />
-            </div>
-          </div>
-
-          <div className={styles.row}>
-            <div className={styles.field}>
               <label className={styles.fieldLabel} htmlFor="addr-postal">
                 Postal code
               </label>
@@ -246,18 +238,22 @@ export default function AccountAddresses({ initialAddresses = [] }) {
                 required
               />
             </div>
-            <div className={styles.field}>
-              <label className={styles.fieldLabel} htmlFor="addr-country">
-                Country
-              </label>
-              <input
-                id="addr-country"
-                className={styles.input}
-                value={form.country}
-                onChange={(e) => updateField('country', e.target.value)}
-                required
-              />
-            </div>
+          </div>
+
+          <div className={styles.row}>
+            <AddressRegionFields
+              idPrefix="account"
+              country={form.country}
+              state={form.state}
+              onCountryChange={(value) => updateField('country', value)}
+              onStateChange={(value) => updateField('state', value)}
+              disabled={saving}
+              fieldClassName={styles.field}
+              labelClassName={styles.fieldLabel}
+              selectClassName={styles.input}
+              countryLabel="Country"
+              stateLabel="State / Province"
+            />
           </div>
 
           <label className={styles.checkRow}>

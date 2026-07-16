@@ -96,7 +96,8 @@
   text-transform: none;
 }
 
-.field input {
+.field input,
+.field select {
   width: 100%;
   min-height: 46px;
   padding: 11px 13px;
@@ -106,7 +107,8 @@
   font-size: 0.95rem;
 }
 
-.field input:focus {
+.field input:focus,
+.field select:focus {
   outline: none;
   border-color: var(--gold);
   box-shadow: 0 0 0 2px rgba(196, 151, 58, 0.12);

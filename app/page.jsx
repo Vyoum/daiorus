@@ -1,15 +1,17 @@
 import HomePage from '../components/HomePage';
 import { getLandingContent } from '../lib/site-content';
 import { getFeaturedStorefrontProducts } from '../lib/storefront/products';
+import { getStorefrontCategories } from '../lib/storefront/categories';
 import prisma from '../lib/prisma';
 
 export const revalidate = 60;
 
 export default async function Page() {
-  const [{ announce, hero, signature, curatedSelects }, featuredProducts] =
+  const [{ announce, hero, signature, curatedSelects }, featuredProducts, categories] =
     await Promise.all([
       getLandingContent(),
       getFeaturedStorefrontProducts({ take: 4 }),
+      getStorefrontCategories(),
     ]);
 
   const selectedIds = curatedSelects?.productIds || [];
@@ -42,6 +44,7 @@ export default async function Page() {
       signature={signature}
       featuredProducts={featuredProducts}
       curatedSelectProducts={curatedSelectProducts}
+      categories={categories}
     />
   );
 }

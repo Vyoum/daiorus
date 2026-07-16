@@ -2,8 +2,12 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import SiteShell from '../../../components/SiteShell';
 import ProductCard from '../../../components/ProductCard';
-import { CATEGORIES, getCategory } from '../../../lib/data';
+import { CATEGORIES } from '../../../lib/data';
 import { getStorefrontProductsByCategory } from '../../../lib/storefront/products';
+import {
+  getStorefrontCategories,
+  getStorefrontCategory,
+} from '../../../lib/storefront/categories';
 
 export const revalidate = 60;
 
@@ -13,7 +17,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
-  const category = getCategory(slug);
+  const category = await getStorefrontCategory(slug);
   if (!category) return { title: 'Category | DAIORUS' };
   return {
     title: `${category.name} | DAIORUS`,
@@ -23,11 +27,14 @@ export async function generateMetadata({ params }) {
 
 export default async function CategoryPage({ params }) {
   const { slug } = await params;
-  const category = getCategory(slug);
+  const [category, allCategories] = await Promise.all([
+    getStorefrontCategory(slug),
+    getStorefrontCategories(),
+  ]);
   if (!category) notFound();
 
   const products = await getStorefrontProductsByCategory(slug);
-  const alsoExplore = CATEGORIES.filter((c) => c.slug !== slug).slice(0, 3);
+  const alsoExplore = allCategories.filter((c) => c.slug !== slug).slice(0, 3);
 
   return (
     <SiteShell headerOverlay>
@@ -100,14 +107,7 @@ export default async function CategoryPage({ params }) {
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
             </svg>
             <h4 className="cat-trust-title">BIS Hallmarked</h4>
-            <p className="cat-trust-desc">Certified authentic gold</p>
-          </div>
-          <div className="cat-trust-item">
-            <svg className="cat-trust-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-            </svg>
-            <h4 className="cat-trust-title">Gift Packaging</h4>
-            <p className="cat-trust-desc">Signature luxury box</p>
+            <p className="cat-trust-desc">Certified gold purity</p>
           </div>
         </div>
       </section>

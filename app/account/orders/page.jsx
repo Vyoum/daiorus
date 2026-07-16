@@ -101,7 +101,7 @@ export default async function AccountOrdersPage() {
                     <div className={styles.totalValue}>{formatINR(order.totalInr)}</div>
                   </div>
                   <Link
-                    href={`/checkout/success?order=${encodeURIComponent(order.orderNumber)}`}
+                    href={`/account/orders/${encodeURIComponent(order.orderNumber)}`}
                     className={styles.viewLink}
                   >
                     View details

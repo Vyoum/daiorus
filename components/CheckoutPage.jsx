@@ -12,6 +12,7 @@ import { applyCouponToTotals, normalizeCouponCode } from '../lib/coupons';
 import { applySurchargeInr } from '../lib/overseas-pricing-defaults';
 import { formatINR } from '../lib/data';
 import { openRazorpayCheckout } from '../lib/razorpay-checkout';
+import AddressRegionFields from './AddressRegionFields';
 import styles from './CheckoutPage.module.css';
 
 const EMPTY_SHIPPING = {
@@ -58,6 +59,22 @@ export default function CheckoutPage() {
       setShipping((prev) => ({ ...prev, fullName: prev.fullName || name }));
     }
   }, [user]);
+
+  useEffect(() => {
+    if (!countryCode) return;
+    setShipping((prev) => {
+      if (prev.country && prev.country !== 'IN') return prev;
+      if (prev.country === countryCode) return prev;
+      // Prefer geolocation country when the form is still on the default.
+      if (prev.country === 'IN' && countryCode !== 'IN' && !prev.state) {
+        return { ...prev, country: countryCode };
+      }
+      if (!prev.country) {
+        return { ...prev, country: countryCode };
+      }
+      return prev;
+    });
+  }, [countryCode]);
 
   useEffect(() => {
     if (!ready) return;
@@ -321,16 +338,6 @@ export default function CheckoutPage() {
                   />
                 </label>
                 <label className={styles.field}>
-                  <span>State</span>
-                  <input
-                    value={shipping.state}
-                    onChange={(e) => updateShipping('state', e.target.value)}
-                    autoComplete="address-level1"
-                    required
-                    disabled={isCheckingOut}
-                  />
-                </label>
-                <label className={styles.field}>
                   <span>Postal code</span>
                   <input
                     value={shipping.postalCode}
@@ -340,17 +347,15 @@ export default function CheckoutPage() {
                     disabled={isCheckingOut}
                   />
                 </label>
-                <label className={styles.field}>
-                  <span>Country code</span>
-                  <input
-                    value={shipping.country}
-                    onChange={(e) => updateShipping('country', e.target.value.toUpperCase())}
-                    maxLength={2}
-                    autoComplete="country"
-                    required
-                    disabled={isCheckingOut}
-                  />
-                </label>
+                <AddressRegionFields
+                  idPrefix="checkout"
+                  country={shipping.country}
+                  state={shipping.state}
+                  onCountryChange={(value) => updateShipping('country', value)}
+                  onStateChange={(value) => updateShipping('state', value)}
+                  disabled={isCheckingOut}
+                  fieldClassName={styles.field}
+                />
               </div>
 
               {user ? (

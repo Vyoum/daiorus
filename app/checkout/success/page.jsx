@@ -14,8 +14,11 @@ export default async function CheckoutSuccessPage({ searchParams }) {
   const orderNumber = typeof params?.order === 'string' ? params.order : null;
 
   const order = orderNumber
-    ? await prisma.order.findUnique({
-        where: { orderNumber },
+    ? await prisma.order.findFirst({
+        where: {
+          orderNumber,
+          status: { notIn: ['CANCELLED', 'REFUNDED'] },
+        },
         include: {
           items: true,
         },
