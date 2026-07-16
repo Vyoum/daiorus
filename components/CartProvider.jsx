@@ -9,6 +9,8 @@ const CartContext = createContext({
   ready: false,
   totalItems: 0,
   subtotal: 0,
+  lastAddedAt: 0,
+  lastAddedProductId: null,
   addToCart: () => {},
   updateQty: () => {},
   removeFromCart: () => {},
@@ -31,6 +33,8 @@ function readStoredCart() {
 export function CartProvider({ children }) {
   const [cart, setCart] = useState([]);
   const [ready, setReady] = useState(false);
+  const [lastAddedAt, setLastAddedAt] = useState(0);
+  const [lastAddedProductId, setLastAddedProductId] = useState(null);
 
   useEffect(() => {
     setCart(readStoredCart());
@@ -68,6 +72,8 @@ export function CartProvider({ children }) {
         },
       ];
     });
+    setLastAddedProductId(product.id);
+    setLastAddedAt(Date.now());
   }, []);
 
   const updateQty = useCallback((id, change) => {
@@ -106,13 +112,26 @@ export function CartProvider({ children }) {
       ready,
       totalItems,
       subtotal,
+      lastAddedAt,
+      lastAddedProductId,
       addToCart,
       updateQty,
       removeFromCart,
       clearCart,
       setCart,
     }),
-    [cart, ready, totalItems, subtotal, addToCart, updateQty, removeFromCart, clearCart],
+    [
+      cart,
+      ready,
+      totalItems,
+      subtotal,
+      lastAddedAt,
+      lastAddedProductId,
+      addToCart,
+      updateQty,
+      removeFromCart,
+      clearCart,
+    ],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
