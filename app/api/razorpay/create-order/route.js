@@ -7,11 +7,145 @@ import {
   generateOrderNumber,
   inrToPaise,
 } from '../../../../lib/checkout';
+import { getCheckoutErrorMessage } from '../../../../lib/checkout-errors';
 import {
   applySurchargeInr,
   getSurchargePctForRegion,
 } from '../../../../lib/overseas-pricing';
 import { applyCouponToTotals } from '../../../../lib/coupons';
+
+async function resolveShippingAddressId(userId, address) {
+  if (!userId || !address.saveAddress) return null;
+
+  try {
+    const existingAddress = await prisma.address.findFirst({
+      where: {
+        userId,
+        line1: address.line1,
+        city: address.city,
+        state: address.state,
+        postalCode: address.postalCode,
+        country: address.country,
+      },
+      select: { id: true },
+    });
+
+    if (existingAddress) {
+      return existingAddress.id;
+    }
+
+    const savedAddress = await prisma.address.create({
+      data: {
+        userId,
+        label: 'Shipping address',
+        line1: address.line1,
+        line2: address.line2,
+        city: address.city,
+        state: address.state,
+        postalCode: address.postalCode,
+        country: address.country,
+        isDefault: false,
+      },
+      select: { id: true },
+    });
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        name: address.fullName,
+        phone: address.phone,
+      },
+    });
+
+    return savedAddress.id;
+  } catch (err) {
+    console.warn('[create-order] address save failed, continuing checkout:', err?.message || err);
+    return null;
+  }
+}
+
+function buildOrderNotes({
+  regionKey,
+  surchargePct,
+  couponResult,
+  discountInr,
+  address,
+  razorpayOrderId = null,
+}) {
+  return JSON.stringify({
+    razorpayOrderId,
+    countryCode: String(regionKey).toUpperCase(),
+    surchargePct,
+    couponCode: couponResult.coupon?.code || null,
+    discountInr,
+    shippingAddress: {
+      fullName: address.fullName,
+      phone: address.phone,
+      line1: address.line1,
+      line2: address.line2,
+      city: address.city,
+      state: address.state,
+      postalCode: address.postalCode,
+      country: address.country,
+    },
+  });
+}
+
+async function createPendingOrder({
+  orderNumber,
+  userId,
+  email,
+  shippingAddressId,
+  subtotalInr,
+  shippingInr,
+  discountInr,
+  totalInr,
+  notes,
+  pricedItems,
+}) {
+  const maxAttempts = 3;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    const receipt = attempt === 0 ? orderNumber : generateOrderNumber();
+
+    try {
+      return await prisma.order.create({
+        data: {
+          orderNumber: receipt,
+          userId,
+          guestEmail: email.trim().toLowerCase(),
+          shippingAddressId,
+          status: 'PENDING',
+          subtotalInr,
+          shippingInr,
+          discountInr,
+          totalInr,
+          currency: 'INR',
+          notes,
+          items: {
+            create: pricedItems.map((item) => ({
+              productId: item.id || null,
+              productName: item.name,
+              material: item.material || null,
+              unitPriceInr: item.price,
+              quantity: item.qty,
+              lineTotalInr: item.price * item.qty,
+              imageUrl: item.image || null,
+            })),
+          },
+        },
+        select: { id: true, orderNumber: true },
+      });
+    } catch (err) {
+      if (err?.code === 'P2002' && attempt < maxAttempts - 1) {
+        continue;
+      }
+      throw err;
+    }
+  }
+
+  throw new Error('Could not create order');
+}
 
 export async function POST(request) {
   try {
@@ -102,103 +236,67 @@ export async function POST(request) {
       userId = null;
     }
 
-    let shippingAddressId = null;
-    if (userId && address.saveAddress) {
-      const existingAddress = await prisma.address.findFirst({
-        where: {
-          userId,
-          line1: address.line1,
-          city: address.city,
-          state: address.state,
-          postalCode: address.postalCode,
-          country: address.country,
-        },
-        select: { id: true },
-      });
+    const shippingAddressId = await resolveShippingAddressId(userId, address);
 
-      if (existingAddress) {
-        shippingAddressId = existingAddress.id;
-      } else {
-        const savedAddress = await prisma.address.create({
-          data: {
-            userId,
-            label: 'Shipping address',
-            line1: address.line1,
-            line2: address.line2,
-            city: address.city,
-            state: address.state,
-            postalCode: address.postalCode,
-            country: address.country,
-            isDefault: false,
-          },
-          select: { id: true },
-        });
-        shippingAddressId = savedAddress.id;
-      }
-
-      await prisma.user.update({
-        where: { id: userId },
-        data: {
-          name: address.fullName,
-          phone: address.phone,
-        },
-      });
-    }
-
-    const razorpay = getRazorpay();
-    const razorpayOrder = await razorpay.orders.create({
-      amount: amountPaise,
-      currency: 'INR',
-      receipt: orderNumber,
-      notes: {
-        email,
-        orderNumber,
-        countryCode: String(regionKey).toUpperCase(),
-        surchargePct: String(surchargePct),
-      },
+    const pendingNotes = buildOrderNotes({
+      regionKey,
+      surchargePct,
+      couponResult,
+      discountInr,
+      address,
     });
 
-    const order = await prisma.order.create({
-      data: {
-        orderNumber,
-        userId,
-        guestEmail: email.trim().toLowerCase(),
-        shippingAddressId,
-        status: 'PENDING',
-        subtotalInr,
-        shippingInr,
-        discountInr,
-        totalInr,
+    const order = await createPendingOrder({
+      orderNumber,
+      userId,
+      email,
+      shippingAddressId,
+      subtotalInr,
+      shippingInr,
+      discountInr,
+      totalInr,
+      notes: pendingNotes,
+      pricedItems,
+    });
+
+    let razorpayOrder;
+    try {
+      const razorpay = getRazorpay();
+      razorpayOrder = await razorpay.orders.create({
+        amount: amountPaise,
         currency: 'INR',
-        notes: JSON.stringify({
-          razorpayOrderId: razorpayOrder.id,
+        receipt: order.orderNumber,
+        notes: {
+          email,
+          orderNumber: order.orderNumber,
           countryCode: String(regionKey).toUpperCase(),
-          surchargePct,
-          couponCode: couponResult.coupon?.code || null,
-          discountInr,
-          shippingAddress: {
-            fullName: address.fullName,
-            phone: address.phone,
-            line1: address.line1,
-            line2: address.line2,
-            city: address.city,
-            state: address.state,
-            postalCode: address.postalCode,
-            country: address.country,
-          },
-        }),
-        items: {
-          create: pricedItems.map((item) => ({
-            productName: item.name,
-            material: item.material || null,
-            unitPriceInr: item.price,
-            quantity: item.qty,
-            lineTotalInr: item.price * item.qty,
-            imageUrl: item.image || null,
-          })),
+          surchargePct: String(surchargePct),
         },
+      });
+    } catch (razorpayError) {
+      await prisma.order
+        .update({
+          where: { id: order.id },
+          data: { status: 'CANCELLED' },
+        })
+        .catch((cancelErr) => {
+          console.error('[create-order] failed to cancel pending order:', cancelErr?.message || cancelErr);
+        });
+      throw razorpayError;
+    }
+
+    await prisma.order.update({
+      where: { id: order.id },
+      data: {
+        notes: buildOrderNotes({
+          regionKey,
+          surchargePct,
+          couponResult,
+          discountInr,
+          address,
+          razorpayOrderId: razorpayOrder.id,
+        }),
       },
-      select: { id: true, orderNumber: true },
     });
 
     return NextResponse.json({
@@ -217,11 +315,16 @@ export async function POST(request) {
       surchargePct,
     });
   } catch (error) {
-    console.error('create-order error:', error);
-    const message =
-      error.message === 'Razorpay credentials are not configured'
-        ? 'Payment gateway is not configured'
-        : 'Failed to create order';
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error('create-order error:', {
+      message: error?.message,
+      code: error?.code,
+      statusCode: error?.statusCode,
+      description: error?.error?.description,
+      stack: error?.stack,
+    });
+    return NextResponse.json(
+      { error: getCheckoutErrorMessage(error) },
+      { status: 500 },
+    );
   }
 }
