@@ -105,10 +105,20 @@
 .addBtn {
   background: var(--text-dark);
   color: #fff;
+  transition:
+    transform 0.22s ease,
+    background 0.22s ease,
+    box-shadow 0.22s ease;
 }
 
 .addBtn:hover {
   background: #2a241c;
+}
+
+.added {
+  background: var(--gold-dark);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 10px 22px rgba(196, 151, 58, 0.28);
 }
 
 .wishBtn {

@@ -7,6 +7,7 @@ import {
   DEFAULT_ANNOUNCE,
   DEFAULT_HERO,
   DEFAULT_SIGNATURE,
+  DEFAULT_CURATED_SELECTS,
   MEDIA_PRESETS,
   MAX_HERO_CAROUSEL_IMAGES,
 } from '../../../../lib/site-content-defaults';
@@ -247,7 +248,7 @@ function heroImagesFromState(hero) {
   return hero.imageUrl ? [hero.imageUrl] : [...DEFAULT_HERO.images];
 }
 
-export default function MediaLibraryEditor({ initialContent }) {
+export default function MediaLibraryEditor({ initialContent, products = [] }) {
   const router = useRouter();
   const [announce, setAnnounce] = useState(initialContent.announce);
   const [hero, setHero] = useState({
@@ -255,6 +256,11 @@ export default function MediaLibraryEditor({ initialContent }) {
     images: heroImagesFromState(initialContent.hero),
   });
   const [signature, setSignature] = useState(initialContent.signature);
+  const [curatedProductIds, setCuratedProductIds] = useState(
+    Array.isArray(initialContent?.curatedSelects?.productIds)
+      ? initialContent.curatedSelects.productIds
+      : DEFAULT_CURATED_SELECTS.productIds,
+  );
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
@@ -351,8 +357,11 @@ export default function MediaLibraryEditor({ initialContent }) {
     setAnnounce({ ...DEFAULT_ANNOUNCE });
     setHero({ ...DEFAULT_HERO, images: [...DEFAULT_HERO.images] });
     setSignature({ ...DEFAULT_SIGNATURE });
+    setCuratedProductIds([...DEFAULT_CURATED_SELECTS.productIds]);
     setError('');
-    setSuccess('Restored default copy and images in the form. Save to publish.');
+    setSuccess(
+      'Restored default copy, images, and curated selections in the form. Save to publish.',
+    );
   };
 
   const handleSave = async () => {
@@ -371,6 +380,7 @@ export default function MediaLibraryEditor({ initialContent }) {
           imageUrl: images[0] || hero.imageUrl,
         },
         signature,
+        curatedSelects: { productIds: curatedProductIds || [] },
       };
 
       const res = await fetch('/api/admin/site-content', {
@@ -387,6 +397,7 @@ export default function MediaLibraryEditor({ initialContent }) {
         images: heroImagesFromState(data.hero),
       });
       setSignature(data.signature);
+      setCuratedProductIds(data?.curatedSelects?.productIds || []);
       setSuccess('Landing page content saved. Changes are live on the storefront.');
       router.refresh();
     } catch (err) {
@@ -404,7 +415,8 @@ export default function MediaLibraryEditor({ initialContent }) {
         <div>
           <h1 className={styles.pageTitle}>Media Library</h1>
           <p className={styles.pageSubtitle}>
-            Manage the announce banner, homepage hero carousel, and Signature Line section.
+            Manage the announce banner, homepage hero carousel, Curated Selects, and Signature Line
+            section.
             Upload images or paste a URL, then save to publish.
           </p>
         </div>
@@ -621,6 +633,115 @@ export default function MediaLibraryEditor({ initialContent }) {
                 onChange={(e) => updateSignature('ctaUrl', e.target.value)}
               />
             </Field>
+          </div>
+        </section>
+
+        <section className={styles.card}>
+          <div className={styles.cardHeader}>
+            <div>
+              <h2 className={styles.cardTitle}>Curated Selects</h2>
+              <p className={styles.cardHint}>
+                Pick up to 3 products shown on the homepage. The “Shop Now” button opens each
+                selected product detail page.
+              </p>
+            </div>
+          </div>
+
+          <div className={styles.grid2} style={{ alignItems: 'start' }}>
+            <div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
+                {curatedProductIds.length ? (
+                  curatedProductIds.map((pid) => {
+                    const p = products.find((x) => x.id === pid);
+                    if (!p) return null;
+                    const img = p.imageUrl || (Array.isArray(p.images) ? p.images[0] : '') || '';
+                    return (
+                      <button
+                        key={pid}
+                        type="button"
+                        className={styles.preset}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 10,
+                          padding: 6,
+                        }}
+                        title="Click to remove"
+                        onClick={() => {
+                          setCuratedProductIds((prev) => prev.filter((id) => id !== pid));
+                        }}
+                        disabled={saving || uploading}
+                      >
+                        {img ? (
+                          <img
+                            src={img}
+                            alt=""
+                            style={{
+                              width: 42,
+                              height: 42,
+                              borderRadius: 6,
+                              objectFit: 'cover',
+                            }}
+                          />
+                        ) : null}
+                        <span style={{ maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {p.name}
+                        </span>
+                        <span aria-hidden="true" style={{ marginLeft: 4 }}>
+                          ×
+                        </span>
+                      </button>
+                    );
+                  })
+                ) : (
+                  <p className={styles.cardHint} style={{ margin: 0 }}>
+                    No products selected yet.
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className={styles.label} style={{ display: 'block', marginBottom: 6 }}>
+                  Add a product
+                </label>
+                <select
+                  className={styles.input}
+                  value=""
+                  disabled={saving || uploading || curatedProductIds.length >= 3 || products.length === 0}
+                  onChange={(e) => {
+                    const pid = e.target.value;
+                    if (!pid) return;
+                    setCuratedProductIds((prev) => {
+                      if (prev.includes(pid)) return prev;
+                      if (prev.length >= 3) return prev;
+                      return [...prev, pid];
+                    });
+                    e.target.value = '';
+                  }}
+                >
+                  <option value="">Select from products…</option>
+                  {products.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+                {curatedProductIds.length >= 3 ? (
+                  <p className={styles.cardHint} style={{ marginTop: 8 }}>
+                    You can select up to 3 products.
+                  </p>
+                ) : null}
+              </div>
+            </div>
+
+            <div>
+              <p className={styles.cardHint} style={{ marginTop: 0 }}>
+                Selected order is preserved and determines the homepage card order.
+              </p>
+              <p className={styles.cardHint}>
+                Tip: click a selected product chip to remove it.
+              </p>
+            </div>
           </div>
         </section>
       </div>

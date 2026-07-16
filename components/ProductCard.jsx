@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import Price from './Price';
@@ -39,11 +40,19 @@ export default function ProductCard({
   showRemove = false,
   priority = false,
 }) {
-  const { addToCart } = useCart();
+  const { addToCart, lastAddedAt, lastAddedProductId } = useCart();
   const { isWished, toggle, remove } = useWishlist();
   const tag = product.tag ? String(product.tag) : '';
   const wished = isWished(product.id);
   const href = product.slug ? `/product/${product.slug}` : null;
+  const [justAdded, setJustAdded] = useState(false);
+
+  useEffect(() => {
+    if (lastAddedProductId !== product.id || !lastAddedAt) return undefined;
+    setJustAdded(true);
+    const timer = setTimeout(() => setJustAdded(false), 1400);
+    return () => clearTimeout(timer);
+  }, [lastAddedAt, lastAddedProductId, product.id]);
 
   const handleWishlist = (e) => {
     e.preventDefault();
@@ -53,6 +62,15 @@ export default function ProductCard({
       return;
     }
     toggle(product);
+  };
+
+  const moveWishlistItemToCart = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart(product);
+    if (showRemove) {
+      remove(product.id);
+    }
   };
 
   const media = (
@@ -89,14 +107,14 @@ export default function ProductCard({
       <ProductMediaImage src={product.image} alt={product.name} priority={priority} />
       <button
         type="button"
-        className="product-action-btn"
+        className={`product-action-btn${justAdded ? ' is-added' : ''}`}
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
           addToCart(product);
         }}
       >
-        Add To Cart
+        {justAdded ? 'Added' : 'Add To Cart'}
       </button>
     </div>
   );
@@ -120,6 +138,11 @@ export default function ProductCard({
       <p className="product-price">
         <Price amount={product.price} />
       </p>
+      {showRemove ? (
+        <button type="button" className="wishlist-cart-btn" onClick={moveWishlistItemToCart}>
+          Move to cart
+        </button>
+      ) : null}
     </article>
   );
 }

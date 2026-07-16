@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Price from './Price';
 import ProductImageCarousel from './ProductImageCarousel';
@@ -20,9 +21,17 @@ function formatReviewDate(value) {
 }
 
 export default function ProductDetail({ product }) {
-  const { addToCart } = useCart();
+  const { addToCart, lastAddedAt, lastAddedProductId } = useCart();
   const { isWished, toggle } = useWishlist();
   const wished = isWished(product.id);
+  const [justAdded, setJustAdded] = useState(false);
+
+  useEffect(() => {
+    if (lastAddedProductId !== product.id || !lastAddedAt) return undefined;
+    setJustAdded(true);
+    const timer = setTimeout(() => setJustAdded(false), 1400);
+    return () => clearTimeout(timer);
+  }, [lastAddedAt, lastAddedProductId, product.id]);
 
   return (
     <div className={styles.page}>
@@ -71,10 +80,10 @@ export default function ProductDetail({ product }) {
           <div className={styles.actions}>
             <button
               type="button"
-              className={styles.addBtn}
+              className={`${styles.addBtn} ${justAdded ? styles.added : ''}`}
               onClick={() => addToCart(product)}
             >
-              Add to cart
+              {justAdded ? 'Added to cart' : 'Add to cart'}
             </button>
             <button
               type="button"

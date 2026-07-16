@@ -29,6 +29,7 @@ export default function SiteShell({
     totalItems,
     subtotal,
     addToCart: addToCartBase,
+    lastAddedAt,
     updateQty,
     removeFromCart,
   } = useCart();
@@ -41,6 +42,7 @@ export default function SiteShell({
   const [subscribed, setSubscribed] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isCartAnimating, setIsCartAnimating] = useState(false);
   const [announce, setAnnounce] = useState(announceProp || DEFAULT_ANNOUNCE);
   const searchCloseTimer = useRef(null);
   const catCloseTimer = useRef(null);
@@ -166,6 +168,13 @@ export default function SiteShell({
       document.body.style.overflow = '';
     };
   }, [isMobileMenuOpen]);
+
+  useEffect(() => {
+    if (!lastAddedAt) return undefined;
+    setIsCartAnimating(true);
+    const timer = setTimeout(() => setIsCartAnimating(false), 650);
+    return () => clearTimeout(timer);
+  }, [lastAddedAt]);
 
   const headerClassName = [
     'ui1-header',
@@ -434,7 +443,7 @@ export default function SiteShell({
 
       <button
         type="button"
-        className={`cart-fab ${isCartOpen ? 'is-hidden' : ''}`}
+        className={`cart-fab ${isCartOpen ? 'is-hidden' : ''} ${isCartAnimating ? 'is-animating' : ''}`}
         aria-label={totalItems > 0 ? `Cart, ${totalItems} items` : 'Cart'}
         onClick={() => setIsCartOpen(true)}
       >

@@ -28,6 +28,7 @@ export async function PUT(request) {
       announce: body?.announce || null,
       hero: body?.hero || null,
       signature: body?.signature || null,
+      curatedSelects: body?.curatedSelects || null,
     });
 
     return NextResponse.json(content);
