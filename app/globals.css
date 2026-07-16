@@ -2172,6 +2172,31 @@ img {
   color: var(--text-dark);
 }
 
+.wishlist-cart-btn {
+  margin-top: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border-dark);
+  background: #fff;
+  color: var(--text-dark);
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  font-weight: 500;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.wishlist-cart-btn:hover {
+  background: var(--text-dark);
+  color: #fff;
+  border-color: var(--text-dark);
+  transform: translateY(-1px);
+}
+
 /* ========== Editorial ========== */
 .editorial-split-section {
   display: grid;

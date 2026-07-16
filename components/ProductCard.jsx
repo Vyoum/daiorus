@@ -64,6 +64,15 @@ export default function ProductCard({
     toggle(product);
   };
 
+  const moveWishlistItemToCart = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart(product);
+    if (showRemove) {
+      remove(product.id);
+    }
+  };
+
   const media = (
     <div className="product-img-wrapper">
       {tag ? (
@@ -129,6 +138,11 @@ export default function ProductCard({
       <p className="product-price">
         <Price amount={product.price} />
       </p>
+      {showRemove ? (
+        <button type="button" className="wishlist-cart-btn" onClick={moveWishlistItemToCart}>
+          Move to cart
+        </button>
+      ) : null}
     </article>
   );
 }
