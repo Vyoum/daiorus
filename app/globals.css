@@ -169,10 +169,6 @@ img {
   border-color: rgba(255, 255, 255, 0.35);
 }
 
-.ui1-header.is-overlay:not(.is-scrolled) .logo-wordmark {
-  color: #fff;
-}
-
 /* Pull heroes under the transparent header */
 .has-header-overlay .ui1-hero {
   margin-top: calc(-1 * var(--header-h));

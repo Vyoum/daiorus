@@ -59,7 +59,7 @@ body {
   text-decoration: none;
 }
 
-.admin-reset button {
+:where(.admin-reset) button {
   background: none;
   border: none;
   padding: 0;

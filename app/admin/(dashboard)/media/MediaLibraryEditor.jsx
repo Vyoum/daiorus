@@ -110,9 +110,10 @@ function CarouselUploader({
         accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif"
         className={styles.hiddenFileInput}
         onChange={(e) => {
-          const files = e.target.files;
+          // Copy before resetting the input: resetting can empty FileList in some browsers.
+          const files = Array.from(e.target.files || []);
           e.target.value = '';
-          if (files?.length) void onUploadFiles(files);
+          if (files.length) void onUploadFiles(files);
         }}
       />
       <div
