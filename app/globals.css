@@ -2702,7 +2702,7 @@ img {
 /* ========== Shop ========== */
 .shop-hero {
   padding: 64px 20px 24px;
-  max-width: var(--max-w);
+  max-width: 1400px;
   margin: 0 auto;
 }
 
@@ -2718,7 +2718,7 @@ img {
 }
 
 .shop-toolbar {
-  max-width: var(--max-w);
+  max-width: 1400px;
   margin: 0 auto;
   padding: 0 20px 28px;
   display: flex;
@@ -2785,19 +2785,19 @@ img {
 }
 
 .shop-layout {
-  max-width: var(--max-w);
+  max-width: 1400px;
   margin: 0 auto;
   padding: 36px 20px 80px;
   display: grid;
-  grid-template-columns: 240px 1fr;
-  gap: 32px;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 24px;
   align-items: start;
 }
 
 .shop-filters-desktop {
   position: sticky;
   top: calc(var(--header-h) + var(--announce-h) + 20px);
-  padding-right: 32px;
+  padding-right: 24px;
   border-right: 1px solid var(--border-dark);
 }
 
@@ -2943,6 +2943,11 @@ img {
 .shop-grid-wrap {
   min-width: 0;
   padding: 0;
+}
+
+.shop-layout .ui1-product-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px;
 }
 
 .shop-empty {
