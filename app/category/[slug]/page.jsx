@@ -2,18 +2,22 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import SiteShell from '../../../components/SiteShell';
 import ProductCard from '../../../components/ProductCard';
-import { CATEGORIES, getCategory } from '../../../lib/data';
 import { getStorefrontProductsByCategory } from '../../../lib/storefront/products';
+import {
+  getStorefrontCategories,
+  getStorefrontCategoryBySlug,
+} from '../../../lib/storefront/categories';
 
 export const revalidate = 60;
 
-export function generateStaticParams() {
-  return CATEGORIES.map((cat) => ({ slug: cat.slug }));
+export async function generateStaticParams() {
+  const categories = await getStorefrontCategories();
+  return categories.map((cat) => ({ slug: cat.slug }));
 }
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
-  const category = getCategory(slug);
+  const category = await getStorefrontCategoryBySlug(slug);
   if (!category) return { title: 'Category | DAIORUS' };
   return {
     title: `${category.name} | DAIORUS`,
@@ -23,11 +27,14 @@ export async function generateMetadata({ params }) {
 
 export default async function CategoryPage({ params }) {
   const { slug } = await params;
-  const category = getCategory(slug);
+  const category = await getStorefrontCategoryBySlug(slug);
   if (!category) notFound();
 
-  const products = await getStorefrontProductsByCategory(slug);
-  const alsoExplore = CATEGORIES.filter((c) => c.slug !== slug).slice(0, 3);
+  const [products, allCategories] = await Promise.all([
+    getStorefrontProductsByCategory(slug),
+    getStorefrontCategories(),
+  ]);
+  const alsoExplore = allCategories.filter((c) => c.slug !== slug).slice(0, 3);
 
   return (
     <SiteShell headerOverlay>

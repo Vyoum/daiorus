@@ -1,4 +1,4 @@
-import { getAdminCategories } from '../../../../../lib/admin/products';
+import { getAdminCategories } from '../../../../../lib/admin/categories';
 import ProductForm from './ProductForm';
 
 export const metadata = {

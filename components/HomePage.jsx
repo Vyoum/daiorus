@@ -2,10 +2,7 @@ import Link from 'next/link';
 import SiteShell from './SiteShell';
 import ProductCard from './ProductCard';
 import HomeHeroCarousel from './HomeHeroCarousel';
-import {
-  CATEGORIES,
-  COLLECTIONS,
-} from '../lib/data';
+import { COLLECTIONS } from '../lib/data';
 import { DEFAULT_HERO, DEFAULT_SIGNATURE } from '../lib/site-content-defaults';
 import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from '../lib/social';
 
@@ -31,6 +28,7 @@ export default function HomePage({
   signature,
   featuredProducts = [],
   curatedSelectProducts = [],
+  categories = [],
 }) {
   const heroContent = hero || DEFAULT_HERO;
   const signatureContent = signature || DEFAULT_SIGNATURE;
@@ -135,7 +133,7 @@ export default function HomePage({
               </div>
             </div>
             <div className="categories-grid">
-              {CATEGORIES.map((cat) => (
+              {categories.map((cat) => (
                 <Link key={cat.slug} href={cat.href} className="category-card">
                   <div className="category-img-wrapper">
                     <img

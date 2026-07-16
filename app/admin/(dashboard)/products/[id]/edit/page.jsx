@@ -1,8 +1,8 @@
 import { notFound } from 'next/navigation';
 import {
-  getAdminCategories,
   getAdminProduct,
 } from '../../../../../../lib/admin/products';
+import { getAdminCategories } from '../../../../../../lib/admin/categories';
 import ProductForm from '../../new/ProductForm';
 
 export const dynamic = 'force-dynamic';
