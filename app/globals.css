@@ -2395,21 +2395,24 @@ img {
 .footer-logo {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .footer-logo-mark {
-  height: 34px;
+  height: 48px;
   width: auto;
 }
 
 .footer-logo-wordmark {
   font-family: var(--font-serif);
-  font-size: 1.3rem;
-  letter-spacing: 0.22em;
+  font-size: 1.85rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--logo-red);
   line-height: 1;
+  -webkit-text-stroke: 0.45px currentColor;
+  paint-order: stroke fill;
 }
 
 .footer-brand-desc {
@@ -4035,4 +4038,11 @@ img {
   .auth-drawer-body {
     padding: 12px 28px 32px;
   }
+}
+
+/* Admin login — same storefront auth drawer, full-page shell */
+.admin-login-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--bg-cream);
 }

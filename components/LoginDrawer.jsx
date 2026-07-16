@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '../lib/supabase/client';
 import { useAuth } from './AuthProvider';
@@ -10,17 +10,86 @@ function getAppOrigin() {
   return process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 }
 
-export default function LoginDrawer({ open, onClose }) {
-  const { user, signOut, configured } = useAuth();
+function safeAdminNextPath(nextPath) {
+  return nextPath.startsWith('/admin') && !nextPath.startsWith('/admin/login')
+    ? nextPath
+    : '/admin';
+}
+
+async function verifyAdminAndRedirect(nextPath, signOut) {
+  await fetch('/api/auth/ensure-user', { method: 'POST' });
+
+  const meRes = await fetch('/api/admin/me', { cache: 'no-store' });
+  const me = await meRes.json().catch(() => ({}));
+
+  if (meRes.status === 401) {
+    throw new Error('Signed in, but the server could not read your session. Refresh and try again.');
+  }
+  if (!meRes.ok) {
+    throw new Error(me.error || 'Could not verify admin access');
+  }
+
+  if (!me.isAdmin && me.role !== 'ADMIN') {
+    await signOut();
+    throw new Error(
+      `Signed in as ${me.email || 'this account'}, but Access is Customer — not Admin. Ask an admin to set Access → Admin on the Customers page, then try again.`
+    );
+  }
+
+  window.location.assign(safeAdminNextPath(nextPath));
+}
+
+export default function LoginDrawer({
+  open,
+  onClose,
+  adminMode = false,
+  adminNextPath = '/admin',
+  initialError = '',
+}) {
+  const { user, signOut, configured, loading: authLoading } = useAuth();
   const [mode, setMode] = useState('login');
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState(initialError);
   const [loading, setLoading] = useState(false);
   const [forgotMode, setForgotMode] = useState(false);
+  const adminVerifyStarted = useRef(false);
+
+  useEffect(() => {
+    setError(initialError);
+  }, [initialError]);
+
+  useEffect(() => {
+    if (!adminMode || !open || authLoading || !user) {
+      adminVerifyStarted.current = false;
+      return undefined;
+    }
+    if (adminVerifyStarted.current) return undefined;
+
+    adminVerifyStarted.current = true;
+    let cancelled = false;
+
+    (async () => {
+      setLoading(true);
+      setError('');
+      try {
+        await verifyAdminAndRedirect(adminNextPath, signOut);
+      } catch (err) {
+        if (!cancelled) {
+          setError(err.message || 'Could not verify admin access');
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [adminMode, open, authLoading, user, adminNextPath, signOut]);
 
   const resetForm = () => {
     setEmail('');
@@ -69,6 +138,12 @@ export default function LoginDrawer({ open, onClose }) {
           password,
         });
         if (signInError) throw signInError;
+
+        if (adminMode) {
+          await verifyAdminAndRedirect(adminNextPath, signOut);
+          return;
+        }
+
         handleClose();
         return;
       }
@@ -110,10 +185,13 @@ export default function LoginDrawer({ open, onClose }) {
 
     try {
       const supabase = createClient();
+      const oauthNext = adminMode
+        ? `/admin/login?next=${encodeURIComponent(safeAdminNextPath(adminNextPath))}`
+        : '/';
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${getAppOrigin()}/auth/callback`,
+          redirectTo: `${getAppOrigin()}/auth/callback?next=${encodeURIComponent(oauthNext)}`,
         },
       });
       if (oauthError) throw oauthError;
@@ -135,7 +213,9 @@ export default function LoginDrawer({ open, onClose }) {
   };
 
   const title = user
-    ? 'My Account'
+    ? adminMode
+      ? 'Log In'
+      : 'My Account'
     : forgotMode
       ? 'Reset Password'
       : mode === 'login'
@@ -168,7 +248,7 @@ export default function LoginDrawer({ open, onClose }) {
         </div>
 
         <div className="auth-drawer-body">
-          {user ? (
+          {user && !adminMode ? (
             <div className="auth-account">
               <p className="auth-account-label">Signed in as</p>
               <p className="auth-account-email">{user.email}</p>
@@ -193,9 +273,39 @@ export default function LoginDrawer({ open, onClose }) {
                 {loading ? 'Signing out…' : 'Sign Out'}
               </button>
             </div>
+          ) : user && adminMode ? (
+            <div className="auth-account">
+              <p className="auth-account-label">
+                {loading || authLoading ? 'Verifying admin access…' : 'Checking your account'}
+              </p>
+              {user.email ? <p className="auth-account-email">{user.email}</p> : null}
+              {error ? <p className="auth-form-message auth-form-error">{error}</p> : null}
+              <button
+                type="button"
+                className="auth-outline-btn"
+                onClick={async () => {
+                  setLoading(true);
+                  try {
+                    await signOut();
+                    adminVerifyStarted.current = false;
+                    setError('');
+                  } catch (err) {
+                    setError(err.message || 'Could not sign out.');
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+                disabled={loading}
+              >
+                Sign out & try another account
+              </button>
+              <Link href="/" className="auth-forgot-link" style={{ marginTop: 16 }}>
+                ← Back to store
+              </Link>
+            </div>
           ) : (
             <>
-              {!forgotMode && (
+              {!forgotMode && !adminMode && (
                 <div className="auth-tabs" role="tablist">
                   <button
                     type="button"
