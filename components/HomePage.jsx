@@ -25,10 +25,36 @@ const MARQUEE = [
   '7-Day Returns',
 ];
 
-export default function HomePage({ announce, hero, signature, featuredProducts = [] }) {
+export default function HomePage({
+  announce,
+  hero,
+  signature,
+  featuredProducts = [],
+  curatedSelectProducts = [],
+}) {
   const heroContent = hero || DEFAULT_HERO;
   const signatureContent = signature || DEFAULT_SIGNATURE;
   const bestSellers = featuredProducts;
+  const curatedProducts = Array.isArray(curatedSelectProducts)
+    ? curatedSelectProducts.filter((p) => p && p.slug)
+    : [];
+
+  const curatedCards = curatedProducts.length
+    ? curatedProducts.map((p) => {
+        const image =
+          p.imageUrl ||
+          (Array.isArray(p.images) ? p.images[0] : '') ||
+          '/images/ui1/hero-home.jpg';
+        const desc = p.material || p.tag || p.description || '';
+        return {
+          name: p.name,
+          desc,
+          href: `/product/${p.slug}`,
+          image,
+        };
+      })
+    : COLLECTIONS;
+
   const heroSlides =
     Array.isArray(heroContent.images) && heroContent.images.length
       ? heroContent.images.filter(Boolean)
@@ -78,7 +104,7 @@ export default function HomePage({ announce, hero, signature, featuredProducts =
               </Link>
             </div>
             <div className="collections-grid">
-              {COLLECTIONS.map((col) => (
+              {curatedCards.map((col) => (
                 <article key={col.name} className="collection-card">
                   <div className="collection-img-wrapper">
                     <img
