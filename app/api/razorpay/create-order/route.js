@@ -201,10 +201,21 @@ export async function POST(request) {
     const regionKey = countryCode || currencyCode || 'IN';
     const surchargePct = await getSurchargePctForRegion(regionKey);
 
+    const productIds = [...new Set(items.map((item) => String(item.id)).filter(Boolean))];
+    const existingProducts = productIds.length
+      ? await prisma.product.findMany({
+          where: { id: { in: productIds } },
+          select: { id: true },
+        })
+      : [];
+    const existingProductIds = new Set(existingProducts.map((p) => p.id));
+
     const pricedItems = items.map((item) => {
       const unitPriceInr = applySurchargeInr(Number(item.price), surchargePct);
+      const productId = String(item.id);
       return {
         ...item,
+        id: existingProductIds.has(productId) ? productId : null,
         qty: Number(item.qty),
         basePriceInr: Math.round(Number(item.price) || 0),
         price: unitPriceInr,
@@ -315,11 +326,19 @@ export async function POST(request) {
       surchargePct,
     });
   } catch (error) {
+    const keyId = getRazorpayKeyId();
     console.error('create-order error:', {
       message: error?.message,
       code: error?.code,
       statusCode: error?.statusCode,
       description: error?.error?.description,
+      razorpayKeyConfigured: Boolean(keyId),
+      razorpayKeyMode: keyId.startsWith('rzp_live_')
+        ? 'live'
+        : keyId.startsWith('rzp_test_')
+          ? 'test'
+          : 'unknown',
+      razorpayKeySuffix: keyId ? keyId.slice(-4) : null,
       stack: error?.stack,
     });
     return NextResponse.json(
