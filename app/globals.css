@@ -2715,8 +2715,8 @@ img {
 }
 
 .shop-page .ui1-product-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(24px, 2.5vw, 36px);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(20px, 2vw, 32px);
 }
 
 .shop-hero {
@@ -3473,6 +3473,18 @@ img {
   .contact-v2-trust-inner {
     grid-template-columns: 1fr;
   }
+
+  .shop-page .ui1-product-grid,
+  .shop-page .shop-layout .ui1-product-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    max-width: min(100%, 440px);
+    margin: 0 auto;
+  }
+
+  .shop-page .product-name {
+    font-size: 1.05rem;
+  }
 }
 
 /* legacy contact helpers kept for other forms */
@@ -3708,7 +3720,8 @@ img {
   }
 
   .shop-page .ui1-product-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
   }
 
   .shop-layout {
@@ -3850,6 +3863,44 @@ img {
   .shop-grid-wrap {
     padding-left: 12px;
     padding-right: 12px;
+  }
+
+  .shop-page {
+    --shop-pad-x: 12px;
+  }
+
+  .shop-page .shop-hero,
+  .shop-page .shop-toolbar,
+  .shop-page .shop-layout,
+  .shop-page .shop-grid-wrap {
+    padding-left: var(--shop-pad-x);
+    padding-right: var(--shop-pad-x);
+  }
+
+  .shop-page .ui1-product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .shop-page .shop-layout .ui1-product-grid {
+    gap: 16px;
+  }
+
+  .shop-page .product-img-wrapper {
+    margin-bottom: 12px;
+  }
+
+  .shop-page .product-name {
+    font-size: 0.98rem;
+    line-height: 1.35;
+  }
+
+  .shop-page .product-material {
+    font-size: 0.78rem;
+  }
+
+  .shop-page .product-price {
+    font-size: 0.9rem;
   }
 
   .shop-layout {
@@ -4122,8 +4173,16 @@ img {
     padding-right: 10px;
   }
 
-  .shop-layout .ui1-product-grid {
-    gap: 8px;
+  .shop-page {
+    --shop-pad-x: 10px;
+  }
+
+  .shop-page .shop-hero,
+  .shop-page .shop-toolbar,
+  .shop-page .shop-layout,
+  .shop-page .shop-grid-wrap {
+    padding-left: var(--shop-pad-x);
+    padding-right: var(--shop-pad-x);
   }
 
   .instagram-grid {

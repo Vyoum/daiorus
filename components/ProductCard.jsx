@@ -7,7 +7,7 @@ import Price from './Price';
 import { useCart } from './CartProvider';
 import { useWishlist } from './WishlistProvider';
 
-function ProductMediaImage({ src, alt, priority = false }) {
+function ProductMediaImage({ src, alt, priority = false, imageSizes }) {
   const isLocal = typeof src === 'string' && src.startsWith('/');
 
   if (isLocal) {
@@ -38,6 +38,7 @@ export default function ProductCard({
   product,
   showMaterial = false,
   showRemove = false,
+  showAddToCart = true,
   priority = false,
   imageSizes = '(max-width: 768px) 50vw, 25vw',
 }) {
@@ -49,11 +50,11 @@ export default function ProductCard({
   const [justAdded, setJustAdded] = useState(false);
 
   useEffect(() => {
-    if (lastAddedProductId !== product.id || !lastAddedAt) return undefined;
+    if (!showAddToCart || lastAddedProductId !== product.id || !lastAddedAt) return undefined;
     setJustAdded(true);
     const timer = setTimeout(() => setJustAdded(false), 1400);
     return () => clearTimeout(timer);
-  }, [lastAddedAt, lastAddedProductId, product.id]);
+  }, [showAddToCart, lastAddedAt, lastAddedProductId, product.id]);
 
   const handleWishlist = (e) => {
     e.preventDefault();
@@ -105,18 +106,25 @@ export default function ProductCard({
         </svg>
       </button>
 
-      <ProductMediaImage src={product.image} alt={product.name} priority={priority} />
-      <button
-        type="button"
-        className={`product-action-btn${justAdded ? ' is-added' : ''}`}
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          addToCart(product);
-        }}
-      >
-        {justAdded ? 'Added' : 'Add To Cart'}
-      </button>
+      <ProductMediaImage
+        src={product.image}
+        alt={product.name}
+        priority={priority}
+        imageSizes={imageSizes}
+      />
+      {showAddToCart ? (
+        <button
+          type="button"
+          className={`product-action-btn${justAdded ? ' is-added' : ''}`}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            addToCart(product);
+          }}
+        >
+          {justAdded ? 'Added' : 'Add To Cart'}
+        </button>
+      ) : null}
     </div>
   );
 

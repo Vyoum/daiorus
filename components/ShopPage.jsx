@@ -5,7 +5,7 @@ import SiteShell from './SiteShell';
 import ProductCard from './ProductCard';
 import { CATEGORIES } from '../lib/data';
 import {
-  collectGoldKaratsFromProducts,
+  GOLD_KARAT_OPTIONS,
   materialMatchesGoldKaratFilter,
   parseGoldKarat,
 } from '../lib/product-material';
@@ -99,11 +99,6 @@ export default function ShopPage({ initialProducts = [] }) {
 
   const allProducts = useMemo(
     () => (initialProducts || []).map(enrichProduct),
-    [initialProducts],
-  );
-
-  const availableCarats = useMemo(
-    () => collectGoldKaratsFromProducts(initialProducts),
     [initialProducts],
   );
 
@@ -218,11 +213,10 @@ export default function ShopPage({ initialProducts = [] }) {
         </div>
       </div>
 
-      {availableCarats.length > 0 && (
       <div className="shop-filter-group">
         <h3>Carat</h3>
         <div className="shop-filter-chips">
-          {availableCarats.map((carat) => (
+          {GOLD_KARAT_OPTIONS.map((carat) => (
             <button
               key={carat}
               type="button"
@@ -239,7 +233,6 @@ export default function ShopPage({ initialProducts = [] }) {
           ))}
         </div>
       </div>
-      )}
 
       <div className="shop-filter-group">
         <h3>Price Range</h3>
@@ -355,7 +348,13 @@ export default function ShopPage({ initialProducts = [] }) {
           {products.length > 0 ? (
             <div className="ui1-product-grid">
               {products.map((product) => (
-                <ProductCard key={product.id} product={product} showMaterial imageSizes="(max-width: 768px) 50vw, 33vw" />
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  showMaterial
+                  showAddToCart={false}
+                  imageSizes="(max-width: 560px) 100vw, (max-width: 768px) 50vw, 25vw"
+                />
               ))}
             </div>
           ) : (
