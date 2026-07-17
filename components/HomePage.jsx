@@ -74,7 +74,7 @@ export default function HomePage({
                 {heroContent.titleLine2}
               </h1>
               <p className="ui1-hero-body">{heroContent.body}</p>
-              <Link href={heroContent.ctaUrl || '/shop'} className="btn-outline-light">
+              <Link href={heroContent.ctaUrl || '/shop'} className="btn-outline-dark">
                 {heroContent.ctaLabel}
               </Link>
             </div>

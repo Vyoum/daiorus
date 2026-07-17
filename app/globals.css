@@ -1714,14 +1714,14 @@ img {
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(28, 24, 17, 0.45);
   background: transparent;
   padding: 0;
   cursor: pointer;
 }
 
 .ui1-hero-dot.is-active {
-  background: #fff;
+  background: var(--text-dark);
 }
 
 @keyframes hero-ken {
@@ -1738,9 +1738,9 @@ img {
   inset: 0;
   background: linear-gradient(
     105deg,
-    rgba(28, 24, 17, 0.72) 0%,
-    rgba(28, 24, 17, 0.35) 45%,
-    rgba(28, 24, 17, 0.15) 100%
+    rgba(250, 248, 244, 0.92) 0%,
+    rgba(250, 248, 244, 0.55) 42%,
+    rgba(250, 248, 244, 0.08) 100%
   );
 }
 
@@ -1751,7 +1751,7 @@ img {
   margin: 0 auto;
   width: 100%;
   padding: 60px 40px;
-  color: #fff;
+  color: var(--text-dark);
 }
 
 .ui1-hero-inner {
@@ -1775,7 +1775,7 @@ img {
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.28em;
-  color: rgba(250, 248, 244, 0.75);
+  color: var(--muted);
   margin-bottom: 20px;
 }
 
@@ -1790,7 +1790,7 @@ img {
 .ui1-hero-body {
   font-size: 1.02rem;
   line-height: 1.65;
-  color: rgba(255, 255, 255, 0.82);
+  color: rgba(28, 24, 17, 0.78);
   font-weight: 300;
   margin-bottom: 36px;
   max-width: 420px;

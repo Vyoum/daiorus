@@ -485,12 +485,12 @@ export default function LoginDrawer({
                 </svg>
                 Contact Us
               </Link>
-              <a href="mailto:hello@daiorus.com" className="auth-help-link">
+              <a href="mailto:sales@daiorus.com" className="auth-help-link">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <circle cx="12" cy="12" r="10" />
                   <polyline points="12 6 12 12 16 14" />
                 </svg>
-                hello@daiorus.com
+                sales@daiorus.com
               </a>
             </div>
           </div>
