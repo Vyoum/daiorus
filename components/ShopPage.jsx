@@ -288,6 +288,7 @@ export default function ShopPage({ initialProducts = [] }) {
 
   return (
     <SiteShell>
+      <div className="shop-page">
       <div className="shop-hero">
         <h1>All Jewellery</h1>
         <p>
@@ -357,6 +358,7 @@ export default function ShopPage({ initialProducts = [] }) {
             </div>
           )}
         </div>
+      </div>
       </div>
     </SiteShell>
   );
