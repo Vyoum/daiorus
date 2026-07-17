@@ -16,7 +16,7 @@ function ProductMediaImage({ src, alt, priority = false }) {
         src={src}
         alt={alt}
         fill
-        sizes="(max-width: 768px) 50vw, 25vw"
+        sizes={imageSizes}
         className="product-img"
         priority={priority}
       />
@@ -39,6 +39,7 @@ export default function ProductCard({
   showMaterial = false,
   showRemove = false,
   priority = false,
+  imageSizes = '(max-width: 768px) 50vw, 25vw',
 }) {
   const { addToCart, lastAddedAt, lastAddedProductId } = useCart();
   const { isWished, toggle, remove } = useWishlist();

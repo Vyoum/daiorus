@@ -21,15 +21,25 @@ function formatInr(n) {
   return `₹${value.toLocaleString('en-IN')}`;
 }
 
-const MATERIAL_PRESETS = ['14K', '18K', '20K', '22K', '24K'];
+import {
+  GOLD_KARAT_OPTIONS,
+  parseGoldKarat,
+} from '../../../../lib/product-material';
+
+const MATERIAL_PRESETS = GOLD_KARAT_OPTIONS;
 
 function resolveMaterialSelection(value) {
   const raw = String(value || '').trim();
   if (!raw) return { mode: '', custom: '' };
 
+  const karat = parseGoldKarat(raw);
+  if (karat && MATERIAL_PRESETS.includes(karat)) {
+    return { mode: karat, custom: '' };
+  }
+
   const normalized = raw.toUpperCase().replace(/\s+/g, '');
   const preset = MATERIAL_PRESETS.find(
-    (item) => item === normalized || item === `${normalized}K` || normalized === `${item} GOLD`,
+    (item) => item === normalized || normalized === `${item.replace(/K$/, '')}K`,
   );
   if (preset) return { mode: preset, custom: '' };
 

@@ -4,8 +4,12 @@ import { useEffect, useMemo, useState } from 'react';
 import SiteShell from './SiteShell';
 import ProductCard from './ProductCard';
 import { CATEGORIES } from '../lib/data';
+import {
+  collectGoldKaratsFromProducts,
+  materialMatchesGoldKaratFilter,
+  parseGoldKarat,
+} from '../lib/product-material';
 
-const CARATS = ['14K', '18K', '20K', '22K', '24K'];
 const METALS = [
   { id: 'gold', label: 'Gold' },
   { id: 'diamond', label: 'Diamond' },
@@ -18,11 +22,6 @@ const SORT_OPTIONS = [
   { id: 'popularity', label: 'Popularity: High to Low' },
   { id: 'rating', label: 'Customer Rating' },
 ];
-
-function parseCarat(material = '') {
-  const match = material.match(/(\d{2})\s*K/i);
-  return match ? `${match[1]}K` : null;
-}
 
 function ratingFromId(id) {
   let hash = 0;
@@ -39,10 +38,12 @@ function popularityFromProduct(product) {
 
 function enrichProduct(product) {
   const material = product.material || '';
+  const goldKarat = parseGoldKarat(material);
   return {
     ...product,
-    carat: parseCarat(material),
-    isGold: /gold|vermeil/i.test(material),
+    goldKarat,
+    carat: goldKarat,
+    isGold: /gold|vermeil/i.test(material) || Boolean(goldKarat),
     isDiamond: /diamond/i.test(material),
     rating: ratingFromId(product.id),
     popularity: popularityFromProduct(product),
@@ -101,6 +102,11 @@ export default function ShopPage({ initialProducts = [] }) {
     [initialProducts],
   );
 
+  const availableCarats = useMemo(
+    () => collectGoldKaratsFromProducts(initialProducts),
+    [initialProducts],
+  );
+
   const catalogMin = useMemo(
     () => (allProducts.length ? Math.min(...allProducts.map((p) => p.price)) : 0),
     [allProducts],
@@ -124,7 +130,9 @@ export default function ShopPage({ initialProducts = [] }) {
       if (filters.categories.length && !filters.categories.includes(product.category)) {
         return false;
       }
-      if (filters.carats.length && !filters.carats.includes(product.carat)) {
+      if (
+        !materialMatchesGoldKaratFilter(product.material, filters.carats)
+      ) {
         return false;
       }
       if (filters.metals.length) {
@@ -210,10 +218,11 @@ export default function ShopPage({ initialProducts = [] }) {
         </div>
       </div>
 
+      {availableCarats.length > 0 && (
       <div className="shop-filter-group">
         <h3>Carat</h3>
         <div className="shop-filter-chips">
-          {CARATS.map((carat) => (
+          {availableCarats.map((carat) => (
             <button
               key={carat}
               type="button"
@@ -230,6 +239,7 @@ export default function ShopPage({ initialProducts = [] }) {
           ))}
         </div>
       </div>
+      )}
 
       <div className="shop-filter-group">
         <h3>Price Range</h3>
@@ -288,6 +298,7 @@ export default function ShopPage({ initialProducts = [] }) {
 
   return (
     <SiteShell>
+      <div className="shop-page">
       <div className="shop-hero">
         <h1>All Jewellery</h1>
         <p>
@@ -344,7 +355,7 @@ export default function ShopPage({ initialProducts = [] }) {
           {products.length > 0 ? (
             <div className="ui1-product-grid">
               {products.map((product) => (
-                <ProductCard key={product.id} product={product} showMaterial />
+                <ProductCard key={product.id} product={product} showMaterial imageSizes="(max-width: 768px) 50vw, 33vw" />
               ))}
             </div>
           ) : (
@@ -357,6 +368,7 @@ export default function ShopPage({ initialProducts = [] }) {
             </div>
           )}
         </div>
+      </div>
       </div>
     </SiteShell>
   );

@@ -2682,6 +2682,43 @@ img {
 }
 
 /* ========== Shop ========== */
+.shop-page {
+  --shop-max-w: min(1680px, calc(100vw - 32px));
+  --shop-pad-x: clamp(16px, 2vw, 32px);
+}
+
+.shop-page .shop-hero,
+.shop-page .shop-toolbar,
+.shop-page .shop-layout {
+  max-width: var(--shop-max-w);
+}
+
+.shop-page .shop-hero {
+  padding-left: var(--shop-pad-x);
+  padding-right: var(--shop-pad-x);
+}
+
+.shop-page .shop-toolbar {
+  padding-left: var(--shop-pad-x);
+  padding-right: var(--shop-pad-x);
+}
+
+.shop-page .shop-layout {
+  padding-left: var(--shop-pad-x);
+  padding-right: var(--shop-pad-x);
+  grid-template-columns: minmax(200px, 220px) minmax(0, 1fr);
+  gap: clamp(24px, 3vw, 40px);
+}
+
+.shop-page .shop-filters-desktop {
+  padding-right: clamp(16px, 2vw, 24px);
+}
+
+.shop-page .ui1-product-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(24px, 2.5vw, 36px);
+}
+
 .shop-hero {
   padding: 64px 20px 24px;
   max-width: var(--max-w);
@@ -3668,6 +3705,10 @@ img {
   .products-grid,
   .cat-products-inner {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .shop-page .ui1-product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .shop-layout {
