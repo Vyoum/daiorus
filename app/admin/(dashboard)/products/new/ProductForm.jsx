@@ -14,17 +14,13 @@ import {
   X,
 } from 'lucide-react';
 import { isAllowedImageFile, uploadAdminImage } from '@/lib/admin/image-upload';
+import { GOLD_KARAT_OPTIONS, parseGoldKarat } from '@/lib/product-material';
 import styles from './product-form.module.css';
 
 function formatInr(n) {
   const value = Number(n) || 0;
   return `₹${value.toLocaleString('en-IN')}`;
 }
-
-import {
-  GOLD_KARAT_OPTIONS,
-  parseGoldKarat,
-} from '../../../../lib/product-material';
 
 const MATERIAL_PRESETS = GOLD_KARAT_OPTIONS;
 
