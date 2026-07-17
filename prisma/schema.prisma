@@ -44,6 +44,11 @@ enum ReviewStatus {
   HIDDEN
 }
 
+enum CouponType {
+  PERCENT
+  FIXED
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -238,4 +243,24 @@ model SiteContent {
 
   @@index([type])
   @@map("site_content")
+}
+
+model Coupon {
+  id             String     @id @default(cuid())
+  code           String     @unique
+  label          String?
+  type           CouponType
+  value          Int
+  freeShipping   Boolean    @default(false)
+  minSubtotalInr Int        @default(0)
+  maxUses        Int?
+  usedCount      Int        @default(0)
+  startsAt       DateTime?
+  expiresAt      DateTime?
+  isActive       Boolean    @default(true)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  @@index([isActive])
+  @@map("coupons")
 }

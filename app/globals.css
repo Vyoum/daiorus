@@ -147,28 +147,6 @@ img {
   flex-shrink: 0;
 }
 
-/* Light nav over image heroes when at top */
-.ui1-header.is-overlay:not(.is-scrolled) .nav-link {
-  color: rgba(255, 255, 255, 0.92);
-}
-
-.ui1-header.is-overlay:not(.is-scrolled) .nav-link:hover {
-  color: var(--gold);
-}
-
-.ui1-header.is-overlay:not(.is-scrolled) .icon-btn {
-  color: rgba(255, 255, 255, 0.92);
-}
-
-.ui1-header.is-overlay:not(.is-scrolled) .icon-btn:hover {
-  color: var(--gold);
-}
-
-.ui1-header.is-overlay:not(.is-scrolled) .header-locale {
-  color: rgba(255, 255, 255, 0.8);
-  border-color: rgba(255, 255, 255, 0.35);
-}
-
 /* Pull heroes under the transparent header */
 .has-header-overlay .ui1-hero {
   margin-top: calc(-1 * var(--header-h));

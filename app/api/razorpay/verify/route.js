@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { NextResponse } from 'next/server';
 import prisma from '../../../../lib/prisma';
+import { incrementCouponUsage } from '../../../../lib/admin/coupons';
 
 export async function POST(request) {
   try {
@@ -73,6 +74,12 @@ export async function POST(request) {
         }),
       },
     });
+
+    if (existingNotes.couponCode) {
+      await incrementCouponUsage(existingNotes.couponCode).catch((err) => {
+        console.warn('[verify] coupon usage increment failed:', err?.message || err);
+      });
+    }
 
     return NextResponse.json({
       success: true,

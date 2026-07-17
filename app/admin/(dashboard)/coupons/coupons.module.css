@@ -1,0 +1,250 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-bottom: 32px;
+}
+
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 220px));
+  gap: 14px;
+}
+
+.statCard {
+  background: #fff;
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.statCard span {
+  color: var(--admin-text-secondary);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.statCard strong {
+  font-size: 24px;
+  color: var(--admin-text-primary);
+}
+
+.bannerError,
+.bannerSuccess {
+  padding: 12px 14px;
+  border-radius: var(--admin-radius);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.bannerError {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+}
+
+.bannerSuccess {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+}
+
+.formCard {
+  background: #fff;
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+  padding: 22px 24px;
+  box-shadow: var(--admin-shadow-sm);
+}
+
+.formTitle {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field > span {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--admin-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius);
+  background: #fff;
+  font-size: 14px;
+  color: var(--admin-text-primary);
+}
+
+.checkField {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  padding-top: 28px;
+  font-size: 14px;
+  color: var(--admin-text-primary);
+  text-transform: none;
+}
+
+.checkField > span {
+  text-transform: none;
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.primaryBtn {
+  padding: 12px 20px !important;
+  background: #111827 !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+}
+
+.secondaryBtn {
+  padding: 12px 18px !important;
+  background: #fff !important;
+  color: #111827 !important;
+  border: 1px solid var(--admin-border) !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+}
+
+.tableContainer {
+  background: #fff;
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+  overflow: auto;
+  box-shadow: var(--admin-shadow-sm);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.th,
+.td {
+  padding: 14px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--admin-border);
+  font-size: 14px;
+}
+
+.th {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--admin-text-secondary);
+  background: #fafafa;
+}
+
+.tr:last-child .td {
+  border-bottom: none;
+}
+
+.codeCell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.codeCell strong {
+  font-size: 14px;
+}
+
+.codeCell span {
+  color: var(--admin-text-secondary);
+  font-size: 12px;
+}
+
+.badge {
+  display: inline-flex;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badgeOn {
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.badgeOff {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.badgeWarn {
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.rowActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.linkBtn,
+.dangerBtn {
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+}
+
+.linkBtn {
+  color: #111827 !important;
+}
+
+.dangerBtn {
+  color: #b91c1c !important;
+}
+
+@media (max-width: 860px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .checkField {
+    padding-top: 0;
+  }
+
+  .statsRow {
+    grid-template-columns: 1fr;
+  }
+}

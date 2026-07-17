@@ -12,7 +12,7 @@ import {
   applySurchargeInr,
   getSurchargePctForRegion,
 } from '../../../../lib/overseas-pricing';
-import { applyCouponToTotals } from '../../../../lib/coupons';
+import { applyCouponCodeToTotals } from '../../../../lib/coupons-server';
 
 async function resolveShippingAddressId(userId, address) {
   if (!userId || !address.saveAddress) return null;
@@ -223,14 +223,25 @@ export async function POST(request) {
     });
 
     const baseTotals = calculateCartTotals(pricedItems);
-    const couponResult = applyCouponToTotals({
+    const couponResult = await applyCouponCodeToTotals({
       subtotalInr: baseTotals.subtotalInr,
       shippingInr: baseTotals.shippingInr,
       couponCode,
     });
+
+    if (couponCode && !couponResult.valid) {
+      return NextResponse.json(
+        { error: couponResult.error || 'This coupon code is not valid.' },
+        { status: 400 },
+      );
+    }
+
     const { subtotalInr, shippingInr, discountInr, totalInr } = calculateCartTotals(
       pricedItems,
-      { discountInr: couponResult.discountInr },
+      {
+        discountInr: couponResult.discountInr,
+        shippingInr: couponResult.shippingInr,
+      },
     );
     const orderNumber = generateOrderNumber();
     const amountPaise = inrToPaise(totalInr);

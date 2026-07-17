@@ -104,7 +104,7 @@ export default function CheckoutPage() {
       applyCouponToTotals({
         subtotalInr: baseTotals.subtotalInr,
         shippingInr: baseTotals.shippingInr,
-        couponCode: appliedCoupon?.code,
+        coupon: appliedCoupon,
       }),
     [baseTotals, appliedCoupon],
   );
@@ -113,8 +113,9 @@ export default function CheckoutPage() {
     () =>
       calculateCartTotals(pricedItems, {
         discountInr: couponResult.discountInr,
+        shippingInr: couponResult.shippingInr,
       }),
-    [pricedItems, couponResult.discountInr],
+    [pricedItems, couponResult.discountInr, couponResult.shippingInr],
   );
 
   const updateShipping = (key, value) => {
@@ -122,7 +123,7 @@ export default function CheckoutPage() {
     if (error) setError('');
   };
 
-  const applyCoupon = () => {
+  const applyCoupon = async () => {
     const code = normalizeCouponCode(couponInput);
     if (!code) {
       setCouponMessage('Enter a coupon code.');
@@ -130,20 +131,30 @@ export default function CheckoutPage() {
       return;
     }
 
-    const result = applyCouponToTotals({
-      subtotalInr: baseTotals.subtotalInr,
-      shippingInr: baseTotals.shippingInr,
-      couponCode: code,
-    });
+    setCouponMessage('');
+    try {
+      const res = await fetch('/api/coupons/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          couponCode: code,
+          subtotalInr: baseTotals.subtotalInr,
+          shippingInr: baseTotals.shippingInr,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.valid) {
+        setAppliedCoupon(null);
+        setCouponMessage(data.error || 'This coupon code is not valid.');
+        return;
+      }
 
-    if (!result.valid) {
+      setAppliedCoupon(data.coupon);
+      setCouponMessage(`${data.coupon.label} applied.`);
+    } catch {
       setAppliedCoupon(null);
-      setCouponMessage('This coupon code is not valid.');
-      return;
+      setCouponMessage('Could not validate coupon. Please try again.');
     }
-
-    setAppliedCoupon(result.coupon);
-    setCouponMessage(`${result.coupon.label} applied.`);
   };
 
   const removeCoupon = () => {
@@ -451,7 +462,7 @@ export default function CheckoutPage() {
                     {couponMessage}
                   </p>
                 ) : (
-                  <p className={styles.couponHint}>Try DAIORUS10 or WELCOME500</p>
+                  <p className={styles.couponHint}>Enter a valid coupon code from DAIORUS</p>
                 )}
               </div>
 
