@@ -3480,18 +3480,6 @@ img {
   .contact-v2-trust-inner {
     grid-template-columns: 1fr;
   }
-
-  .shop-page .ui1-product-grid,
-  .shop-page .shop-layout .ui1-product-grid {
-    grid-template-columns: 1fr;
-    gap: 32px;
-    max-width: min(100%, 440px);
-    margin: 0 auto;
-  }
-
-  .shop-page .product-name {
-    font-size: 1.05rem;
-  }
 }
 
 /* legacy contact helpers kept for other forms */
@@ -4190,6 +4178,11 @@ img {
   .shop-page .shop-grid-wrap {
     padding-left: var(--shop-pad-x);
     padding-right: var(--shop-pad-x);
+  }
+
+  .shop-page .ui1-product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
   }
 
   .instagram-grid {
