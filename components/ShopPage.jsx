@@ -352,7 +352,6 @@ export default function ShopPage({ initialProducts = [] }) {
                   key={product.id}
                   product={product}
                   showMaterial
-                  showAddToCart={false}
                   imageSizes="(max-width: 560px) 100vw, (max-width: 768px) 50vw, 25vw"
                 />
               ))}
