@@ -41,6 +41,10 @@ body {
   overflow-x: hidden;
 }
 
+body.brand-intro-active {
+  overflow: hidden;
+}
+
 a {
   color: inherit;
   text-decoration: none;

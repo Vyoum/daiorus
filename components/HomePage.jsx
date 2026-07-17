@@ -2,6 +2,7 @@ import Link from 'next/link';
 import SiteShell from './SiteShell';
 import ProductCard from './ProductCard';
 import HomeHeroCarousel from './HomeHeroCarousel';
+import BrandIntroSplash from './BrandIntroSplash';
 import { COLLECTIONS } from '../lib/data';
 import { DEFAULT_HERO, DEFAULT_SIGNATURE } from '../lib/site-content-defaults';
 import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from '../lib/social';
@@ -61,6 +62,7 @@ export default function HomePage({
 
   return (
     <SiteShell headerOverlay announce={announce}>
+      <BrandIntroSplash />
       <>
         <section className="ui1-hero">
           <HomeHeroCarousel images={heroSlides} alt={heroContent.imageAlt} />
