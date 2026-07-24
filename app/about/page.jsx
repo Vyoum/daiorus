@@ -1,12 +1,21 @@
 import Link from 'next/link';
 import SiteShell from '../../components/SiteShell';
+import { getAboutProcess } from '../../lib/site-content';
+import { DEFAULT_PROCESS } from '../../lib/site-content-defaults';
 
 export const metadata = {
   title: 'Our Story | DAIORUS',
   description: 'The story of Daiorus — fine jewellery crafted for everyday wear.',
 };
 
-export default function AboutPage() {
+export const revalidate = 60;
+
+export default async function AboutPage() {
+  const processContent = (await getAboutProcess()) || DEFAULT_PROCESS;
+  const stats = Array.isArray(processContent.stats) && processContent.stats.length
+    ? processContent.stats
+    : DEFAULT_PROCESS.stats;
+
   return (
     <SiteShell>
       <section className="about-hero">
@@ -77,41 +86,35 @@ export default function AboutPage() {
 
       <section className="about-process">
         <div>
-          <span className="section-label">The Process</span>
+          <span className="section-label">{processContent.label}</span>
           <h2 className="section-title">
-            BIS Hallmarked.
-            <br />
-            Made for Keeps.
+            {processContent.titleLine1}
+            {processContent.titleLine2 ? (
+              <>
+                <br />
+                {processContent.titleLine2}
+              </>
+            ) : null}
           </h2>
           <p className="vermeil-desc" style={{ marginTop: 20 }}>
-            Every Daiorus piece carries a Bureau of Indian Standards hallmark — the
-            gold standard for gold purity in India. Our 18K gold meets BIS 916
-            certification, and our 14K gold meets BIS 585.
+            {processContent.body1}
           </p>
-          <p className="vermeil-desc">
-            We work with a small network of master goldsmiths in Jaipur and Mumbai who
-            have been crafting fine jewellery for generations. No factories. No
-            shortcuts.
-          </p>
+          {processContent.body2 ? (
+            <p className="vermeil-desc">{processContent.body2}</p>
+          ) : null}
           <div className="about-process-stats">
-            <div className="process-stat">
-              <strong>18K Gold</strong>
-              <span>BIS 916</span>
-            </div>
-            <div className="process-stat">
-              <strong>14K Gold</strong>
-              <span>BIS 585</span>
-            </div>
-            <div className="process-stat">
-              <strong>Silver</strong>
-              <span>925 Sterling</span>
-            </div>
+            {stats.map((stat) => (
+              <div key={`${stat.label}-${stat.value}`} className="process-stat">
+                <strong>{stat.label}</strong>
+                <span>{stat.value}</span>
+              </div>
+            ))}
           </div>
         </div>
         <div className="about-process-mosaic">
-          <img src="/images/ui1/prod-eclipse.jpg" alt="Gold earring detail" />
-          <img src="/images/ui1/prod-coin.jpg" alt="Pendant detail" />
-          <img src="/images/ui1/coll-fine-gold.jpg" alt="Fine gold craftsmanship" />
+          <img src={processContent.imageUrl1} alt={processContent.imageAlt1} />
+          <img src={processContent.imageUrl2} alt={processContent.imageAlt2} />
+          <img src={processContent.imageUrl3} alt={processContent.imageAlt3} />
         </div>
       </section>
 

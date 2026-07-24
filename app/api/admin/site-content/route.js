@@ -29,6 +29,8 @@ export async function PUT(request) {
       hero: body?.hero || null,
       signature: body?.signature || null,
       curatedSelects: body?.curatedSelects || null,
+      philosophy: body?.philosophy || null,
+      process: body?.process || null,
       social: body?.social || null,
     });
 

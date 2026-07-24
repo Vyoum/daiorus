@@ -7,7 +7,7 @@ import prisma from '../lib/prisma';
 export const revalidate = 60;
 
 export default async function Page() {
-  const [{ announce, hero, signature, curatedSelects, social }, featuredProducts, categories] =
+  const [{ announce, hero, signature, curatedSelects, philosophy, social }, featuredProducts, categories] =
     await Promise.all([
       getLandingContent(),
       getFeaturedStorefrontProducts({ take: 4 }),
@@ -42,6 +42,7 @@ export default async function Page() {
       announce={announce}
       hero={hero}
       signature={signature}
+      philosophy={philosophy}
       social={social}
       featuredProducts={featuredProducts}
       curatedSelectProducts={curatedSelectProducts}

@@ -4,11 +4,7 @@ import ProductCard from './ProductCard';
 import HomeHeroCarousel from './HomeHeroCarousel';
 import BrandIntroSplash from './BrandIntroSplash';
 import { COLLECTIONS } from '../lib/data';
-import {
-  DEFAULT_HERO,
-  DEFAULT_SIGNATURE,
-  DEFAULT_SOCIAL,
-} from '../lib/site-content-defaults';
+import { DEFAULT_HERO, DEFAULT_SIGNATURE, DEFAULT_PHILOSOPHY, DEFAULT_SOCIAL } from '../lib/site-content-defaults';
 import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from '../lib/social';
 
 const MARQUEE = [
@@ -22,6 +18,7 @@ export default function HomePage({
   announce,
   hero,
   signature,
+  philosophy,
   social,
   featuredProducts = [],
   curatedSelectProducts = [],
@@ -29,12 +26,12 @@ export default function HomePage({
 }) {
   const heroContent = hero || DEFAULT_HERO;
   const signatureContent = signature || DEFAULT_SIGNATURE;
+  const philosophyContent = philosophy || DEFAULT_PHILOSOPHY;
   const socialContent = social || DEFAULT_SOCIAL;
-  const socialItems = Array.isArray(socialContent.items) && socialContent.items.length
-    ? socialContent.items
-    : DEFAULT_SOCIAL.items;
-  const socialProfileUrl = socialContent.profileUrl || INSTAGRAM_URL;
-  const socialHandle = socialContent.handle || INSTAGRAM_HANDLE;
+  const socialItems =
+    Array.isArray(socialContent.items) && socialContent.items.length
+      ? socialContent.items.filter((item) => item?.url)
+      : DEFAULT_SOCIAL.items;
   const bestSellers = featuredProducts;
   const shopCategories = Array.isArray(categories) ? categories : [];
   const curatedProducts = Array.isArray(curatedSelectProducts)
@@ -187,21 +184,17 @@ export default function HomePage({
 
         <section className="editorial-split-section">
           <div className="editorial-text-block">
-            <span className="section-label">Our Philosophy</span>
-            <h2 className="section-title">Crafted With Intention</h2>
-            <p className="editorial-desc">
-              Every Daiorus piece is designed to be worn every day — BIS hallmarked
-              gold, finished by master goldsmiths in India. Beauty that doesn&apos;t
-              wait for special occasions.
-            </p>
-            <Link href="/about" className="btn-outline-light">
-              Read Our Story
+            <span className="section-label">{philosophyContent.label}</span>
+            <h2 className="section-title">{philosophyContent.title}</h2>
+            <p className="editorial-desc">{philosophyContent.body}</p>
+            <Link href={philosophyContent.ctaUrl || '/about'} className="btn-outline-light">
+              {philosophyContent.ctaLabel}
             </Link>
           </div>
           <div className="editorial-img-block">
             <img
-              src="/images/ui1/brand-story.jpg"
-              alt="Daiorus craftsmanship"
+              src={philosophyContent.imageUrl}
+              alt={philosophyContent.imageAlt}
               className="editorial-img"
               loading="lazy"
               decoding="async"
@@ -241,57 +234,52 @@ export default function HomePage({
         <section className="ui1-section">
           <div className="ui1-container">
             <div className="instagram-header">
-              <span className="section-label">{socialContent.label || 'Social'}</span>
+              <span className="section-label">{socialContent.label}</span>
               <h2 className="section-title">
-                {socialContent.titlePrefix || 'Follow Us'}{' '}
-                <a href={socialProfileUrl} target="_blank" rel="noreferrer">
-                  {socialHandle}
+                {socialContent.titlePrefix}{' '}
+                <a href={INSTAGRAM_URL} target="_blank" rel="noreferrer">
+                  {INSTAGRAM_HANDLE}
                 </a>
               </h2>
             </div>
             <div className="instagram-grid">
-              {socialItems.map((item, idx) => {
-                const href = item.href || socialProfileUrl;
-                const key = `${item.type}-${item.url}-${idx}`;
-                return (
-                  <a
-                    key={key}
-                    href={href}
-                    className="instagram-card"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {item.type === 'video' ? (
-                      <video
-                        className="instagram-img"
-                        src={item.url}
-                        poster={item.poster || undefined}
-                        muted
-                        loop
-                        playsInline
-                        autoPlay
-                        preload="metadata"
-                        aria-label={item.alt || `Social video ${idx + 1}`}
-                      />
-                    ) : (
-                      <img
-                        src={item.url}
-                        alt={item.alt || `Instagram look ${idx + 1}`}
-                        className="instagram-img"
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    )}
-                    <div className="instagram-overlay">
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                        <rect x="2" y="2" width="20" height="20" rx="5" />
-                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-                      </svg>
-                    </div>
-                  </a>
-                );
-              })}
+              {socialItems.map((item, idx) => (
+                <a
+                  key={`${item.url}-${idx}`}
+                  href={INSTAGRAM_URL}
+                  className="instagram-card"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {item.type === 'video' ? (
+                    <video
+                      src={item.url}
+                      className="instagram-img"
+                      muted
+                      playsInline
+                      loop
+                      autoPlay
+                      preload="metadata"
+                      aria-label={item.alt || `Social look ${idx + 1}`}
+                    />
+                  ) : (
+                    <img
+                      src={item.url}
+                      alt={item.alt || `Instagram look ${idx + 1}`}
+                      className="instagram-img"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  )}
+                  <div className="instagram-overlay">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <rect x="2" y="2" width="20" height="20" rx="5" />
+                      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+                    </svg>
+                  </div>
+                </a>
+              ))}
             </div>
           </div>
         </section>

@@ -2,22 +2,22 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import prisma from '@/lib/prisma';
-import { ensureMediaBucket, getMediaBucketName } from '@/lib/admin/upload-storage';
 
 export const runtime = 'nodejs';
 
-const BUCKET = getMediaBucketName();
-const IMAGE_MAX_BYTES = 4 * 1024 * 1024; // stay under typical Vercel 4.5MB body limit
-const ALLOWED_IMAGE_TYPES = new Set([
+const BUCKET = 'product-images';
+const MAX_BYTES = 4 * 1024 * 1024; // stay under typical Vercel 4.5MB body limit
+const ALLOWED_TYPES = new Set([
   'image/jpeg',
   'image/jpg',
   'image/pjpeg',
   'image/png',
   'image/webp',
   'image/gif',
+  'video/mp4',
+  'video/webm',
+  'video/quicktime',
 ]);
-const ALLOWED_VIDEO_TYPES = new Set(['video/mp4', 'video/webm', 'video/quicktime']);
-const ALLOWED_TYPES = new Set([...ALLOWED_IMAGE_TYPES, ...ALLOWED_VIDEO_TYPES]);
 
 const EXT_TO_MIME = {
   jpg: 'image/jpeg',
@@ -41,10 +41,6 @@ function resolveMime(file) {
   }
   const ext = fileExtension(file.name);
   return EXT_TO_MIME[ext] || null;
-}
-
-function isVideoMime(mime) {
-  return String(mime || '').startsWith('video/');
 }
 
 async function requireAdminLight() {
@@ -72,13 +68,37 @@ async function requireAdminLight() {
   if (!dbUser || dbUser.role !== 'ADMIN') {
     return {
       error: NextResponse.json(
-        { error: 'Admin access required to upload media.' },
+        { error: 'Admin access required to upload images.' },
         { status: 403 },
       ),
     };
   }
 
   return { admin: dbUser };
+}
+
+async function ensureBucket(supabase) {
+  const { data: existing } = await supabase.storage.getBucket(BUCKET);
+  if (existing) return;
+
+  const { error } = await supabase.storage.createBucket(BUCKET, {
+    public: true,
+    fileSizeLimit: 40 * 1024 * 1024,
+    allowedMimeTypes: [
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'image/gif',
+      'video/mp4',
+      'video/webm',
+      'video/quicktime',
+    ],
+  });
+
+  // Ignore "already exists" races
+  if (error && !/exists|duplicate/i.test(error.message || '')) {
+    throw new Error(error.message || 'Could not create storage bucket');
+  }
 }
 
 export async function POST(request) {
@@ -97,7 +117,7 @@ export async function POST(request) {
       );
     }
 
-    await ensureMediaBucket(supabase);
+    await ensureBucket(supabase);
 
     const form = await request.formData();
     const file = form.get('file');
@@ -117,26 +137,26 @@ export async function POST(request) {
       );
     }
 
-    if (isVideoMime(mime)) {
+    if (file.size > MAX_BYTES) {
       return NextResponse.json(
         {
           error:
-            'Videos must use the signed upload flow. Use the Social media uploader in Media Library.',
+            'File must be 4MB or smaller for quick upload. Larger images and videos use the direct uploader automatically — try again.',
         },
         { status: 400 },
       );
     }
 
-    if (file.size > IMAGE_MAX_BYTES) {
-      return NextResponse.json(
-        { error: 'Image must be 4MB or smaller.' },
-        { status: 400 },
-      );
-    }
-
     const ext = fileExtension(file.name) || mime.split('/')[1] || 'jpg';
-    const safeExt = EXT_TO_MIME[ext] ? (ext === 'jpeg' ? 'jpg' : ext) : 'jpg';
-    const path = `products/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${safeExt}`;
+    const safeExt = EXT_TO_MIME[ext]
+      ? ext === 'jpeg'
+        ? 'jpg'
+        : ext
+      : mime.startsWith('video/')
+        ? 'mp4'
+        : 'jpg';
+    const folder = mime.startsWith('video/') ? 'social' : 'products';
+    const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${safeExt}`;
     const buffer = Buffer.from(await file.arrayBuffer());
 
     const { error: uploadError } = await supabase.storage
@@ -163,7 +183,7 @@ export async function POST(request) {
       );
     }
 
-    return NextResponse.json({ url: data.publicUrl, path, kind: 'image' });
+    return NextResponse.json({ url: data.publicUrl, path });
   } catch (err) {
     console.error('[admin:upload]', err?.message || err);
     const message = err?.message || 'Could not upload file';

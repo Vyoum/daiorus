@@ -300,6 +300,12 @@
   cursor: not-allowed;
 }
 
+.uploadBtnDisabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .hiddenFileInput {
   position: absolute;
   width: 1px;
@@ -310,6 +316,38 @@
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+  opacity: 0;
+}
+
+.dropzoneDisabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.previewVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.socialGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.socialItem {
+  padding: 16px;
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius);
+  background: #fafafa;
+}
+
+@media (max-width: 900px) {
+  .socialGrid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .urlRow {
@@ -323,6 +361,9 @@
 }
 
 .uploadBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 10px 16px;
   background: #fff;
   color: var(--admin-text-primary);
@@ -333,6 +374,7 @@
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
+  position: relative;
 }
 
 .uploadBtn:hover:not(:disabled) {

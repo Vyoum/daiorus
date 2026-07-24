@@ -2286,6 +2286,10 @@ img {
   pointer-events: none;
 }
 
+.instagram-card video.instagram-img {
+  pointer-events: none;
+}
+
 .instagram-overlay {
   position: absolute;
   inset: 0;
