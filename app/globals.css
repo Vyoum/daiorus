@@ -3729,8 +3729,9 @@ img {
     gap: 20px;
   }
 
-  .shop-layout {
-    grid-template-columns: 1fr;
+  .shop-layout,
+  .shop-page .shop-layout {
+    grid-template-columns: minmax(0, 1fr);
     gap: 28px;
   }
 
@@ -3864,31 +3865,42 @@ img {
   .shop-hero,
   .shop-filters,
   .shop-toolbar,
-  .shop-layout,
+  .shop-layout {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
   .shop-grid-wrap {
-    padding-left: 12px;
-    padding-right: 12px;
+    padding-left: 0;
+    padding-right: 0;
   }
 
   .shop-page {
-    --shop-pad-x: 12px;
+    --shop-max-w: 100%;
+    --shop-pad-x: 16px;
   }
 
   .shop-page .shop-hero,
   .shop-page .shop-toolbar,
-  .shop-page .shop-layout,
-  .shop-page .shop-grid-wrap {
+  .shop-page .shop-layout {
+    max-width: var(--shop-max-w);
+    width: 100%;
     padding-left: var(--shop-pad-x);
     padding-right: var(--shop-pad-x);
   }
 
+  .shop-page .shop-grid-wrap {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
   .shop-page .ui1-product-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
+    gap: 12px;
   }
 
   .shop-page .shop-layout .ui1-product-grid {
-    gap: 16px;
+    gap: 12px;
   }
 
   .shop-page .product-img-wrapper {
@@ -3908,7 +3920,8 @@ img {
     font-size: 0.9rem;
   }
 
-  .shop-layout {
+  .shop-layout,
+  .shop-page .shop-layout {
     padding-top: 24px;
     padding-bottom: 64px;
     gap: 20px;
@@ -4172,27 +4185,38 @@ img {
 
   .shop-hero,
   .shop-toolbar,
-  .shop-layout,
+  .shop-layout {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
   .shop-grid-wrap {
-    padding-left: 10px;
-    padding-right: 10px;
+    padding-left: 0;
+    padding-right: 0;
   }
 
   .shop-page {
-    --shop-pad-x: 10px;
+    --shop-max-w: 100%;
+    --shop-pad-x: 12px;
   }
 
   .shop-page .shop-hero,
   .shop-page .shop-toolbar,
-  .shop-page .shop-layout,
-  .shop-page .shop-grid-wrap {
+  .shop-page .shop-layout {
+    max-width: var(--shop-max-w);
+    width: 100%;
     padding-left: var(--shop-pad-x);
     padding-right: var(--shop-pad-x);
   }
 
+  .shop-page .shop-grid-wrap {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
   .shop-page .ui1-product-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
+    gap: 10px;
   }
 
   .instagram-grid {
