@@ -7,17 +7,20 @@ import { ensureMediaBucket, getMediaBucketName } from '@/lib/admin/upload-storag
 export const runtime = 'nodejs';
 
 const BUCKET = getMediaBucketName();
-const IMAGE_MAX_BYTES = 4 * 1024 * 1024; // stay under typical Vercel 4.5MB body limit
-const ALLOWED_IMAGE_TYPES = new Set([
+const VIDEO_MAX_BYTES = 50 * 1024 * 1024;
+const IMAGE_MAX_BYTES = 4 * 1024 * 1024;
+
+const ALLOWED_TYPES = new Set([
   'image/jpeg',
   'image/jpg',
   'image/pjpeg',
   'image/png',
   'image/webp',
   'image/gif',
+  'video/mp4',
+  'video/webm',
+  'video/quicktime',
 ]);
-const ALLOWED_VIDEO_TYPES = new Set(['video/mp4', 'video/webm', 'video/quicktime']);
-const ALLOWED_TYPES = new Set([...ALLOWED_IMAGE_TYPES, ...ALLOWED_VIDEO_TYPES]);
 
 const EXT_TO_MIME = {
   jpg: 'image/jpeg',
@@ -34,17 +37,13 @@ function fileExtension(filename = '') {
   return String(filename).split('.').pop()?.toLowerCase() || '';
 }
 
-function resolveMime(file) {
-  const type = String(file.type || '').toLowerCase().trim();
+function resolveMime({ filename, contentType }) {
+  const type = String(contentType || '').toLowerCase().trim();
   if (ALLOWED_TYPES.has(type)) {
     return type === 'image/jpg' || type === 'image/pjpeg' ? 'image/jpeg' : type;
   }
-  const ext = fileExtension(file.name);
+  const ext = fileExtension(filename);
   return EXT_TO_MIME[ext] || null;
-}
-
-function isVideoMime(mime) {
-  return String(mime || '').startsWith('video/');
 }
 
 async function requireAdminLight() {
@@ -99,82 +98,73 @@ export async function POST(request) {
 
     await ensureMediaBucket(supabase);
 
-    const form = await request.formData();
-    const file = form.get('file');
+    const body = await request.json();
+    const filename = String(body?.filename || 'media.bin');
+    const size = Number(body?.size) || 0;
+    const mime = resolveMime({
+      filename,
+      contentType: body?.contentType,
+    });
 
-    if (!file || typeof file === 'string' || !file.size) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
-    }
-
-    const mime = resolveMime(file);
     if (!mime) {
       return NextResponse.json(
         {
           error:
-            'Only JPG, PNG, WEBP, GIF images or MP4 / WEBM / MOV videos are supported. Convert HEIC/Phone Live Photos before uploading.',
+            'Only JPG, PNG, WEBP, GIF images or MP4 / WEBM / MOV videos are supported.',
         },
         { status: 400 },
       );
     }
 
-    if (isVideoMime(mime)) {
+    const isVideo = mime.startsWith('video/');
+    const maxBytes = isVideo ? VIDEO_MAX_BYTES : IMAGE_MAX_BYTES;
+    if (size > maxBytes) {
       return NextResponse.json(
         {
-          error:
-            'Videos must use the signed upload flow. Use the Social media uploader in Media Library.',
+          error: isVideo
+            ? 'Video must be 50MB or smaller.'
+            : 'Image must be 4MB or smaller.',
         },
         { status: 400 },
       );
     }
 
-    if (file.size > IMAGE_MAX_BYTES) {
-      return NextResponse.json(
-        { error: 'Image must be 4MB or smaller.' },
-        { status: 400 },
-      );
-    }
+    const ext = fileExtension(filename) || mime.split('/')[1] || (isVideo ? 'mp4' : 'jpg');
+    const safeExt = EXT_TO_MIME[ext]
+      ? ext === 'jpeg'
+        ? 'jpg'
+        : ext
+      : isVideo
+        ? 'mp4'
+        : 'jpg';
+    const folder = isVideo ? 'social/videos' : 'social/images';
+    const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${safeExt}`;
 
-    const ext = fileExtension(file.name) || mime.split('/')[1] || 'jpg';
-    const safeExt = EXT_TO_MIME[ext] ? (ext === 'jpeg' ? 'jpg' : ext) : 'jpg';
-    const path = `products/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${safeExt}`;
-    const buffer = Buffer.from(await file.arrayBuffer());
-
-    const { error: uploadError } = await supabase.storage
+    const { data, error } = await supabase.storage
       .from(BUCKET)
-      .upload(path, buffer, {
-        contentType: mime,
-        upsert: false,
-        cacheControl: '31536000',
-      });
+      .createSignedUploadUrl(path);
 
-    if (uploadError) {
-      console.error('[admin:upload]', uploadError.message);
+    if (error || !data?.token || !data?.path) {
+      console.error('[admin:upload:sign]', error?.message || error);
       return NextResponse.json(
-        { error: uploadError.message || 'Upload failed' },
+        { error: error?.message || 'Could not create signed upload URL' },
         { status: 500 },
       );
     }
 
-    const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
-    if (!data?.publicUrl) {
-      return NextResponse.json(
-        { error: 'Upload succeeded but public URL is missing. Check bucket is public.' },
-        { status: 500 },
-      );
-    }
-
-    return NextResponse.json({ url: data.publicUrl, path, kind: 'image' });
+    const { data: publicData } = supabase.storage.from(BUCKET).getPublicUrl(data.path);
+    return NextResponse.json({
+      bucket: BUCKET,
+      path: data.path,
+      token: data.token,
+      signedUrl: data.signedUrl || null,
+      publicUrl: publicData?.publicUrl || null,
+      kind: isVideo ? 'video' : 'image',
+    });
   } catch (err) {
-    console.error('[admin:upload]', err?.message || err);
-    const message = err?.message || 'Could not upload file';
-    const isDb =
-      /timeout|EAUTH|P1001|Can't reach database|Database/i.test(message);
+    console.error('[admin:upload:sign]', err?.message || err);
     return NextResponse.json(
-      {
-        error: isDb
-          ? 'Database unavailable while checking admin access. Try again in a moment.'
-          : message,
-      },
+      { error: err?.message || 'Could not prepare upload' },
       { status: 500 },
     );
   }

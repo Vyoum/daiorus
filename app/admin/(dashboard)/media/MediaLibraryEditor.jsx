@@ -8,10 +8,19 @@ import {
   DEFAULT_HERO,
   DEFAULT_SIGNATURE,
   DEFAULT_CURATED_SELECTS,
+  DEFAULT_SOCIAL,
   MEDIA_PRESETS,
   MAX_HERO_CAROUSEL_IMAGES,
+  MAX_SOCIAL_ITEMS,
 } from '../../../../lib/site-content-defaults';
-import { isAllowedImageFile, uploadAdminImage } from '@/lib/admin/image-upload';
+import {
+  isAllowedImageFile,
+  isAllowedMediaFile,
+  mediaKindFromFile,
+  mediaKindFromUrl,
+  uploadAdminImage,
+  uploadAdminMedia,
+} from '@/lib/admin/image-upload';
 import styles from './media.module.css';
 
 function Field({ label, children, full }) {
@@ -248,6 +257,344 @@ function heroImagesFromState(hero) {
   return hero.imageUrl ? [hero.imageUrl] : [...DEFAULT_HERO.images];
 }
 
+function socialFromState(social) {
+  const base = social || DEFAULT_SOCIAL;
+  const items = Array.isArray(base.items)
+    ? base.items
+        .map((item, index) => {
+          if (!item) return null;
+          if (typeof item === 'string') {
+            const url = item.trim();
+            if (!url) return null;
+            return {
+              type: mediaKindFromUrl(url),
+              url,
+              poster: '',
+              alt: `Instagram look ${index + 1}`,
+              href: '',
+            };
+          }
+          const url = String(item.url || '').trim();
+          if (!url) return null;
+          return {
+            type: item.type === 'video' || mediaKindFromUrl(url) === 'video' ? 'video' : 'image',
+            url,
+            poster: String(item.poster || '').trim(),
+            alt: String(item.alt || '').trim() || `Instagram look ${index + 1}`,
+            href: String(item.href || '').trim(),
+          };
+        })
+        .filter(Boolean)
+        .slice(0, MAX_SOCIAL_ITEMS)
+    : [];
+
+  return {
+    label: base.label || DEFAULT_SOCIAL.label,
+    titlePrefix: base.titlePrefix || DEFAULT_SOCIAL.titlePrefix,
+    handle: base.handle || DEFAULT_SOCIAL.handle,
+    profileUrl: base.profileUrl || DEFAULT_SOCIAL.profileUrl,
+    items: items.length ? items : DEFAULT_SOCIAL.items.map((item) => ({ ...item })),
+  };
+}
+
+function SocialMediaEditor({
+  social,
+  onChange,
+  uploading,
+  onUploadFiles,
+  uploadError,
+  uploadSuccess,
+}) {
+  const fileRef = useRef(null);
+  const [dragOver, setDragOver] = useState(false);
+  const [pasteUrl, setPasteUrl] = useState('');
+  const remaining = MAX_SOCIAL_ITEMS - social.items.length;
+
+  const updateItem = (index, patch) => {
+    onChange({
+      ...social,
+      items: social.items.map((item, i) => (i === index ? { ...item, ...patch } : item)),
+    });
+  };
+
+  const removeItem = (index) => {
+    onChange({
+      ...social,
+      items: social.items.filter((_, i) => i !== index),
+    });
+  };
+
+  const moveItem = (index, direction) => {
+    const nextIndex = index + direction;
+    if (nextIndex < 0 || nextIndex >= social.items.length) return;
+    const next = [...social.items];
+    const [item] = next.splice(index, 1);
+    next.splice(nextIndex, 0, item);
+    onChange({ ...social, items: next });
+  };
+
+  const addUrl = () => {
+    const url = pasteUrl.trim();
+    if (!url || remaining <= 0) return;
+    if (social.items.some((item) => item.url === url)) return;
+    onChange({
+      ...social,
+      items: [
+        ...social.items,
+        {
+          type: mediaKindFromUrl(url),
+          url,
+          poster: '',
+          alt: `Instagram look ${social.items.length + 1}`,
+          href: '',
+        },
+      ],
+    });
+    setPasteUrl('');
+  };
+
+  return (
+    <div>
+      <div className={styles.grid2}>
+        <Field label="Section label">
+          <input
+            className={styles.input}
+            value={social.label}
+            onChange={(e) => onChange({ ...social, label: e.target.value })}
+            disabled={uploading}
+          />
+        </Field>
+        <Field label="Title prefix">
+          <input
+            className={styles.input}
+            value={social.titlePrefix}
+            onChange={(e) => onChange({ ...social, titlePrefix: e.target.value })}
+            disabled={uploading}
+          />
+        </Field>
+      </div>
+      <div className={styles.grid2}>
+        <Field label="Handle">
+          <input
+            className={styles.input}
+            value={social.handle}
+            onChange={(e) => onChange({ ...social, handle: e.target.value })}
+            placeholder="@daiorus"
+            disabled={uploading}
+          />
+        </Field>
+        <Field label="Profile URL">
+          <input
+            className={styles.input}
+            value={social.profileUrl}
+            onChange={(e) => onChange({ ...social, profileUrl: e.target.value })}
+            placeholder="https://www.instagram.com/daiorus"
+            disabled={uploading}
+          />
+        </Field>
+      </div>
+
+      <Field label="Grid media" full>
+        <input
+          ref={fileRef}
+          type="file"
+          multiple
+          accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime,.jpg,.jpeg,.png,.webp,.gif,.mp4,.webm,.mov"
+          className={styles.hiddenFileInput}
+          onChange={(e) => {
+            const files = Array.from(e.target.files || []);
+            e.target.value = '';
+            if (files.length) void onUploadFiles(files);
+          }}
+        />
+        <div
+          role="button"
+          tabIndex={0}
+          className={`${styles.dropzone} ${dragOver ? styles.dropzoneActive : ''}`}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragOver(true);
+          }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragOver(false);
+            if (e.dataTransfer.files?.length) void onUploadFiles(e.dataTransfer.files);
+          }}
+          onClick={() => {
+            if (!uploading && remaining > 0) fileRef.current?.click();
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              if (!uploading && remaining > 0) fileRef.current?.click();
+            }
+          }}
+        >
+          <Upload size={28} className={styles.uploadIcon} />
+          <p className={styles.dropTitle}>
+            {uploading ? 'Uploading…' : 'Upload social images or videos'}
+          </p>
+          <p className={styles.dropText}>
+            Click to browse or drag and drop. JPG, PNG, WEBP, GIF, MP4, WEBM, MOV · up to{' '}
+            {MAX_SOCIAL_ITEMS} items. Videos autoplay muted in the homepage grid.
+          </p>
+        </div>
+
+        {uploadError ? (
+          <p className={styles.inlineUploadError} role="alert">
+            {uploadError}
+          </p>
+        ) : null}
+        {uploadSuccess ? <p className={styles.inlineUploadSuccess}>{uploadSuccess}</p> : null}
+
+        {social.items.length > 0 ? (
+          <div className={styles.galleryGrid}>
+            {social.items.map((item, index) => (
+              <div key={`${item.url}-${index}`} className={styles.galleryItem}>
+                {item.type === 'video' ? (
+                  <video
+                    src={item.url}
+                    className={styles.galleryImg}
+                    muted
+                    playsInline
+                    loop
+                    autoPlay
+                    poster={item.poster || undefined}
+                  />
+                ) : (
+                  <img src={item.url} alt="" className={styles.galleryImg} />
+                )}
+                <span className={styles.coverBadge}>
+                  {item.type === 'video' ? 'Video' : 'Image'} {index + 1}
+                </span>
+                <div className={styles.galleryActions}>
+                  <button
+                    type="button"
+                    className={styles.galleryBtn}
+                    onClick={() => moveItem(index, -1)}
+                    disabled={uploading || index === 0}
+                  >
+                    ←
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.galleryBtn}
+                    onClick={() => moveItem(index, 1)}
+                    disabled={uploading || index === social.items.length - 1}
+                  >
+                    →
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.galleryBtn} ${styles.galleryDanger}`}
+                    onClick={() => removeItem(index)}
+                    disabled={uploading}
+                  >
+                    Remove
+                  </button>
+                </div>
+                <input
+                  className={styles.input}
+                  style={{ marginTop: 8 }}
+                  value={item.alt}
+                  onChange={(e) => updateItem(index, { alt: e.target.value })}
+                  placeholder="Alt text"
+                  disabled={uploading}
+                />
+                <input
+                  className={styles.input}
+                  style={{ marginTop: 8 }}
+                  value={item.href}
+                  onChange={(e) => updateItem(index, { href: e.target.value })}
+                  placeholder="Optional link URL (defaults to profile)"
+                  disabled={uploading}
+                />
+                {item.type === 'video' ? (
+                  <input
+                    className={styles.input}
+                    style={{ marginTop: 8 }}
+                    value={item.poster}
+                    onChange={(e) => updateItem(index, { poster: e.target.value })}
+                    placeholder="Optional poster image URL"
+                    disabled={uploading}
+                  />
+                ) : null}
+              </div>
+            ))}
+          </div>
+        ) : null}
+
+        <div className={styles.urlRow}>
+          <input
+            className={styles.input}
+            value={pasteUrl}
+            onChange={(e) => setPasteUrl(e.target.value)}
+            placeholder="Or paste an image / video URL"
+            disabled={uploading || remaining <= 0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                addUrl();
+              }
+            }}
+          />
+          <button
+            type="button"
+            className={styles.uploadBtn}
+            onClick={addUrl}
+            disabled={uploading || !pasteUrl.trim() || remaining <= 0}
+          >
+            Add URL
+          </button>
+        </div>
+
+        <div className={styles.presets}>
+          {MEDIA_PRESETS.filter((src) => src.includes('/ig-')).map((src) => (
+            <button
+              key={src}
+              type="button"
+              className={`${styles.preset} ${
+                social.items.some((item) => item.url === src) ? styles.presetActive : ''
+              }`}
+              title={src}
+              disabled={
+                uploading ||
+                (remaining <= 0 && !social.items.some((item) => item.url === src))
+              }
+              onClick={() => {
+                if (social.items.some((item) => item.url === src)) {
+                  onChange({
+                    ...social,
+                    items: social.items.filter((item) => item.url !== src),
+                  });
+                  return;
+                }
+                if (remaining <= 0) return;
+                onChange({
+                  ...social,
+                  items: [
+                    ...social.items,
+                    {
+                      type: 'image',
+                      url: src,
+                      poster: '',
+                      alt: `Instagram look ${social.items.length + 1}`,
+                      href: '',
+                    },
+                  ],
+                });
+              }}
+            >
+              <img src={src} alt="" />
+            </button>
+          ))}
+        </div>
+      </Field>
+    </div>
+  );
+}
+
 export default function MediaLibraryEditor({ initialContent, products = [] }) {
   const router = useRouter();
   const [announce, setAnnounce] = useState(initialContent.announce);
@@ -261,6 +608,7 @@ export default function MediaLibraryEditor({ initialContent, products = [] }) {
       ? initialContent.curatedSelects.productIds
       : DEFAULT_CURATED_SELECTS.productIds,
   );
+  const [social, setSocial] = useState(socialFromState(initialContent?.social));
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
@@ -353,14 +701,74 @@ export default function MediaLibraryEditor({ initialContent, products = [] }) {
     }
   };
 
+  const handleSocialUpload = async (fileList) => {
+    if (uploading) return;
+    const current = socialFromState(social).items;
+    const room = MAX_SOCIAL_ITEMS - current.length;
+    if (room <= 0) {
+      setError(`You can upload up to ${MAX_SOCIAL_ITEMS} social media items.`);
+      return;
+    }
+
+    setUploading(true);
+    setError('');
+    setSuccess('');
+    try {
+      const picked = Array.from(fileList || []).filter(Boolean).slice(0, room);
+      const files = picked.filter(isAllowedMediaFile);
+      if (!files.length) {
+        throw new Error(
+          picked.length
+            ? 'Please choose JPG, PNG, WEBP, GIF, MP4, WEBM, or MOV files.'
+            : 'No media files selected.',
+        );
+      }
+
+      const uploaded = [];
+      for (const file of files) {
+        const url = await uploadAdminMedia(file);
+        uploaded.push({
+          type: mediaKindFromFile(file) || mediaKindFromUrl(url),
+          url,
+          poster: '',
+          alt: `Instagram look ${current.length + uploaded.length + 1}`,
+          href: '',
+        });
+      }
+
+      setSocial((prev) => {
+        const nextItems = [...socialFromState(prev).items];
+        for (const item of uploaded) {
+          if (!nextItems.some((existing) => existing.url === item.url)) {
+            nextItems.push(item);
+          }
+        }
+        return {
+          ...socialFromState(prev),
+          items: nextItems.slice(0, MAX_SOCIAL_ITEMS),
+        };
+      });
+      setSuccess(
+        uploaded.length > 1
+          ? `${uploaded.length} media files uploaded. Save changes to publish the social section.`
+          : 'Media uploaded. Save changes to publish the social section.',
+      );
+    } catch (err) {
+      setError(err.message || 'Could not upload media');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleReset = () => {
     setAnnounce({ ...DEFAULT_ANNOUNCE });
     setHero({ ...DEFAULT_HERO, images: [...DEFAULT_HERO.images] });
     setSignature({ ...DEFAULT_SIGNATURE });
     setCuratedProductIds([...DEFAULT_CURATED_SELECTS.productIds]);
+    setSocial(socialFromState(DEFAULT_SOCIAL));
     setError('');
     setSuccess(
-      'Restored default copy, images, and curated selections in the form. Save to publish.',
+      'Restored default copy, images, social media, and curated selections in the form. Save to publish.',
     );
   };
 
@@ -372,6 +780,7 @@ export default function MediaLibraryEditor({ initialContent, products = [] }) {
 
     try {
       const images = heroImagesFromState(hero);
+      const socialPayload = socialFromState(social);
       const payload = {
         announce,
         hero: {
@@ -381,6 +790,7 @@ export default function MediaLibraryEditor({ initialContent, products = [] }) {
         },
         signature,
         curatedSelects: { productIds: curatedProductIds || [] },
+        social: socialPayload,
       };
 
       const res = await fetch('/api/admin/site-content', {
@@ -398,6 +808,7 @@ export default function MediaLibraryEditor({ initialContent, products = [] }) {
       });
       setSignature(data.signature);
       setCuratedProductIds(data?.curatedSelects?.productIds || []);
+      setSocial(socialFromState(data.social));
       setSuccess('Landing page content saved. Changes are live on the storefront.');
       router.refresh();
     } catch (err) {
@@ -415,9 +826,9 @@ export default function MediaLibraryEditor({ initialContent, products = [] }) {
         <div>
           <h1 className={styles.pageTitle}>Media Library</h1>
           <p className={styles.pageSubtitle}>
-            Manage the announce banner, homepage hero carousel, Curated Selects, and Signature Line
-            section.
-            Upload images or paste a URL, then save to publish.
+            Manage the announce banner, homepage hero carousel, Curated Selects, Signature Line,
+            and Social grid.
+            Upload images or videos, paste a URL, then save to publish.
           </p>
         </div>
         <div className={styles.headerActions}>
@@ -634,6 +1045,27 @@ export default function MediaLibraryEditor({ initialContent, products = [] }) {
               />
             </Field>
           </div>
+        </section>
+
+        <section className={styles.card}>
+          <div className={styles.cardHeader}>
+            <div>
+              <h2 className={styles.cardTitle}>Social</h2>
+              <p className={styles.cardHint}>
+                Homepage Instagram-style grid. Upload images or videos, reorder tiles, and edit the
+                follow handle.
+              </p>
+            </div>
+          </div>
+
+          <SocialMediaEditor
+            social={social}
+            onChange={setSocial}
+            uploading={uploading}
+            onUploadFiles={handleSocialUpload}
+            uploadError={error}
+            uploadSuccess={success}
+          />
         </section>
 
         <section className={styles.card}>
