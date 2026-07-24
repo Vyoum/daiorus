@@ -4,17 +4,12 @@ import ProductCard from './ProductCard';
 import HomeHeroCarousel from './HomeHeroCarousel';
 import BrandIntroSplash from './BrandIntroSplash';
 import { COLLECTIONS } from '../lib/data';
-import { DEFAULT_HERO, DEFAULT_SIGNATURE } from '../lib/site-content-defaults';
+import {
+  DEFAULT_HERO,
+  DEFAULT_SIGNATURE,
+  DEFAULT_SOCIAL,
+} from '../lib/site-content-defaults';
 import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from '../lib/social';
-
-const IG_IMAGES = [
-  '/images/ui1/ig-1.jpg',
-  '/images/ui1/ig-2.jpg',
-  '/images/ui1/ig-3.jpg',
-  '/images/ui1/ig-4.jpg',
-  '/images/ui1/ig-5.jpg',
-  '/images/ui1/ig-6.jpg',
-];
 
 const MARQUEE = [
   'BIS Hallmarked Gold',
@@ -27,12 +22,19 @@ export default function HomePage({
   announce,
   hero,
   signature,
+  social,
   featuredProducts = [],
   curatedSelectProducts = [],
   categories = [],
 }) {
   const heroContent = hero || DEFAULT_HERO;
   const signatureContent = signature || DEFAULT_SIGNATURE;
+  const socialContent = social || DEFAULT_SOCIAL;
+  const socialItems = Array.isArray(socialContent.items) && socialContent.items.length
+    ? socialContent.items
+    : DEFAULT_SOCIAL.items;
+  const socialProfileUrl = socialContent.profileUrl || INSTAGRAM_URL;
+  const socialHandle = socialContent.handle || INSTAGRAM_HANDLE;
   const bestSellers = featuredProducts;
   const shopCategories = Array.isArray(categories) ? categories : [];
   const curatedProducts = Array.isArray(curatedSelectProducts)
@@ -239,39 +241,57 @@ export default function HomePage({
         <section className="ui1-section">
           <div className="ui1-container">
             <div className="instagram-header">
-              <span className="section-label">Social</span>
+              <span className="section-label">{socialContent.label || 'Social'}</span>
               <h2 className="section-title">
-                Follow Us{' '}
-                <a href={INSTAGRAM_URL} target="_blank" rel="noreferrer">
-                  {INSTAGRAM_HANDLE}
+                {socialContent.titlePrefix || 'Follow Us'}{' '}
+                <a href={socialProfileUrl} target="_blank" rel="noreferrer">
+                  {socialHandle}
                 </a>
               </h2>
             </div>
             <div className="instagram-grid">
-              {IG_IMAGES.map((src, idx) => (
-                <a
-                  key={src}
-                  href={INSTAGRAM_URL}
-                  className="instagram-card"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <img
-                    src={src}
-                    alt={`Instagram look ${idx + 1}`}
-                    className="instagram-img"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                  <div className="instagram-overlay">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <rect x="2" y="2" width="20" height="20" rx="5" />
-                      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-                      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-                    </svg>
-                  </div>
-                </a>
-              ))}
+              {socialItems.map((item, idx) => {
+                const href = item.href || socialProfileUrl;
+                const key = `${item.type}-${item.url}-${idx}`;
+                return (
+                  <a
+                    key={key}
+                    href={href}
+                    className="instagram-card"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {item.type === 'video' ? (
+                      <video
+                        className="instagram-img"
+                        src={item.url}
+                        poster={item.poster || undefined}
+                        muted
+                        loop
+                        playsInline
+                        autoPlay
+                        preload="metadata"
+                        aria-label={item.alt || `Social video ${idx + 1}`}
+                      />
+                    ) : (
+                      <img
+                        src={item.url}
+                        alt={item.alt || `Instagram look ${idx + 1}`}
+                        className="instagram-img"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    )}
+                    <div className="instagram-overlay">
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <rect x="2" y="2" width="20" height="20" rx="5" />
+                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+                      </svg>
+                    </div>
+                  </a>
+                );
+              })}
             </div>
           </div>
         </section>

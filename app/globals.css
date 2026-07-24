@@ -2278,6 +2278,12 @@ img {
   height: 100%;
   object-fit: cover;
   transition: transform 0.45s ease;
+  display: block;
+  background: #e8e4dc;
+}
+
+.instagram-card video.instagram-img {
+  pointer-events: none;
 }
 
 .instagram-overlay {
