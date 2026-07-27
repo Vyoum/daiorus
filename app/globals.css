@@ -2227,15 +2227,15 @@ img {
 
 .vermeil-split {
   display: grid;
-  grid-template-columns: 1.2fr 1fr;
+  grid-template-columns: 1.45fr 1fr;
   align-items: center;
-  gap: 64px;
+  gap: 48px;
 }
 
 .vermeil-images {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
 }
 
 .vermeil-images img {
