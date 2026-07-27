@@ -2263,11 +2263,12 @@ img {
 .instagram-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 12px;
+  gap: 16px;
+  align-items: start;
 }
 
 .instagram-card {
-  aspect-ratio: 1;
+  aspect-ratio: 4 / 5;
   overflow: hidden;
   position: relative;
   background: var(--bg-cream);
@@ -2277,13 +2278,10 @@ img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center center;
   transition: transform 0.45s ease;
   display: block;
   background: #e8e4dc;
-}
-
-.instagram-card video.instagram-img {
-  pointer-events: none;
 }
 
 .instagram-card video.instagram-img {
