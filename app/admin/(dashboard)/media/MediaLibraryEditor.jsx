@@ -977,12 +977,12 @@ export default function MediaLibraryEditor({ initialContent, products = [] }) {
             <div>
               <h2 className={styles.cardTitle}>Signature Line</h2>
               <p className={styles.cardHint}>
-                Evil Eye Collection block on the landing page — two images plus copy and CTA.
+                Evil Eye Collection block on the landing page — three image frames plus copy and CTA.
               </p>
             </div>
           </div>
 
-          <div className={styles.grid2}>
+          <div className={styles.grid3}>
             <Field label="Image 1">
               <ImagePicker
                 value={signature.imageUrl1}
@@ -1005,6 +1005,41 @@ export default function MediaLibraryEditor({ initialContent, products = [] }) {
                 onUpload={(file) =>
                   handleSingleUpload(file, (url) => updateSignature('imageUrl2', url))
                 }
+              />
+            </Field>
+            <Field label="Image 3">
+              <ImagePicker
+                value={signature.imageUrl3 || ''}
+                onChange={(v) => updateSignature('imageUrl3', v)}
+                presets={MEDIA_PRESETS}
+                tall
+                uploading={uploading}
+                onUpload={(file) =>
+                  handleSingleUpload(file, (url) => updateSignature('imageUrl3', url))
+                }
+              />
+            </Field>
+          </div>
+          <div className={styles.grid3}>
+            <Field label="Image 1 alt text">
+              <input
+                className={styles.input}
+                value={signature.imageAlt1 || ''}
+                onChange={(e) => updateSignature('imageAlt1', e.target.value)}
+              />
+            </Field>
+            <Field label="Image 2 alt text">
+              <input
+                className={styles.input}
+                value={signature.imageAlt2 || ''}
+                onChange={(e) => updateSignature('imageAlt2', e.target.value)}
+              />
+            </Field>
+            <Field label="Image 3 alt text">
+              <input
+                className={styles.input}
+                value={signature.imageAlt3 || ''}
+                onChange={(e) => updateSignature('imageAlt3', e.target.value)}
               />
             </Field>
           </div>

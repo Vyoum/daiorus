@@ -225,6 +225,12 @@ export default function HomePage({
                   loading="lazy"
                   decoding="async"
                 />
+                <img
+                  src={signatureContent.imageUrl3}
+                  alt={signatureContent.imageAlt3}
+                  loading="lazy"
+                  decoding="async"
+                />
               </div>
               <div className="vermeil-copy">
                 <span className="section-label">{signatureContent.label}</span>

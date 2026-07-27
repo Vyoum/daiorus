@@ -140,6 +140,12 @@
   gap: 16px;
 }
 
+.grid3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
 .field {
   display: flex;
   flex-direction: column;
@@ -507,7 +513,8 @@
     min-height: 44px;
   }
 
-  .grid2 {
+  .grid2,
+  .grid3 {
     grid-template-columns: 1fr;
   }
 
