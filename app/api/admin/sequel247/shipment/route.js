@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireAdminApi } from '@/lib/admin/auth';
 import { bookShipmentForOrder, cancelShipmentForOrder } from '@/lib/sequel247/shipment';
+import { sequelAccountHint } from '@/lib/sequel247/status';
 import prisma from '@/lib/prisma';
 
 export async function POST(request) {
@@ -36,7 +37,11 @@ export async function POST(request) {
       );
     }
     if (!result.success) {
-      return NextResponse.json({ error: result.error, shipment: result.shipment || null }, { status: 502 });
+      const hint = sequelAccountHint(result.error);
+      return NextResponse.json(
+        { error: result.error, hint, shipment: result.shipment || null },
+        { status: 502 },
+      );
     }
 
     return NextResponse.json({ success: true, shipment: result.shipment });

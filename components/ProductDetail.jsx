@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Price from './Price';
 import ProductImageCarousel from './ProductImageCarousel';
 import ProductSpecs from './ProductSpecs';
+import ProductDeliveryEstimate from './ProductDeliveryEstimate';
 import { useCart } from './CartProvider';
 import { useWishlist } from './WishlistProvider';
 import styles from './ProductDetail.module.css';
@@ -78,6 +79,8 @@ export default function ProductDetail({ product }) {
               A DAIORUS piece crafted to catch the light — refined, wearable, and made to last.
             </p>
           )}
+
+          <ProductDeliveryEstimate />
 
           <div className={styles.actions}>
             <button

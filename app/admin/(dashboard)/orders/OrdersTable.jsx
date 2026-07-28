@@ -45,7 +45,10 @@ function shipmentStatusLabel(order) {
     return { kind: 'booked' };
   }
   if (shipment?.status === 'FAILED') {
-    return { kind: 'failed', message: shipment.errorMessage || 'Booking failed' };
+    return {
+      kind: 'failed',
+      message: `${shipment.errorMessage || 'Booking failed'} — click Retry to try again`,
+    };
   }
   if (shipment?.status === 'CANCELLED') {
     return { kind: 'cancelled', message: 'Cancelled' };
@@ -86,7 +89,10 @@ async function bookShipment(orderId, { force = false } = {}) {
     body: JSON.stringify({ orderId, force }),
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.error || data.reason || 'Could not create shipment');
+  if (!res.ok) {
+    const message = [data.error, data.hint].filter(Boolean).join(' ');
+    throw new Error(message || data.reason || 'Could not create shipment');
+  }
   return data;
 }
 
@@ -207,11 +213,6 @@ export default function OrdersTable({ orders, total, sequelConfigured }) {
       </div>
 
       {message ? <p className={styles.shipmentMessage}>{message}</p> : null}
-      {!sequelConfigured ? (
-        <p className={styles.shipmentWarning}>
-          Sequel247 is not configured on this server. Add SEQUEL247_* env vars to enable shipment booking.
-        </p>
-      ) : null}
 
       <table className={styles.table}>
         <thead>

@@ -2,6 +2,7 @@ import { Download } from 'lucide-react';
 import { getAdminOrders } from '../../../../lib/admin/orders';
 import { isSequelConfigured } from '../../../../lib/sequel247/config';
 import OrdersTable from './OrdersTable';
+import SequelStatusBanner from './SequelStatusBanner';
 import styles from './orders.module.css';
 
 export default async function OrdersPage() {
@@ -22,6 +23,7 @@ export default async function OrdersPage() {
         </div>
       </header>
 
+      <SequelStatusBanner sequelConfigured={isSequelConfigured()} />
       <OrdersTable orders={orders} total={total} sequelConfigured={isSequelConfigured()} />
     </div>
   );
