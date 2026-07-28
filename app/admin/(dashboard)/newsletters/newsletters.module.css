@@ -1,0 +1,119 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.pageTitle {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+
+.pageSubtitle {
+  color: var(--admin-text-secondary);
+  font-size: 15px;
+  max-width: 520px;
+}
+
+.statCard {
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+  padding: 20px 28px;
+  min-width: 160px;
+  box-shadow: var(--admin-shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.statLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--admin-text-secondary);
+}
+
+.statValue {
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.errorBanner {
+  margin: 0 0 16px;
+  padding: 12px 16px;
+  border-radius: var(--admin-radius);
+  background: #fef2f2;
+  color: #991b1b;
+  font-size: 14px;
+}
+
+.tableContainer {
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+  box-shadow: var(--admin-shadow-sm);
+  overflow: hidden;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.th {
+  padding: 16px 24px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--admin-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--admin-border);
+  background: #f9fafb;
+}
+
+.td {
+  padding: 16px 24px;
+  font-size: 14px;
+  border-bottom: 1px solid var(--admin-border);
+  vertical-align: middle;
+}
+
+.tr:hover .td {
+  background: var(--admin-surface-hover);
+}
+
+.emailLink {
+  font-weight: 600;
+  color: var(--admin-text-primary);
+}
+
+.emailLink:hover {
+  text-decoration: underline;
+}
+
+.sourceBadge {
+  display: inline-flex;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: #f3f4f6;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.dateCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dateSub {
+  font-size: 12px;
+  color: var(--admin-text-secondary);
+}

@@ -2436,6 +2436,12 @@ img {
   font-weight: 500;
 }
 
+.newsletter-error {
+  margin-top: 12px;
+  color: #fca5a5;
+  font-size: 0.9rem;
+}
+
 /* Footer */
 .footer-container {
   background: #12100d;

@@ -301,3 +301,13 @@ model Coupon {
   @@index([isActive])
   @@map("coupons")
 }
+
+model Newsletter {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  source    String   @default("inner_circle")
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@map("newsletters")
+}

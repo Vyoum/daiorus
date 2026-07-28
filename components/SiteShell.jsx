@@ -41,6 +41,8 @@ export default function SiteShell({
   const [searchQuery, setSearchQuery] = useState('');
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const [subscribing, setSubscribing] = useState(false);
+  const [subscribeError, setSubscribeError] = useState('');
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCartAnimating, setIsCartAnimating] = useState(false);
@@ -145,12 +147,32 @@ export default function SiteShell({
     catCloseTimer.current = setTimeout(() => setCategoriesOpen(false), 120);
   };
 
-  const handleSubscribe = (e) => {
+  const handleSubscribe = async (e) => {
     e.preventDefault();
-    if (!email.trim()) return;
-    setSubscribed(true);
-    setEmail('');
-    setTimeout(() => setSubscribed(false), 5000);
+    const value = email.trim().toLowerCase();
+    if (!value || subscribing) return;
+
+    setSubscribing(true);
+    setSubscribeError('');
+
+    try {
+      const res = await fetch('/api/newsletter/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: value, source: 'inner_circle' }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || 'Could not subscribe');
+      }
+      setSubscribed(true);
+      setEmail('');
+      setTimeout(() => setSubscribed(false), 5000);
+    } catch (err) {
+      setSubscribeError(err.message || 'Could not subscribe. Please try again.');
+    } finally {
+      setSubscribing(false);
+    }
   };
 
   useEffect(() => {
@@ -573,12 +595,18 @@ export default function SiteShell({
                   className="newsletter-input"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  disabled={subscribing}
                 />
-                <button type="submit" className="newsletter-btn">
-                  Subscribe
+                <button type="submit" className="newsletter-btn" disabled={subscribing}>
+                  {subscribing ? 'Subscribing…' : 'Subscribe'}
                 </button>
               </form>
             )}
+            {subscribeError ? (
+              <p className="newsletter-error" role="alert">
+                {subscribeError}
+              </p>
+            ) : null}
           </div>
         </section>
       )}
