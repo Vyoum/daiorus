@@ -383,6 +383,35 @@
   color: #047857;
 }
 
+.shipmentReadyBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.shipBtnInline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid #86efac;
+  border-radius: var(--admin-radius-sm);
+  background: #ecfdf5;
+  font-size: 12px;
+  font-weight: 600;
+  color: #047857;
+}
+
+.shipBtnInline:hover:not(:disabled) {
+  background: #d1fae5;
+}
+
+.shipBtnInline:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .shipmentSequelOnly {
   font-size: 11px;
   font-weight: 600;

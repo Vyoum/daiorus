@@ -51,7 +51,7 @@ function shipmentStatusLabel(order) {
     return { kind: 'cancelled', message: 'Cancelled' };
   }
   if (order.status === 'PENDING') {
-    return { kind: 'ready_pending', message: 'Payment pending — can book in Sequel' };
+    return { kind: 'ready_pending', message: 'Unpaid — admin can book in Sequel for testing' };
   }
   if (order.status === 'CANCELLED' || order.status === 'REFUNDED') {
     return { kind: 'na', message: '—' };
@@ -67,9 +67,16 @@ function shipmentStatusLabel(order) {
 
 function canBookShipment(order) {
   if (order.country && String(order.country).toUpperCase() !== 'IN') return false;
-  if (!['PENDING', 'PAID', 'PROCESSING'].includes(order.status)) return false;
   if (order.shipment?.status === 'BOOKED' && order.shipment?.docketNumber) return false;
-  return true;
+  if (order.shipment?.status === 'FAILED') return true;
+  return ['PENDING', 'PAID', 'PROCESSING'].includes(order.status);
+}
+
+function shipButtonLabel(order, rowBusy) {
+  if (rowBusy) return '…';
+  if (order.shipment?.status === 'FAILED') return 'Retry';
+  if (order.status === 'PENDING') return 'Book in Sequel';
+  return 'Ship';
 }
 
 async function bookShipment(orderId, { force = false } = {}) {
@@ -194,7 +201,7 @@ export default function OrdersTable({ orders, total, sequelConfigured }) {
             onClick={handleBulkShip}
           >
             <Truck size={16} />
-            {bulkBusy ? 'Creating…' : `Create Shipment${selectedShippableCount ? ` (${selectedShippableCount})` : ''}`}
+            {bulkBusy ? 'Creating…' : `Book in Sequel${selectedShippableCount ? ` (${selectedShippableCount})` : ''}`}
           </button>
         </div>
       </div>
@@ -327,7 +334,20 @@ export default function OrdersTable({ orders, total, sequelConfigured }) {
                           {shipmentLabel.message}
                         </span>
                       ) : shipmentLabel.kind === 'ready' || shipmentLabel.kind === 'ready_pending' ? (
-                        <span className={styles.shipmentReady}>{shipmentLabel.message}</span>
+                        <div className={styles.shipmentReadyBlock}>
+                          <span className={styles.shipmentReady}>{shipmentLabel.message}</span>
+                          {shippable ? (
+                            <button
+                              type="button"
+                              className={styles.shipBtnInline}
+                              disabled={rowBusy}
+                              onClick={() => handleRowShip(order)}
+                            >
+                              <Truck size={14} />
+                              {shipButtonLabel(order, rowBusy)}
+                            </button>
+                          ) : null}
+                        </div>
                       ) : (
                         <span className={styles.shipmentMeta}>{shipmentLabel.message}</span>
                       )}
@@ -340,20 +360,18 @@ export default function OrdersTable({ orders, total, sequelConfigured }) {
                           type="button"
                           className={styles.shipBtn}
                           disabled={rowBusy}
-                          onClick={() => handleRowShip(order)}
+                          onClick={() =>
+                            handleRowShip(order, {
+                              force: order.shipment?.status === 'FAILED',
+                            })
+                          }
                         >
-                          <Truck size={14} />
-                          {rowBusy ? '…' : 'Ship'}
-                        </button>
-                      ) : shipment?.status === 'FAILED' ? (
-                        <button
-                          type="button"
-                          className={styles.shipBtn}
-                          disabled={rowBusy}
-                          onClick={() => handleRowShip(order, { force: true })}
-                        >
-                          <RefreshCw size={14} />
-                          {rowBusy ? '…' : 'Retry'}
+                          {order.shipment?.status === 'FAILED' ? (
+                            <RefreshCw size={14} />
+                          ) : (
+                            <Truck size={14} />
+                          )}
+                          {shipButtonLabel(order, rowBusy)}
                         </button>
                       ) : (
                         <MoreHorizontal size={18} className={styles.moreBtn} />
