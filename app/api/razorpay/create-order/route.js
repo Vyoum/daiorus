@@ -123,15 +123,21 @@ async function createPendingOrder({
           currency: 'INR',
           notes,
           items: {
-            create: pricedItems.map((item) => ({
-              productId: item.id || null,
-              productName: item.name,
-              material: item.material || null,
-              unitPriceInr: item.price,
-              quantity: item.qty,
-              lineTotalInr: item.price * item.qty,
-              imageUrl: item.image || null,
-            })),
+            create: pricedItems.map((item) => {
+              const specs = item.id ? productSpecById[item.id] : null;
+              return {
+                productId: item.id || null,
+                productName: item.name,
+                material: specs?.material || item.material || null,
+                weightGrams: specs?.weightGrams ?? item.weightGrams ?? null,
+                diamondCount: specs?.diamondCount ?? item.diamondCount ?? null,
+                productInfo: specs?.productInfo || item.productInfo || null,
+                unitPriceInr: item.price,
+                quantity: item.qty,
+                lineTotalInr: item.price * item.qty,
+                imageUrl: item.image || null,
+              };
+            }),
           },
         },
         select: { id: true, orderNumber: true },
@@ -205,10 +211,17 @@ export async function POST(request) {
     const existingProducts = productIds.length
       ? await prisma.product.findMany({
           where: { id: { in: productIds } },
-          select: { id: true },
+          select: {
+            id: true,
+            material: true,
+            weightGrams: true,
+            diamondCount: true,
+            productInfo: true,
+          },
         })
       : [];
     const existingProductIds = new Set(existingProducts.map((p) => p.id));
+    const productSpecById = Object.fromEntries(existingProducts.map((p) => [p.id, p]));
 
     const pricedItems = items.map((item) => {
       const unitPriceInr = applySurchargeInr(Number(item.price), surchargePct);

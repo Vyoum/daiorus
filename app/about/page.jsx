@@ -27,7 +27,7 @@ export default async function AboutPage() {
           &ldquo;We believe that fine jewellery should be worn every day — not saved
           for special occasions.&rdquo;
         </blockquote>
-        <cite>— Priya Malhotra, Founder of Daiorus</cite>
+        <cite>— Shikha Agarwal, Founder of Daiorus</cite>
       </section>
 
       <section className="about-split">

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Price from './Price';
 import ProductImageCarousel from './ProductImageCarousel';
+import ProductSpecs from './ProductSpecs';
 import { useCart } from './CartProvider';
 import { useWishlist } from './WishlistProvider';
 import styles from './ProductDetail.module.css';
@@ -53,7 +54,8 @@ export default function ProductDetail({ product }) {
         <div className={styles.info}>
           {product.tag ? <p className={styles.tag}>{product.tag}</p> : null}
           <h1 className={styles.title}>{product.name}</h1>
-          {product.material ? <p className={styles.material}>{product.material}</p> : null}
+
+          <ProductSpecs product={product} />
 
           <div className={styles.priceRow}>
             <Price amount={product.price} className={styles.price} />

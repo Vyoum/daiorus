@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { cartItemFromProduct } from '../lib/product-specs';
 
 const STORAGE_KEY = 'daiorus_cart';
 
@@ -44,7 +45,8 @@ export function CartProvider({ children }) {
   useEffect(() => {
     if (!ready) return;
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
+      const persisted = cart.map(({ _specsHydrated, ...item }) => item);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(persisted));
     } catch {
       // ignore quota / private mode
     }
@@ -52,6 +54,7 @@ export function CartProvider({ children }) {
 
   const addToCart = useCallback((product) => {
     if (!product?.id) return;
+    const snapshot = cartItemFromProduct(product);
     setCart((prev) => {
       const existing = prev.find((item) => item.id === product.id);
       if (existing) {
@@ -59,18 +62,7 @@ export function CartProvider({ children }) {
           item.id === product.id ? { ...item, qty: item.qty + 1 } : item,
         );
       }
-      return [
-        ...prev,
-        {
-          id: product.id,
-          name: product.name,
-          price: product.price,
-          image: product.image,
-          material: product.material || null,
-          slug: product.slug || null,
-          qty: 1,
-        },
-      ];
+      return [...prev, snapshot];
     });
     setLastAddedProductId(product.id);
     setLastAddedAt(Date.now());

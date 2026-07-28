@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireAdminApi } from '@/lib/admin/auth';
 import { bookShipmentForOrder, cancelShipmentForOrder } from '@/lib/sequel247/shipment';
+import prisma from '@/lib/prisma';
 
 export async function POST(request) {
   try {
@@ -15,9 +16,24 @@ export async function POST(request) {
       return NextResponse.json({ error: 'orderId is required' }, { status: 400 });
     }
 
-    const result = await bookShipmentForOrder(orderId, { force });
+    const result = await bookShipmentForOrder(orderId, { force, allowPendingPayment: true });
     if (result.skipped) {
-      return NextResponse.json({ skipped: true, reason: result.reason, shipment: result.shipment || null });
+      const messages = {
+        not_configured:
+          'Sequel247 is not configured on this server. Add SEQUEL247_* env vars in Vercel/host settings.',
+        order_not_bookable: 'This order cannot be shipped (cancelled, refunded, or already fulfilled).',
+        order_not_found: 'Order not found.',
+        already_booked: 'Shipment is already booked for this order.',
+        international_order: 'Sequel247 only supports domestic (India) orders.',
+      };
+      return NextResponse.json(
+        {
+          error: messages[result.reason] || result.reason || 'Shipment was not created',
+          reason: result.reason,
+          shipment: result.shipment || null,
+        },
+        { status: 400 },
+      );
     }
     if (!result.success) {
       return NextResponse.json({ error: result.error, shipment: result.shipment || null }, { status: 502 });
@@ -43,7 +59,13 @@ export async function DELETE(request) {
       return NextResponse.json({ error: 'orderId is required' }, { status: 400 });
     }
 
-    const shipment = await cancelShipmentForOrder(orderId, cancelReason);
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      select: { status: true },
+    });
+    const shipment = await cancelShipmentForOrder(orderId, cancelReason, {
+      preserveOrderStatus: order?.status === 'PENDING',
+    });
     return NextResponse.json({ success: true, shipment });
   } catch (err) {
     console.error('[admin:sequel247:shipment:DELETE]', err?.message || err);

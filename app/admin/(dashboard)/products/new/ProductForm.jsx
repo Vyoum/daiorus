@@ -139,6 +139,13 @@ export default function ProductForm({ categories = [], product = null }) {
   const [surchargeType, setSurchargeType] = useState('percentage');
   const [surchargeValue, setSurchargeValue] = useState('15');
   const [tag, setTag] = useState(product?.tag || '');
+  const [weightGrams, setWeightGrams] = useState(
+    product?.weightGrams != null ? String(product.weightGrams) : '',
+  );
+  const [diamondCount, setDiamondCount] = useState(
+    product?.diamondCount != null ? String(product.diamondCount) : '',
+  );
+  const [productInfo, setProductInfo] = useState(product?.productInfo || '');
 
   const basePrice = Number(priceInr) || 0;
   const surchargeNum = Number(surchargeValue) || 0;
@@ -217,6 +224,9 @@ export default function ProductForm({ categories = [], product = null }) {
             description: combinedDescription,
             status: nextStatus,
             tag: tag || null,
+            weightGrams: weightGrams === '' ? null : Number(weightGrams),
+            diamondCount: diamondCount === '' ? null : Number(diamondCount),
+            productInfo: productInfo || null,
           }),
         },
       );
@@ -445,6 +455,46 @@ export default function ProductForm({ categories = [], product = null }) {
                 <div className={styles.field} aria-hidden="true" />
               )}
             </div>
+
+            <div className={styles.row2}>
+              <label className={styles.field}>
+                <span>Weight (grams)</span>
+                <input
+                  className={styles.input}
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  inputMode="decimal"
+                  value={weightGrams}
+                  onChange={(e) => setWeightGrams(e.target.value)}
+                  placeholder="e.g. 2.45"
+                />
+              </label>
+              <label className={styles.field}>
+                <span>No. of diamonds</span>
+                <input
+                  className={styles.input}
+                  type="number"
+                  min="0"
+                  step="1"
+                  inputMode="numeric"
+                  value={diamondCount}
+                  onChange={(e) => setDiamondCount(e.target.value)}
+                  placeholder="e.g. 12"
+                />
+              </label>
+            </div>
+
+            <label className={styles.field}>
+              <span>Product info</span>
+              <textarea
+                className={styles.textarea}
+                value={productInfo}
+                onChange={(e) => setProductInfo(e.target.value)}
+                placeholder="Dimensions, stone details, clasp type, care notes, etc."
+                rows={3}
+              />
+            </label>
 
             <div className={styles.field}>
               <span>Upload Media</span>

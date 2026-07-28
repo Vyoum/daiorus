@@ -119,7 +119,7 @@ export default async function AccountOrderDetailPage({ params }) {
         </article>
       ) : null}
 
-      {order.shipment?.docketNumber ? (
+      {order.shipment?.docketNumber && order.status !== 'PENDING' ? (
         <article className={`${styles.card} ${styles.detailCard}`}>
           <h2 className={styles.sectionTitle}>Shipment tracking</h2>
           <div className={styles.addressBlock}>

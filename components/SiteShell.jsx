@@ -10,6 +10,7 @@ import dynamic from 'next/dynamic';
 import { useCurrency } from './CurrencyProvider';
 import { INSTAGRAM_URL } from '../lib/social';
 import { useCart } from './CartProvider';
+import ProductSpecs from './ProductSpecs';
 import { useAuth } from './AuthProvider';
 
 const LoginDrawer = dynamic(() => import('./LoginDrawer'), { ssr: false });
@@ -496,6 +497,7 @@ export default function SiteShell({
                         <h4 className="cart-item-name">{item.name}</h4>
                         <span className="cart-item-price">{formatPrice(item.price * item.qty)}</span>
                       </div>
+                      <ProductSpecs product={item} variant="compact" className="cart-item-specs" />
                       <div className="cart-item-qty-actions">
                         <div className="qty-selector">
                           <button type="button" className="qty-btn" onClick={() => updateQty(item.id, -1)}>
@@ -592,6 +594,13 @@ export default function SiteShell({
               <p className="footer-brand-desc">
                 Fine jewellery for the modern woman. Crafted with intention, worn with grace.
               </p>
+              <address className="footer-address">
+                411, DLF Prime Towers,
+                <br />
+                Okhla Industrial Area, Phase 1,
+                <br />
+                Delhi, India 110020
+              </address>
               <div className="social-links">
                 <a href={INSTAGRAM_URL} className="social-link" aria-label="Instagram" target="_blank" rel="noreferrer">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">

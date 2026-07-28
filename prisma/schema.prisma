@@ -118,6 +118,9 @@ model Product {
   name         String
   description  String?
   material     String?
+  weightGrams  Float?
+  diamondCount Int?
+  productInfo  String?
   tag          String?
   priceInr     Int
   compareAtInr Int?
@@ -223,6 +226,9 @@ model OrderItem {
   productId    String?
   productName  String
   material     String?
+  weightGrams  Float?
+  diamondCount Int?
+  productInfo  String?
   unitPriceInr Int
   quantity     Int
   lineTotalInr Int

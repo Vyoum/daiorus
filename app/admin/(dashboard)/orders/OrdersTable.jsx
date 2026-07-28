@@ -36,9 +36,38 @@ function FulfillIcon({ tone }) {
   );
 }
 
+function shipmentStatusLabel(order) {
+  const shipment = order.shipment;
+  if (shipment?.docketNumber) {
+    if (order.status === 'PENDING') {
+      return { kind: 'booked_sequel', message: 'Booked in Sequel (payment pending)' };
+    }
+    return { kind: 'booked' };
+  }
+  if (shipment?.status === 'FAILED') {
+    return { kind: 'failed', message: shipment.errorMessage || 'Booking failed' };
+  }
+  if (shipment?.status === 'CANCELLED') {
+    return { kind: 'cancelled', message: 'Cancelled' };
+  }
+  if (order.status === 'PENDING') {
+    return { kind: 'ready_pending', message: 'Payment pending — can book in Sequel' };
+  }
+  if (order.status === 'CANCELLED' || order.status === 'REFUNDED') {
+    return { kind: 'na', message: '—' };
+  }
+  if (order.status === 'PAID' || order.status === 'PROCESSING') {
+    return { kind: 'ready', message: 'Ready to ship' };
+  }
+  if (order.status === 'SHIPPED' || order.status === 'DELIVERED') {
+    return { kind: 'ready', message: 'Not booked' };
+  }
+  return { kind: 'na', message: '—' };
+}
+
 function canBookShipment(order) {
   if (order.country && String(order.country).toUpperCase() !== 'IN') return false;
-  if (order.status !== 'PAID' && order.status !== 'PROCESSING') return false;
+  if (!['PENDING', 'PAID', 'PROCESSING'].includes(order.status)) return false;
   if (order.shipment?.status === 'BOOKED' && order.shipment?.docketNumber) return false;
   return true;
 }
@@ -51,16 +80,10 @@ async function bookShipment(orderId, { force = false } = {}) {
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || data.reason || 'Could not create shipment');
-  if (data.skipped && data.reason === 'already_booked') {
-    throw new Error('Shipment already booked for this order.');
-  }
-  if (data.skipped) {
-    throw new Error(data.reason || 'Shipment was not created');
-  }
   return data;
 }
 
-export default function OrdersTable({ orders, total }) {
+export default function OrdersTable({ orders, total, sequelConfigured }) {
   const router = useRouter();
   const [selected, setSelected] = useState(() => new Set());
   const [busyIds, setBusyIds] = useState(() => new Set());
@@ -177,6 +200,11 @@ export default function OrdersTable({ orders, total }) {
       </div>
 
       {message ? <p className={styles.shipmentMessage}>{message}</p> : null}
+      {!sequelConfigured ? (
+        <p className={styles.shipmentWarning}>
+          Sequel247 is not configured on this server. Add SEQUEL247_* env vars to enable shipment booking.
+        </p>
+      ) : null}
 
       <table className={styles.table}>
         <thead>
@@ -216,6 +244,7 @@ export default function OrdersTable({ orders, total }) {
               const shippable = canBookShipment(order);
               const rowBusy = busyIds.has(order.id);
               const shipment = order.shipment;
+              const shipmentLabel = shipmentStatusLabel(order);
 
               return (
                 <tr key={order.id} className={styles.tr}>
@@ -276,6 +305,9 @@ export default function OrdersTable({ orders, total }) {
                       {shipment?.docketNumber ? (
                         <>
                           <span className={styles.docketNumber}>{shipment.docketNumber}</span>
+                          {order.status === 'PENDING' ? (
+                            <span className={styles.shipmentSequelOnly}>Sequel dashboard only</span>
+                          ) : null}
                           {shipment.estimatedDelivery ? (
                             <span className={styles.shipmentMeta}>EDD: {shipment.estimatedDelivery}</span>
                           ) : null}
@@ -290,12 +322,14 @@ export default function OrdersTable({ orders, total }) {
                             </a>
                           ) : null}
                         </>
-                      ) : shipment?.status === 'FAILED' ? (
-                        <span className={styles.shipmentError} title={shipment.errorMessage || ''}>
-                          Failed
+                      ) : shipmentLabel.kind === 'failed' ? (
+                        <span className={styles.shipmentError} title={shipmentLabel.message}>
+                          {shipmentLabel.message}
                         </span>
+                      ) : shipmentLabel.kind === 'ready' || shipmentLabel.kind === 'ready_pending' ? (
+                        <span className={styles.shipmentReady}>{shipmentLabel.message}</span>
                       ) : (
-                        <span className={styles.shipmentMeta}>Not booked</span>
+                        <span className={styles.shipmentMeta}>{shipmentLabel.message}</span>
                       )}
                     </div>
                   </td>

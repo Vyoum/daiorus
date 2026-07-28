@@ -12,7 +12,8 @@ import { applyCouponToTotals, normalizeCouponCode } from '../lib/coupons';
 import { applySurchargeInr } from '../lib/overseas-pricing-defaults';
 import { formatINR } from '../lib/data';
 import { openRazorpayCheckout } from '../lib/razorpay-checkout';
-import AddressRegionFields from './AddressRegionFields';
+import ProductSpecs from './ProductSpecs';
+import { getProductSpecLines } from '../lib/product-specs';
 import styles from './CheckoutPage.module.css';
 
 const EMPTY_SHIPPING = {
@@ -30,7 +31,7 @@ const EMPTY_SHIPPING = {
 export default function CheckoutPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const { cart, ready, clearCart } = useCart();
+  const { cart, ready, clearCart, setCart } = useCart();
   const {
     formatPrice,
     countryCode,
@@ -82,6 +83,40 @@ export default function CheckoutPage() {
       router.replace('/shop');
     }
   }, [ready, cart.length, router]);
+
+  useEffect(() => {
+    if (!ready || cart.length === 0) return;
+
+    const needsSpecs = cart.some((item) => !item._specsHydrated);
+    if (!needsSpecs) return;
+
+    let cancelled = false;
+    fetch('/api/products/specs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: cart.map((item) => item.id) }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (cancelled || !data?.specs) return;
+        setCart((prev) =>
+          prev.map((item) => ({
+            ...item,
+            ...(data.specs[item.id] || {}),
+            _specsHydrated: true,
+          })),
+        );
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setCart((prev) => prev.map((item) => ({ ...item, _specsHydrated: true })));
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [ready, cart, setCart]);
 
   const pricedItems = useMemo(
     () =>
@@ -202,6 +237,9 @@ export default function CheckoutPage() {
             qty: item.qty,
             image: item.image,
             material: item.material,
+            weightGrams: item.weightGrams,
+            diamondCount: item.diamondCount,
+            productInfo: item.productInfo,
           })),
         }),
       });
@@ -409,6 +447,7 @@ export default function CheckoutPage() {
                     <div className={styles.itemInfo}>
                       <p className={styles.itemName}>{item.name}</p>
                       <p className={styles.itemMeta}>Qty {item.qty}</p>
+                      <ProductSpecs product={item} variant="compact" />
                     </div>
                     <span className={styles.itemPrice}>
                       {formatPrice(item.price * item.qty)}

@@ -1,5 +1,6 @@
 import { Download } from 'lucide-react';
 import { getAdminOrders } from '../../../../lib/admin/orders';
+import { isSequelConfigured } from '../../../../lib/sequel247/config';
 import OrdersTable from './OrdersTable';
 import styles from './orders.module.css';
 
@@ -21,7 +22,7 @@ export default async function OrdersPage() {
         </div>
       </header>
 
-      <OrdersTable orders={orders} total={total} />
+      <OrdersTable orders={orders} total={total} sequelConfigured={isSequelConfigured()} />
     </div>
   );
 }

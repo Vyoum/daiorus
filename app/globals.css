@@ -991,6 +991,10 @@ img {
   font-size: 1rem;
 }
 
+.cart-item-specs {
+  margin-top: 6px;
+}
+
 .cart-item-qty-actions {
   display: flex;
   justify-content: space-between;
@@ -2486,6 +2490,14 @@ img {
   line-height: 1.6;
   font-weight: 300;
   max-width: 260px;
+}
+
+.footer-address {
+  font-style: normal;
+  line-height: 1.65;
+  font-weight: 300;
+  max-width: 280px;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .social-links {
