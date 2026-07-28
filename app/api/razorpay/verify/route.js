@@ -2,6 +2,8 @@ import crypto from 'crypto';
 import { NextResponse } from 'next/server';
 import prisma from '../../../../lib/prisma';
 import { incrementCouponUsage } from '../../../../lib/admin/coupons';
+import { getSequelConfig, isSequelConfigured } from '../../../../lib/sequel247/config';
+import { bookShipmentForOrder } from '../../../../lib/sequel247/shipment';
 
 export async function POST(request) {
   try {
@@ -78,6 +80,12 @@ export async function POST(request) {
     if (existingNotes.couponCode) {
       await incrementCouponUsage(existingNotes.couponCode).catch((err) => {
         console.warn('[verify] coupon usage increment failed:', err?.message || err);
+      });
+    }
+
+    if (isSequelConfigured() && getSequelConfig().autoBookOnPayment) {
+      bookShipmentForOrder(orderId).catch((err) => {
+        console.error('[verify:sequel247]', err?.message || err);
       });
     }
 

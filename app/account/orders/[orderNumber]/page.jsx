@@ -119,6 +119,29 @@ export default async function AccountOrderDetailPage({ params }) {
         </article>
       ) : null}
 
+      {order.shipment?.docketNumber ? (
+        <article className={`${styles.card} ${styles.detailCard}`}>
+          <h2 className={styles.sectionTitle}>Shipment tracking</h2>
+          <div className={styles.addressBlock}>
+            <p>
+              <strong>AWB / Docket:</strong> {order.shipment.docketNumber}
+            </p>
+            {order.shipment.estimatedDelivery ? (
+              <p>
+                <strong>Estimated delivery:</strong> {order.shipment.estimatedDelivery}
+              </p>
+            ) : null}
+            {order.shipment.docketPrintUrl ? (
+              <p>
+                <a href={order.shipment.docketPrintUrl} target="_blank" rel="noreferrer">
+                  Download shipping label
+                </a>
+              </p>
+            ) : null}
+          </div>
+        </article>
+      ) : null}
+
       <div className={styles.detailActions}>
         <Link href="/contact" className={styles.secondaryLink}>
           Need help with this order?
