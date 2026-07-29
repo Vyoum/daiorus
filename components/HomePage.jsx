@@ -9,8 +9,9 @@ import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from '../lib/social';
 
 const MARQUEE = [
   'BIS Hallmarked Gold',
-  'Crafted in India',
-  'Free Shipping Across India',
+  'Hand Crafted in India',
+  'Free Shipping Pan India',
+  'Ships Globally',
   '7-Day Returns',
 ];
 

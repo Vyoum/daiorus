@@ -15,8 +15,11 @@ export default async function Page() {
     ]);
 
   const selectedIds = curatedSelects?.productIds || [];
-  const selectedProductsRaw = selectedIds.length
-    ? await prisma.product.findMany({
+  let curatedSelectProducts = [];
+
+  if (selectedIds.length) {
+    try {
+      const selectedProductsRaw = await prisma.product.findMany({
         where: {
           id: { in: selectedIds },
           status: 'ACTIVE',
@@ -31,11 +34,14 @@ export default async function Page() {
           imageUrl: true,
           images: true,
         },
-      })
-    : [];
-
-  const byId = Object.fromEntries(selectedProductsRaw.map((p) => [p.id, p]));
-  const curatedSelectProducts = selectedIds.map((id) => byId[id]).filter(Boolean);
+      });
+      const byId = Object.fromEntries(selectedProductsRaw.map((p) => [p.id, p]));
+      curatedSelectProducts = selectedIds.map((id) => byId[id]).filter(Boolean);
+    } catch (err) {
+      console.error('[home:curated-selects]', err?.message || err);
+      curatedSelectProducts = [];
+    }
+  }
 
   return (
     <HomePage
