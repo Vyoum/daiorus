@@ -36,12 +36,26 @@ export default function SequelStatusBanner({ sequelConfigured }) {
           {status.serviceability.ok ? status.serviceability.message : status.serviceability.message}
         </p>
       ) : null}
-      <p className={styles.sequelStatusHint}>
-        If booking still says &quot;company not active&quot;, Sequel may have activated{' '}
-        <strong>production</strong> while this server uses <strong>{status.env}</strong>. Set{' '}
-        <code>SEQUEL247_ENV=production</code> in env and restart, or ask Sequel to activate UAT.
-        For old errors on an order, click <strong>Retry</strong> — do not rely on a previous failed message.
-      </p>
+      {status.serviceability && !status.serviceability.ok ? (
+        <p className={styles.sequelStatusHint}>
+          {status.env === 'production' ? (
+            <>
+              Your server is already on <strong>production</strong>. This error is coming directly
+              from Sequel&apos;s live API — not from a wrong env setting. Ask Sequel to activate API
+              access for store <code>{status.fromStoreCode}</code> and your production token. If
+              wallet balance is zero, recharge that too. For old order errors, click{' '}
+              <strong>Retry</strong> after Sequel confirms activation.
+            </>
+          ) : (
+            <>
+              If booking says &quot;company not active&quot;, Sequel may have activated{' '}
+              <strong>production</strong> while this server uses <strong>{status.env}</strong>. Set{' '}
+              <code>SEQUEL247_ENV=production</code> in env and restart, or ask Sequel to activate
+              UAT. For old errors on an order, click <strong>Retry</strong>.
+            </>
+          )}
+        </p>
+      ) : null}
     </div>
   );
 }

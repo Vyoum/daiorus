@@ -135,14 +135,16 @@
   border-bottom-left-radius: var(--admin-radius-lg);
   border-bottom-right-radius: var(--admin-radius-lg);
   box-shadow: var(--admin-shadow-sm);
-  overflow: hidden;
+  overflow-x: auto;
   margin-bottom: 32px;
 }
 
 .table {
   width: 100%;
+  min-width: 1100px;
   border-collapse: collapse;
   text-align: left;
+  table-layout: auto;
 }
 
 .th {
@@ -452,13 +454,22 @@
 .shipmentCell {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  min-width: 120px;
+  gap: 6px;
+  min-width: 220px;
+  max-width: 320px;
+}
+
+.shipmentColumn {
+  min-width: 240px;
+  max-width: 340px;
+  white-space: normal;
+  vertical-align: top;
 }
 
 .docketNumber {
   font-weight: 600;
   font-size: 13px;
+  word-break: break-word;
 }
 
 .shipmentMeta {
@@ -466,10 +477,20 @@
   color: var(--admin-text-secondary);
 }
 
+.shipmentErrorBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .shipmentError {
+  display: block;
   font-size: 12px;
   font-weight: 600;
+  line-height: 1.45;
   color: var(--admin-danger);
+  white-space: normal;
+  word-break: break-word;
 }
 
 .shipmentLink {

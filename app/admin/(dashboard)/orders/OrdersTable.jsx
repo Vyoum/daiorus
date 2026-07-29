@@ -47,7 +47,8 @@ function shipmentStatusLabel(order) {
   if (shipment?.status === 'FAILED') {
     return {
       kind: 'failed',
-      message: `${shipment.errorMessage || 'Booking failed'} — click Retry to try again`,
+      message: shipment.errorMessage || 'Booking failed',
+      hint: 'Click Retry to try again',
     };
   }
   if (shipment?.status === 'CANCELLED') {
@@ -234,7 +235,7 @@ export default function OrdersTable({ orders, total, sequelConfigured }) {
             <th className={styles.th}>Total</th>
             <th className={styles.th}>Payment</th>
             <th className={styles.th}>Fulfillment</th>
-            <th className={styles.th}>Shipment</th>
+            <th className={`${styles.th} ${styles.shipmentColumn}`}>Shipment</th>
             <th className={styles.th} />
           </tr>
         </thead>
@@ -308,7 +309,7 @@ export default function OrdersTable({ orders, total, sequelConfigured }) {
                       <FulfillIcon tone={fulfill.tone} /> {fulfill.label}
                     </span>
                   </td>
-                  <td className={styles.td}>
+                  <td className={`${styles.td} ${styles.shipmentColumn}`}>
                     <div className={styles.shipmentCell}>
                       {shipment?.docketNumber ? (
                         <>
@@ -331,9 +332,12 @@ export default function OrdersTable({ orders, total, sequelConfigured }) {
                           ) : null}
                         </>
                       ) : shipmentLabel.kind === 'failed' ? (
-                        <span className={styles.shipmentError} title={shipmentLabel.message}>
-                          {shipmentLabel.message}
-                        </span>
+                        <div className={styles.shipmentErrorBlock}>
+                          <span className={styles.shipmentError}>{shipmentLabel.message}</span>
+                          {shipmentLabel.hint ? (
+                            <span className={styles.shipmentMeta}>{shipmentLabel.hint}</span>
+                          ) : null}
+                        </div>
                       ) : shipmentLabel.kind === 'ready' || shipmentLabel.kind === 'ready_pending' ? (
                         <div className={styles.shipmentReadyBlock}>
                           <span className={styles.shipmentReady}>{shipmentLabel.message}</span>
