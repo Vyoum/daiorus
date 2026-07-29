@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -15,6 +15,10 @@ import {
 } from 'lucide-react';
 import { isAllowedImageFile, uploadAdminImage } from '@/lib/admin/image-upload';
 import { GOLD_KARAT_OPTIONS, parseGoldKarat } from '@/lib/product-material';
+import {
+  calculateGoldProductPrice,
+  inferFixedNonGoldPrice,
+} from '@/lib/gold-pricing-calc';
 import styles from './product-form.module.css';
 
 function formatInr(n) {
@@ -142,10 +146,37 @@ export default function ProductForm({ categories = [], product = null }) {
   const [weightGrams, setWeightGrams] = useState(
     product?.weightGrams != null ? String(product.weightGrams) : '',
   );
+  const [goldWeightGrams, setGoldWeightGrams] = useState(
+    product?.goldWeightGrams != null ? String(product.goldWeightGrams) : '',
+  );
   const [diamondCount, setDiamondCount] = useState(
     product?.diamondCount != null ? String(product.diamondCount) : '',
   );
   const [productInfo, setProductInfo] = useState(product?.productInfo || '');
+  const [goldSettings, setGoldSettings] = useState(null);
+  const [goldPricingEnabled, setGoldPricingEnabled] = useState(
+    Boolean(product?.goldPricingEnabled),
+  );
+  const [fixedNonGoldPriceInr] = useState(
+    product?.fixedNonGoldPriceInr != null ? Number(product.fixedNonGoldPriceInr) : null,
+  );
+  const [rebaseGoldPricing, setRebaseGoldPricing] = useState(
+    !product?.goldPricingEnabled || product?.fixedNonGoldPriceInr == null,
+  );
+  const goldToggleTouchedRef = useRef(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/admin/gold-pricing')
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled) setGoldSettings(data?.settings || null);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const basePrice = Number(priceInr) || 0;
   const surchargeNum = Number(surchargeValue) || 0;
@@ -181,6 +212,73 @@ export default function ProductForm({ categories = [], product = null }) {
     }
     return materialMode || '';
   }, [materialMode, customMaterial]);
+
+  const goldBreakdown = useMemo(() => {
+    if (!goldSettings?.rate24kPerGram) return null;
+    const weight = Number(goldWeightGrams);
+    if (!Number.isFinite(weight) || weight <= 0 || !materialValue) return null;
+
+    if (goldPricingEnabled && !rebaseGoldPricing && fixedNonGoldPriceInr != null) {
+      return {
+        ...calculateGoldProductPrice({
+          goldWeightGrams: weight,
+          material: materialValue,
+          rate24kPerGram: goldSettings.rate24kPerGram,
+          fixedNonGoldPriceInr,
+        }),
+        valid: true,
+      };
+    }
+
+    return calculateGoldProductPrice({
+      goldWeightGrams: weight,
+      rate24kPerGram: goldSettings.rate24kPerGram,
+      material: materialValue,
+      fixedNonGoldPriceInr: 0,
+    });
+  }, [
+    fixedNonGoldPriceInr,
+    goldPricingEnabled,
+    goldSettings,
+    goldWeightGrams,
+    materialValue,
+    rebaseGoldPricing,
+  ]);
+
+  const inferredGoldPricing = useMemo(() => {
+    if (!goldSettings?.rate24kPerGram || !goldWeightGrams || !materialValue) return null;
+    return inferFixedNonGoldPrice({
+      sellingPriceInr: basePrice,
+      goldWeightGrams,
+      material: materialValue,
+      rate24kPerGram: goldSettings.rate24kPerGram,
+    });
+  }, [basePrice, goldSettings, goldWeightGrams, materialValue]);
+
+  useEffect(() => {
+    const weight = Number(goldWeightGrams);
+    const hasGoldInputs =
+      Number.isFinite(weight) &&
+      weight > 0 &&
+      Boolean(parseGoldKarat(materialValue)) &&
+      Boolean(goldSettings?.rate24kPerGram);
+
+    if (hasGoldInputs && !isEdit && !goldToggleTouchedRef.current) {
+      setGoldPricingEnabled(true);
+    }
+  }, [goldWeightGrams, isEdit, materialValue, goldSettings?.rate24kPerGram]);
+
+  useEffect(() => {
+    if (
+      !goldPricingEnabled ||
+      rebaseGoldPricing ||
+      !goldBreakdown?.priceInr ||
+      fixedNonGoldPriceInr == null
+    ) {
+      return;
+    }
+    setPriceInr(String(goldBreakdown.priceInr));
+  }, [fixedNonGoldPriceInr, goldBreakdown, goldPricingEnabled, rebaseGoldPricing]);
 
   const discard = () => {
     router.push('/admin/products');
@@ -225,8 +323,12 @@ export default function ProductForm({ categories = [], product = null }) {
             status: nextStatus,
             tag: tag || null,
             weightGrams: weightGrams === '' ? null : Number(weightGrams),
+            goldWeightGrams: goldWeightGrams === '' ? null : Number(goldWeightGrams),
             diamondCount: diamondCount === '' ? null : Number(diamondCount),
             productInfo: productInfo || null,
+            goldPricingEnabled,
+            fixedNonGoldPriceInr,
+            rebaseGoldPricing,
           }),
         },
       );
@@ -458,7 +560,7 @@ export default function ProductForm({ categories = [], product = null }) {
 
             <div className={styles.row2}>
               <label className={styles.field}>
-                <span>Weight (grams)</span>
+                <span>Total product weight (grams)</span>
                 <input
                   className={styles.input}
                   type="number"
@@ -470,6 +572,25 @@ export default function ProductForm({ categories = [], product = null }) {
                   placeholder="e.g. 2.45"
                 />
               </label>
+              <label className={styles.field}>
+                <span>Net gold weight (grams)</span>
+                <input
+                  className={styles.input}
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  inputMode="decimal"
+                  value={goldWeightGrams}
+                  onChange={(e) => setGoldWeightGrams(e.target.value)}
+                  placeholder="e.g. 2.10"
+                />
+                <small className={styles.fieldHint}>
+                  Gold only — exclude diamonds, stones and other materials.
+                </small>
+              </label>
+            </div>
+
+            <div className={styles.row2}>
               <label className={styles.field}>
                 <span>No. of diamonds</span>
                 <input
@@ -483,6 +604,7 @@ export default function ProductForm({ categories = [], product = null }) {
                   placeholder="e.g. 12"
                 />
               </label>
+              <div className={styles.field} aria-hidden="true" />
             </div>
 
             <label className={styles.field}>
@@ -594,6 +716,73 @@ export default function ProductForm({ categories = [], product = null }) {
 
           <section className={styles.card}>
             <h2 className={styles.cardTitle}>Pricing Structure</h2>
+
+            {goldBreakdown ? (
+              <div className={styles.goldPricingCard}>
+                <div className={styles.goldPricingHead}>
+                  <div>
+                    <strong>Automatic gold pricing</strong>
+                    <p>
+                      Using today&apos;s 24K rate of {formatInr(goldBreakdown.rate24kPerGram)}/g
+                      {goldBreakdown.karat ? ` · ${goldBreakdown.karat}` : ''}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    className={`${styles.toggle} ${goldPricingEnabled ? styles.toggleOn : ''}`}
+                    onClick={() => {
+                      goldToggleTouchedRef.current = true;
+                      const next = !goldPricingEnabled;
+                      setGoldPricingEnabled(next);
+                      if (next && fixedNonGoldPriceInr == null) setRebaseGoldPricing(true);
+                    }}
+                    aria-pressed={goldPricingEnabled}
+                  >
+                    <span className={styles.toggleKnob} />
+                  </button>
+                </div>
+                <div className={styles.goldPricingBreakdown}>
+                  <span>
+                    Gold: {goldBreakdown.goldWeightGrams}g ×{' '}
+                    {formatInr(goldBreakdown.ratePerGram)}/g ={' '}
+                    {formatInr(goldBreakdown.goldValue)}
+                  </span>
+                  {goldPricingEnabled ? (
+                    <>
+                      <span>
+                        Fixed non-gold amount:{' '}
+                        {inferredGoldPricing?.valid && rebaseGoldPricing
+                          ? formatInr(inferredGoldPricing.fixedNonGoldPriceInr)
+                          : fixedNonGoldPriceInr != null
+                            ? formatInr(fixedNonGoldPriceInr)
+                            : 'Enter a selling price'}
+                      </span>
+                      <strong>
+                        Current total:{' '}
+                        {rebaseGoldPricing
+                          ? formatInr(basePrice)
+                          : formatInr(goldBreakdown.priceInr)}
+                      </strong>
+                    </>
+                  ) : (
+                    <span>Turn this on to let only the net-gold portion follow the gold rate.</span>
+                  )}
+                </div>
+                {goldPricingEnabled && inferredGoldPricing && !inferredGoldPricing.valid ? (
+                  <p className={styles.goldPricingError}>
+                    Selling price must be at least today&apos;s gold value of{' '}
+                    {formatInr(inferredGoldPricing.goldValue)}.
+                  </p>
+                ) : null}
+                {goldPricingEnabled ? (
+                  <p className={styles.goldPricingHint}>
+                    Future updates recalculate only the gold value. The fixed non-gold amount stays
+                    unchanged.
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+
             <div className={styles.row2}>
               <label className={styles.field}>
                 <span>Base Price (INR)</span>
@@ -605,7 +794,10 @@ export default function ProductForm({ categories = [], product = null }) {
                     step="1"
                     className={styles.input}
                     value={priceInr}
-                    onChange={(e) => setPriceInr(e.target.value)}
+                    onChange={(e) => {
+                      setPriceInr(e.target.value);
+                      if (goldPricingEnabled) setRebaseGoldPricing(true);
+                    }}
                     placeholder="0"
                   />
                 </div>

@@ -398,6 +398,62 @@
   border: 1px solid #e4dff7;
 }
 
+.goldPricingCard {
+  margin-bottom: 16px;
+  padding: 16px;
+  border-radius: var(--admin-radius-lg);
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+}
+
+.goldPricingHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.goldPricingHead strong {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+
+.goldPricingHead p {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--admin-text-secondary);
+}
+
+.goldPricingBreakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--admin-text-primary);
+}
+
+.goldPricingHint {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: #92400e;
+}
+
+.goldPricingError {
+  margin: 10px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #b91c1c;
+}
+
+.fieldHint {
+  font-size: 11px;
+  line-height: 1.4;
+  font-weight: 400;
+  color: var(--admin-text-secondary);
+}
+
 .overseasHead {
   display: flex;
   align-items: flex-start;

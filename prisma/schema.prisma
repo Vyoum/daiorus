@@ -113,23 +113,27 @@ model Category {
 }
 
 model Product {
-  id           String        @id @default(cuid())
-  slug         String        @unique
-  name         String
-  description  String?
-  material     String?
-  weightGrams  Float?
-  diamondCount Int?
-  productInfo  String?
-  tag          String?
-  priceInr     Int
-  compareAtInr Int?
-  imageUrl     String?
-  images       String[]      @default([])
-  status       ProductStatus @default(ACTIVE)
-  categoryId   String?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  id                      String        @id @default(cuid())
+  slug                    String        @unique
+  name                    String
+  description             String?
+  material                String?
+  weightGrams             Float?
+  goldWeightGrams         Float?
+  goldPricingEnabled      Boolean       @default(false)
+  fixedNonGoldPriceInr    Int?
+  goldRate24kAtPricingInr Int?
+  diamondCount            Int?
+  productInfo             String?
+  tag                     String?
+  priceInr                Int
+  compareAtInr            Int?
+  imageUrl                String?
+  images                  String[]      @default([])
+  status                  ProductStatus @default(ACTIVE)
+  categoryId              String?
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
 
   category   Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   inventory  Inventory?
