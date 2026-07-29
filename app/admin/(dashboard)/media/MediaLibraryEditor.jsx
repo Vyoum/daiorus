@@ -977,6 +977,19 @@ export default function MediaLibraryEditor({ initialContent, products = [] }) {
                     onChange={(e) => updateSocialItem(index, { alt: e.target.value })}
                   />
                 </Field>
+                {item.type === 'video' || mediaKindFromUrl(item.url) === 'video' ? (
+                  <Field label="View count">
+                    <input
+                      className={styles.input}
+                      value={item.viewCount ?? ''}
+                      onChange={(e) => updateSocialItem(index, { viewCount: e.target.value })}
+                      placeholder="e.g. 12.5K"
+                    />
+                    <p className={styles.cardHint} style={{ marginTop: 6 }}>
+                      Shown on the homepage when visitors hover over this video.
+                    </p>
+                  </Field>
+                ) : null}
               </div>
             ))}
           </div>
