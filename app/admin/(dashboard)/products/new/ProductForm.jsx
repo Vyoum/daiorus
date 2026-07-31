@@ -599,6 +599,9 @@ export default function ProductForm({ categories = [], product = null }) {
                 />
                 <small className={styles.fieldHint}>
                   Gold only — exclude diamonds, stones and other materials.
+                  {goldWeightGrams && !parseGoldKarat(materialValue)
+                    ? ' Select a karat above so the price breakup can use the correct karat rate.'
+                    : ''}
                 </small>
               </label>
             </div>
