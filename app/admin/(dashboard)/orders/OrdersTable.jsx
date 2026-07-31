@@ -4,7 +4,6 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ChevronDown,
-  Printer,
   Truck,
   MoreHorizontal,
   RefreshCw,
@@ -197,10 +196,6 @@ export default function OrdersTable({ orders, total, sequelConfigured }) {
         </div>
 
         <div className={styles.bulkActions}>
-          <button type="button" className={styles.bulkActionBtn} disabled>
-            <Printer size={16} />
-            Print Invoices
-          </button>
           <button
             type="button"
             className={`${styles.bulkActionBtn} ${selectedShippableCount > 0 ? styles.bulkActionBtnActive : ''}`}

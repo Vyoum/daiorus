@@ -128,6 +128,12 @@ export default function ProductForm({ categories = [], product = null }) {
   const [compareAtInr, setCompareAtInr] = useState(
     product?.compareAtInr != null ? String(product.compareAtInr) : '',
   );
+  const [makingChargeInr, setMakingChargeInr] = useState(
+    product?.makingChargeInr != null ? String(product.makingChargeInr) : '',
+  );
+  const [taxPct, setTaxPct] = useState(
+    product?.taxPct != null ? String(product.taxPct) : '3',
+  );
   const [quantity, setQuantity] = useState(
     product?.quantity != null ? String(product.quantity) : '25',
   );
@@ -180,6 +186,11 @@ export default function ProductForm({ categories = [], product = null }) {
 
   const basePrice = Number(priceInr) || 0;
   const surchargeNum = Number(surchargeValue) || 0;
+  const taxPctNum = Number(taxPct);
+  const taxAmountInr =
+    basePrice > 0 && Number.isFinite(taxPctNum) && taxPctNum >= 0
+      ? Math.round((basePrice * taxPctNum) / (100 + taxPctNum))
+      : 0;
 
   const intlPreview = useMemo(() => {
     if (!overseasEnabled || basePrice <= 0) return null;
@@ -329,6 +340,8 @@ export default function ProductForm({ categories = [], product = null }) {
             goldPricingEnabled,
             fixedNonGoldPriceInr,
             rebaseGoldPricing,
+            makingChargeInr: makingChargeInr === '' ? null : Number(makingChargeInr),
+            taxPct: taxPct === '' ? 3 : Number(taxPct),
           }),
         },
       );
@@ -816,6 +829,46 @@ export default function ProductForm({ categories = [], product = null }) {
                     placeholder="0"
                   />
                 </div>
+              </label>
+            </div>
+
+            <div className={styles.row2}>
+              <label className={styles.field}>
+                <span>Making Charge (INR)</span>
+                <div className={styles.prefixInput}>
+                  <span>₹</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    className={styles.input}
+                    value={makingChargeInr}
+                    onChange={(e) => setMakingChargeInr(e.target.value)}
+                    placeholder="e.g. 2500"
+                  />
+                </div>
+                <span className={styles.fieldHint}>
+                  Shown in the product price breakup. Does not change the selling price.
+                </span>
+              </label>
+              <label className={styles.field}>
+                <span>Tax (% of selling price)</span>
+                <div className={styles.prefixInput}>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    className={styles.input}
+                    value={taxPct}
+                    onChange={(e) => setTaxPct(e.target.value)}
+                    placeholder="3"
+                  />
+                  <span>%</span>
+                </div>
+                <span className={styles.fieldHint}>
+                  Defaults to 3%. Shown as TAX in the price breakup (about{' '}
+                  {formatInr(taxAmountInr)} of the selling price).
+                </span>
               </label>
             </div>
 

@@ -123,6 +123,8 @@ model Product {
   goldPricingEnabled      Boolean       @default(false)
   fixedNonGoldPriceInr    Int?
   goldRate24kAtPricingInr Int?
+  makingChargeInr         Int?
+  taxPct                  Float         @default(3)
   diamondCount            Int?
   productInfo             String?
   tag                     String?

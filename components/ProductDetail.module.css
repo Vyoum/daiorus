@@ -78,11 +78,60 @@
   margin-bottom: 18px;
 }
 
+.tabSwitch {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px;
+  margin: 6px 0 18px;
+  border-radius: 999px;
+  background: rgba(28, 24, 17, 0.06);
+}
+
+.tabBtn {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.tabBtn:hover {
+  color: var(--text-dark);
+}
+
+.tabBtnActive {
+  background: var(--text-dark);
+  color: #fff;
+}
+
+.tabPanel {
+  margin-bottom: 28px;
+  min-height: 120px;
+}
+
+.productInfo {
+  color: var(--muted);
+  line-height: 1.7;
+  max-width: 42ch;
+  margin-top: 12px;
+  white-space: pre-wrap;
+  font-size: 0.92rem;
+}
+
 .description {
   color: var(--muted);
   line-height: 1.7;
   max-width: 42ch;
-  margin-bottom: 28px;
+  margin-bottom: 0;
   white-space: pre-wrap;
 }
 
