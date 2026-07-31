@@ -20,7 +20,10 @@ export default function ProductPriceBreakup({ product }) {
       <ul className={styles.list}>
         {breakup.lines.map((line) => (
           <li key={line.key} className={styles.row}>
-            <span className={styles.label}>{line.label}</span>
+            <span className={styles.label}>
+              {line.label}
+              {line.detail ? <span className={styles.detail}>{line.detail}</span> : null}
+            </span>
             <Price amount={line.amount} className={styles.amount} />
           </li>
         ))}
