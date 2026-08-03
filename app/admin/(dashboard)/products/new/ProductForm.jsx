@@ -158,6 +158,19 @@ export default function ProductForm({ categories = [], product = null }) {
   const [diamondCount, setDiamondCount] = useState(
     product?.diamondCount != null ? String(product.diamondCount) : '',
   );
+  const [diamondCarat, setDiamondCarat] = useState(
+    product?.diamondCarat != null ? String(product.diamondCarat) : '',
+  );
+  const [diamondCostInr, setDiamondCostInr] = useState(
+    product?.diamondCostInr != null ? String(product.diamondCostInr) : '',
+  );
+  const [heightMm, setHeightMm] = useState(
+    product?.heightMm != null ? String(product.heightMm) : '',
+  );
+  const [widthMm, setWidthMm] = useState(
+    product?.widthMm != null ? String(product.widthMm) : '',
+  );
+  const [metalColor, setMetalColor] = useState(product?.metalColor || '');
   const [productInfo, setProductInfo] = useState(product?.productInfo || '');
   const [goldSettings, setGoldSettings] = useState(null);
   const [goldPricingEnabled, setGoldPricingEnabled] = useState(
@@ -187,10 +200,8 @@ export default function ProductForm({ categories = [], product = null }) {
   const basePrice = Number(priceInr) || 0;
   const surchargeNum = Number(surchargeValue) || 0;
   const taxPctNum = Number(taxPct);
-  const taxAmountInr =
-    basePrice > 0 && Number.isFinite(taxPctNum) && taxPctNum >= 0
-      ? Math.round((basePrice * taxPctNum) / (100 + taxPctNum))
-      : 0;
+  const makingNum = Number(makingChargeInr) || 0;
+  const diamondCostNum = Number(diamondCostInr) || 0;
 
   const intlPreview = useMemo(() => {
     if (!overseasEnabled || basePrice <= 0) return null;
@@ -256,6 +267,16 @@ export default function ProductForm({ categories = [], product = null }) {
     rebaseGoldPricing,
   ]);
 
+  const goldPreviewValue = goldBreakdown?.goldValue || 0;
+  const taxAmountInr =
+    Number.isFinite(taxPctNum) && taxPctNum >= 0
+      ? Math.round(
+          ((goldPreviewValue + diamondCostNum + makingNum) * taxPctNum) / 100,
+        )
+      : 0;
+  const breakupPreviewTotal =
+    goldPreviewValue + diamondCostNum + makingNum + taxAmountInr;
+
   const inferredGoldPricing = useMemo(() => {
     if (!goldSettings?.rate24kPerGram || !goldWeightGrams || !materialValue) return null;
     return inferFixedNonGoldPrice({
@@ -315,6 +336,13 @@ export default function ProductForm({ categories = [], product = null }) {
         }
       }
 
+      const netGold = goldWeightGrams === '' ? null : Number(goldWeightGrams);
+      if (netGold != null && Number.isFinite(netGold) && netGold > 0 && !parseGoldKarat(materialValue)) {
+        throw new Error(
+          'Select a karat (e.g. 14K, 18K) when entering net gold weight. Price breakup uses that karat’s rate, not 24K.',
+        );
+      }
+
       const res = await fetch(
         isEdit ? `/api/admin/products/${product.id}` : '/api/admin/products',
         {
@@ -336,6 +364,11 @@ export default function ProductForm({ categories = [], product = null }) {
             weightGrams: weightGrams === '' ? null : Number(weightGrams),
             goldWeightGrams: goldWeightGrams === '' ? null : Number(goldWeightGrams),
             diamondCount: diamondCount === '' ? null : Number(diamondCount),
+            diamondCarat: diamondCarat === '' ? null : Number(diamondCarat),
+            diamondCostInr: diamondCostInr === '' ? null : Number(diamondCostInr),
+            heightMm: heightMm === '' ? null : Number(heightMm),
+            widthMm: widthMm === '' ? null : Number(widthMm),
+            metalColor: metalColor || null,
             productInfo: productInfo || null,
             goldPricingEnabled,
             fixedNonGoldPriceInr,
@@ -533,7 +566,7 @@ export default function ProductForm({ categories = [], product = null }) {
 
             <div className={styles.row2}>
               <label className={styles.field}>
-                <span>Material</span>
+                <span>Material / Karat</span>
                 <select
                   className={styles.input}
                   value={materialMode}
@@ -567,10 +600,69 @@ export default function ProductForm({ categories = [], product = null }) {
                   />
                 </label>
               ) : (
-                <div className={styles.field} aria-hidden="true" />
+                <label className={styles.field}>
+                  <span>Metal colour</span>
+                  <select
+                    className={styles.input}
+                    value={metalColor}
+                    onChange={(e) => setMetalColor(e.target.value)}
+                  >
+                    <option value="">Select colour</option>
+                    <option value="Yellow Gold">Yellow Gold</option>
+                    <option value="White Gold">White Gold</option>
+                    <option value="Rose Gold">Rose Gold</option>
+                  </select>
+                </label>
               )}
             </div>
 
+            {materialMode === 'custom' ? (
+              <label className={styles.field}>
+                <span>Metal colour</span>
+                <select
+                  className={styles.input}
+                  value={metalColor}
+                  onChange={(e) => setMetalColor(e.target.value)}
+                >
+                  <option value="">Select colour</option>
+                  <option value="Yellow Gold">Yellow Gold</option>
+                  <option value="White Gold">White Gold</option>
+                  <option value="Rose Gold">Rose Gold</option>
+                </select>
+              </label>
+            ) : null}
+
+            <p className={styles.sectionLabel}>Product details</p>
+            <div className={styles.row2}>
+              <label className={styles.field}>
+                <span>Height (mm)</span>
+                <input
+                  className={styles.input}
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  inputMode="decimal"
+                  value={heightMm}
+                  onChange={(e) => setHeightMm(e.target.value)}
+                  placeholder="e.g. 22.11"
+                />
+              </label>
+              <label className={styles.field}>
+                <span>Width (mm)</span>
+                <input
+                  className={styles.input}
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  inputMode="decimal"
+                  value={widthMm}
+                  onChange={(e) => setWidthMm(e.target.value)}
+                  placeholder="e.g. 7.22"
+                />
+              </label>
+            </div>
+
+            <p className={styles.sectionLabel}>Metal details</p>
             <div className={styles.row2}>
               <label className={styles.field}>
                 <span>Total product weight (grams)</span>
@@ -582,11 +674,11 @@ export default function ProductForm({ categories = [], product = null }) {
                   inputMode="decimal"
                   value={weightGrams}
                   onChange={(e) => setWeightGrams(e.target.value)}
-                  placeholder="e.g. 2.45"
+                  placeholder="e.g. 2.75"
                 />
               </label>
               <label className={styles.field}>
-                <span>Net gold weight (grams)</span>
+                <span>Net gold / metal weight (grams)</span>
                 <input
                   className={styles.input}
                   type="number"
@@ -595,20 +687,34 @@ export default function ProductForm({ categories = [], product = null }) {
                   inputMode="decimal"
                   value={goldWeightGrams}
                   onChange={(e) => setGoldWeightGrams(e.target.value)}
-                  placeholder="e.g. 2.10"
+                  placeholder="e.g. 2.68"
                 />
                 <small className={styles.fieldHint}>
-                  Gold only — exclude diamonds, stones and other materials.
+                  Gold only — exclude diamonds and stones.
                   {goldWeightGrams && !parseGoldKarat(materialValue)
-                    ? ' Select a karat above so the price breakup can use the correct karat rate.'
+                    ? ' Select a karat above so gold uses the correct karat rate.'
                     : ''}
                 </small>
               </label>
             </div>
 
+            <p className={styles.sectionLabel}>Diamond / stone details</p>
             <div className={styles.row2}>
               <label className={styles.field}>
-                <span>No. of diamonds</span>
+                <span>Total diamond weight (Ct)</span>
+                <input
+                  className={styles.input}
+                  type="number"
+                  min="0"
+                  step="0.001"
+                  inputMode="decimal"
+                  value={diamondCarat}
+                  onChange={(e) => setDiamondCarat(e.target.value)}
+                  placeholder="e.g. 0.338"
+                />
+              </label>
+              <label className={styles.field}>
+                <span>Total no. of diamonds</span>
                 <input
                   className={styles.input}
                   type="number"
@@ -617,11 +723,28 @@ export default function ProductForm({ categories = [], product = null }) {
                   inputMode="numeric"
                   value={diamondCount}
                   onChange={(e) => setDiamondCount(e.target.value)}
-                  placeholder="e.g. 12"
+                  placeholder="e.g. 65"
                 />
               </label>
-              <div className={styles.field} aria-hidden="true" />
             </div>
+            <label className={styles.field}>
+              <span>Diamond / stone cost (INR)</span>
+              <div className={styles.prefixInput}>
+                <span>₹</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  className={styles.input}
+                  value={diamondCostInr}
+                  onChange={(e) => setDiamondCostInr(e.target.value)}
+                  placeholder="e.g. 46846"
+                />
+              </div>
+              <span className={styles.fieldHint}>
+                Shown as the Diamond line in price breakup.
+              </span>
+            </label>
 
             <label className={styles.field}>
               <span>Product info</span>
@@ -851,11 +974,11 @@ export default function ProductForm({ categories = [], product = null }) {
                   />
                 </div>
                 <span className={styles.fieldHint}>
-                  Shown in the product price breakup. Does not change the selling price.
+                  Shown as Making Charges in the price breakup.
                 </span>
               </label>
               <label className={styles.field}>
-                <span>Tax (% of selling price)</span>
+                <span>GST (%)</span>
                 <div className={styles.prefixInput}>
                   <input
                     type="number"
@@ -869,8 +992,10 @@ export default function ProductForm({ categories = [], product = null }) {
                   <span>%</span>
                 </div>
                 <span className={styles.fieldHint}>
-                  Defaults to 3%. Shown as TAX in the price breakup (about{' '}
-                  {formatInr(taxAmountInr)} of the selling price).
+                  Defaults to 3%. Applied on Gold + Diamond + Making.
+                  {breakupPreviewTotal > 0
+                    ? ` Breakup total ≈ ${formatInr(breakupPreviewTotal)} (GST ${formatInr(taxAmountInr)}).`
+                    : ''}
                 </span>
               </label>
             </div>

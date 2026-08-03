@@ -24,13 +24,17 @@ export default function ProductPriceBreakup({ product }) {
               {line.label}
               {line.detail ? <span className={styles.detail}>{line.detail}</span> : null}
             </span>
-            <Price amount={line.amount} className={styles.amount} />
+            {line.muted ? (
+              <span className={styles.mutedAmount}>—</span>
+            ) : (
+              <Price amount={line.amount} className={styles.amount} />
+            )}
           </li>
         ))}
       </ul>
 
       <div className={styles.totalRow}>
-        <span className={styles.totalLabel}>Grand Total</span>
+        <span className={styles.totalLabel}>Total</span>
         <div className={styles.totalPrices}>
           {product.compareAt && product.compareAt > breakup.grandTotal ? (
             <Price amount={product.compareAt} className={styles.compare} />

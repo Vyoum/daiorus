@@ -126,6 +126,11 @@ model Product {
   makingChargeInr         Int?
   taxPct                  Float         @default(3)
   diamondCount            Int?
+  diamondCarat            Float?
+  diamondCostInr          Int?
+  heightMm                Float?
+  widthMm                 Float?
+  metalColor              String?
   productInfo             String?
   tag                     String?
   priceInr                Int

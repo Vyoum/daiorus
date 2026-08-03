@@ -118,6 +118,10 @@
   min-height: 120px;
 }
 
+.infoPanels {
+  margin-top: 36px;
+}
+
 .productInfo {
   color: var(--muted);
   line-height: 1.7;

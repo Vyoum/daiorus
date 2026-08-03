@@ -39,6 +39,12 @@
   white-space: nowrap;
 }
 
+.mutedAmount {
+  font-size: 0.95rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
 .totalRow {
   display: flex;
   align-items: baseline;

@@ -4,8 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Price from './Price';
 import ProductImageCarousel from './ProductImageCarousel';
-import ProductSpecs from './ProductSpecs';
-import ProductPriceBreakup from './ProductPriceBreakup';
+import ProductInfoPanels from './ProductInfoPanels';
 import ProductDeliveryEstimate from './ProductDeliveryEstimate';
 import { useCart } from './CartProvider';
 import { useWishlist } from './WishlistProvider';
@@ -28,7 +27,6 @@ export default function ProductDetail({ product }) {
   const { isWished, toggle } = useWishlist();
   const wished = isWished(product.id);
   const [justAdded, setJustAdded] = useState(false);
-  const [infoTab, setInfoTab] = useState('details');
 
   useEffect(() => {
     if (lastAddedProductId !== product.id || !lastAddedAt) return undefined;
@@ -72,47 +70,6 @@ export default function ProductDetail({ product }) {
             </p>
           ) : null}
 
-          <div className={styles.tabSwitch} role="tablist" aria-label="Product information">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={infoTab === 'details'}
-              className={`${styles.tabBtn} ${infoTab === 'details' ? styles.tabBtnActive : ''}`}
-              onClick={() => setInfoTab('details')}
-            >
-              Product Details
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={infoTab === 'breakup'}
-              className={`${styles.tabBtn} ${infoTab === 'breakup' ? styles.tabBtnActive : ''}`}
-              onClick={() => setInfoTab('breakup')}
-            >
-              Price Breakup
-            </button>
-          </div>
-
-          <div className={styles.tabPanel} role="tabpanel">
-            {infoTab === 'details' ? (
-              <>
-                <ProductSpecs product={product} />
-                {product.description ? (
-                  <p className={styles.description}>{product.description}</p>
-                ) : (
-                  <p className={styles.description}>
-                    A DAIORUS piece crafted to catch the light — refined, wearable, and made to last.
-                  </p>
-                )}
-                {product.productInfo ? (
-                  <p className={styles.productInfo}>{product.productInfo}</p>
-                ) : null}
-              </>
-            ) : (
-              <ProductPriceBreakup product={product} />
-            )}
-          </div>
-
           <ProductDeliveryEstimate />
 
           <div className={styles.actions}>
@@ -131,6 +88,10 @@ export default function ProductDetail({ product }) {
             >
               {wished ? 'Saved' : 'Wishlist'}
             </button>
+          </div>
+
+          <div className={styles.infoPanels}>
+            <ProductInfoPanels product={product} />
           </div>
         </div>
       </div>
