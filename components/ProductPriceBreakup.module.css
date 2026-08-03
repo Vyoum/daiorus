@@ -1,5 +1,6 @@
 .wrap {
   width: 100%;
+  max-width: 28rem;
 }
 
 .list {
@@ -8,35 +9,31 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
 }
 
 .row {
   display: flex;
-  align-items: flex-start;
+  align-items: baseline;
   justify-content: space-between;
-  gap: 16px;
+  gap: 24px;
+}
+
+.rowMuted {
+  opacity: 0.7;
 }
 
 .label {
-  color: rgba(28, 24, 17, 0.72);
-  font-size: 0.95rem;
-  line-height: 1.45;
-  max-width: 70%;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.detail {
-  font-size: 0.78rem;
   color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.4;
 }
 
 .amount {
   font-size: 0.95rem;
   color: var(--text-dark);
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .mutedAmount {
@@ -49,9 +46,9 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 16px;
-  margin-top: 22px;
-  padding-top: 18px;
+  gap: 24px;
+  margin-top: 18px;
+  padding-top: 16px;
   border-top: 1px solid rgba(28, 24, 17, 0.12);
 }
 
@@ -77,6 +74,7 @@
   font-size: 1.05rem;
   font-weight: 600;
   color: var(--text-dark);
+  font-variant-numeric: tabular-nums;
 }
 
 .empty {

@@ -19,11 +19,8 @@ export default function ProductPriceBreakup({ product }) {
     <div className={styles.wrap}>
       <ul className={styles.list}>
         {breakup.lines.map((line) => (
-          <li key={line.key} className={styles.row}>
-            <span className={styles.label}>
-              {line.label}
-              {line.detail ? <span className={styles.detail}>{line.detail}</span> : null}
-            </span>
+          <li key={line.key} className={`${styles.row} ${line.muted ? styles.rowMuted : ''}`}>
+            <span className={styles.label}>{line.label}</span>
             {line.muted ? (
               <span className={styles.mutedAmount}>—</span>
             ) : (
