@@ -13,6 +13,7 @@ import { applySurchargeInr } from '../lib/overseas-pricing-defaults';
 import { formatINR } from '../lib/data';
 import { openRazorpayCheckout } from '../lib/razorpay-checkout';
 import ProductSpecs from './ProductSpecs';
+import AddressRegionFields from './AddressRegionFields';
 import { getProductSpecLines } from '../lib/product-specs';
 import styles from './CheckoutPage.module.css';
 

@@ -102,6 +102,7 @@ async function createPendingOrder({
   totalInr,
   notes,
   pricedItems,
+  productSpecById = {},
 }) {
   const maxAttempts = 3;
 
@@ -292,6 +293,7 @@ export async function POST(request) {
       totalInr,
       notes: pendingNotes,
       pricedItems,
+      productSpecById,
     });
 
     let razorpayOrder;
