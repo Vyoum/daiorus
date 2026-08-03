@@ -9,6 +9,7 @@ import ProductPriceBreakup from './ProductPriceBreakup';
 import ProductDeliveryEstimate from './ProductDeliveryEstimate';
 import { useCart } from './CartProvider';
 import { useWishlist } from './WishlistProvider';
+import { useCurrency } from './CurrencyProvider';
 import styles from './ProductDetail.module.css';
 
 function formatReviewDate(value) {
@@ -26,9 +27,11 @@ function formatReviewDate(value) {
 export default function ProductDetail({ product }) {
   const { addToCart, lastAddedAt, lastAddedProductId } = useCart();
   const { isWished, toggle } = useWishlist();
+  const { isLocalCurrency } = useCurrency();
   const wished = isWished(product.id);
   const [justAdded, setJustAdded] = useState(false);
   const [infoTab, setInfoTab] = useState('details');
+  const showPriceBreakup = isLocalCurrency;
 
   useEffect(() => {
     if (lastAddedProductId !== product.id || !lastAddedAt) return undefined;
@@ -36,6 +39,12 @@ export default function ProductDetail({ product }) {
     const timer = setTimeout(() => setJustAdded(false), 1400);
     return () => clearTimeout(timer);
   }, [lastAddedAt, lastAddedProductId, product.id]);
+
+  useEffect(() => {
+    if (!showPriceBreakup && infoTab === 'breakup') {
+      setInfoTab('details');
+    }
+  }, [showPriceBreakup, infoTab]);
 
   return (
     <div className={styles.page}>
@@ -74,29 +83,33 @@ export default function ProductDetail({ product }) {
             </p>
           ) : null}
 
-          <div className={styles.tabSwitch} role="tablist" aria-label="Product information">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={infoTab === 'details'}
-              className={`${styles.tabBtn} ${infoTab === 'details' ? styles.tabBtnActive : ''}`}
-              onClick={() => setInfoTab('details')}
-            >
-              Product Details
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={infoTab === 'breakup'}
-              className={`${styles.tabBtn} ${infoTab === 'breakup' ? styles.tabBtnActive : ''}`}
-              onClick={() => setInfoTab('breakup')}
-            >
-              Price Breakup
-            </button>
-          </div>
+          {showPriceBreakup ? (
+            <div className={styles.tabSwitch} role="tablist" aria-label="Product information">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={infoTab === 'details'}
+                className={`${styles.tabBtn} ${infoTab === 'details' ? styles.tabBtnActive : ''}`}
+                onClick={() => setInfoTab('details')}
+              >
+                Product Details
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={infoTab === 'breakup'}
+                className={`${styles.tabBtn} ${infoTab === 'breakup' ? styles.tabBtnActive : ''}`}
+                onClick={() => setInfoTab('breakup')}
+              >
+                Price Breakup
+              </button>
+            </div>
+          ) : null}
 
           <div className={styles.tabPanel} role="tabpanel">
-            {infoTab === 'details' ? (
+            {showPriceBreakup && infoTab === 'breakup' ? (
+              <ProductPriceBreakup product={product} />
+            ) : (
               <>
                 {product.description ? (
                   <p className={styles.description}>{product.description}</p>
@@ -109,8 +122,6 @@ export default function ProductDetail({ product }) {
                   <p className={styles.productInfo}>{product.productInfo}</p>
                 ) : null}
               </>
-            ) : (
-              <ProductPriceBreakup product={product} />
             )}
           </div>
 
