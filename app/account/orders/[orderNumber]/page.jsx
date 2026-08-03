@@ -142,6 +142,22 @@ export default async function AccountOrderDetailPage({ params }) {
         </article>
       ) : null}
 
+      <aside className={`${styles.returnNotice} ${styles.detailCard}`} aria-label="Return instructions">
+        <h2 className={styles.returnNoticeTitle}>Need to return this order?</h2>
+        <p className={styles.returnNoticeText}>
+          Email the Daiorus team at{' '}
+          <a
+            href={`mailto:sales@daiorus.com?subject=${encodeURIComponent(
+              `Return request — Order #${order.orderNumber}`,
+            )}`}
+          >
+            sales@daiorus.com
+          </a>
+          {' '}with this order number (#{order.orderNumber}) and clear photos or videos of the
+          product. Our team will guide you through the return.
+        </p>
+      </aside>
+
       <div className={styles.detailActions}>
         <Link href="/contact" className={styles.secondaryLink}>
           Need help with this order?

@@ -10,6 +10,7 @@ import {
   DEFAULT_CURATED_SELECTS,
   DEFAULT_PHILOSOPHY,
   DEFAULT_PROCESS,
+  DEFAULT_ABOUT,
   DEFAULT_SOCIAL,
   MEDIA_PRESETS,
   MAX_HERO_CAROUSEL_IMAGES,
@@ -283,6 +284,7 @@ export default function MediaLibraryEditor({ initialContent, products = [] }) {
   const [aboutProcess, setAboutProcess] = useState(
     initialContent.process || DEFAULT_PROCESS,
   );
+  const [aboutPage, setAboutPage] = useState(initialContent.about || DEFAULT_ABOUT);
   const [social, setSocial] = useState(initialContent.social || DEFAULT_SOCIAL);
   const [curatedProductIds, setCuratedProductIds] = useState(
     Array.isArray(initialContent?.curatedSelects?.productIds)
@@ -312,6 +314,28 @@ export default function MediaLibraryEditor({ initialContent, products = [] }) {
 
   const updateAboutProcess = (key, value) => {
     setAboutProcess((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const updateAboutPage = (key, value) => {
+    setAboutPage((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const updateAboutValue = (index, key, value) => {
+    setAboutPage((prev) => {
+      const values = (prev.values || DEFAULT_ABOUT.values).map((item, i) =>
+        i === index ? { ...item, [key]: value } : item,
+      );
+      return { ...prev, values };
+    });
+  };
+
+  const updateTrustItem = (index, key, value) => {
+    setAboutPage((prev) => {
+      const trustItems = (prev.trustItems || DEFAULT_ABOUT.trustItems).map((item, i) =>
+        i === index ? { ...item, [key]: value } : item,
+      );
+      return { ...prev, trustItems };
+    });
   };
 
   const updateSocial = (key, value) => {
@@ -427,6 +451,11 @@ export default function MediaLibraryEditor({ initialContent, products = [] }) {
       ...DEFAULT_PROCESS,
       stats: DEFAULT_PROCESS.stats.map((stat) => ({ ...stat })),
     });
+    setAboutPage({
+      ...DEFAULT_ABOUT,
+      values: DEFAULT_ABOUT.values.map((item) => ({ ...item })),
+      trustItems: DEFAULT_ABOUT.trustItems.map((item) => ({ ...item })),
+    });
     setSocial({
       ...DEFAULT_SOCIAL,
       items: DEFAULT_SOCIAL.items.map((item) => ({ ...item })),
@@ -456,6 +485,7 @@ export default function MediaLibraryEditor({ initialContent, products = [] }) {
         signature,
         philosophy,
         process: aboutProcess,
+        about: aboutPage,
         social,
         curatedSelects: { productIds: curatedProductIds || [] },
       };
@@ -476,6 +506,7 @@ export default function MediaLibraryEditor({ initialContent, products = [] }) {
       setSignature(data.signature);
       setPhilosophy(data.philosophy || DEFAULT_PHILOSOPHY);
       setAboutProcess(data.process || DEFAULT_PROCESS);
+      setAboutPage(data.about || DEFAULT_ABOUT);
       setSocial(data.social || DEFAULT_SOCIAL);
       setCuratedProductIds(data?.curatedSelects?.productIds || []);
       setSuccess('Landing page content saved. Changes are live on the storefront.');
@@ -496,7 +527,8 @@ export default function MediaLibraryEditor({ initialContent, products = [] }) {
           <h1 className={styles.pageTitle}>Media Library</h1>
           <p className={styles.pageSubtitle}>
             Manage the announce banner, homepage hero, Our Philosophy, Signature Line, Curated
-            Selects, Social grid, and About Process. Upload images or videos, then save to publish.
+            Selects, Social grid, About Us, and The Process. Upload images or videos, then save to
+            publish.
           </p>
         </div>
         <div className={styles.headerActions}>
@@ -991,6 +1023,196 @@ export default function MediaLibraryEditor({ initialContent, products = [] }) {
                   </Field>
                 ) : null}
               </div>
+            ))}
+          </div>
+        </section>
+
+        <section className={styles.card}>
+          <div className={styles.cardHeader}>
+            <div>
+              <h2 className={styles.cardTitle}>About Us</h2>
+              <p className={styles.cardHint}>
+                Story, values, CTA, and trust bar on the About page (/about).
+              </p>
+            </div>
+          </div>
+
+          <Field label="Hero image" full>
+            <ImagePicker
+              value={aboutPage.heroImageUrl}
+              onChange={(v) => updateAboutPage('heroImageUrl', v)}
+              presets={MEDIA_PRESETS}
+              tall
+              uploading={uploading}
+              onUpload={(file) =>
+                handleSingleUpload(file, (url) => updateAboutPage('heroImageUrl', url))
+              }
+            />
+          </Field>
+          <Field label="Hero image alt">
+            <input
+              className={styles.input}
+              value={aboutPage.heroImageAlt}
+              onChange={(e) => updateAboutPage('heroImageAlt', e.target.value)}
+            />
+          </Field>
+
+          <Field label="Quote">
+            <textarea
+              className={styles.textarea}
+              value={aboutPage.quote}
+              onChange={(e) => updateAboutPage('quote', e.target.value)}
+            />
+          </Field>
+          <Field label="Quote citation">
+            <input
+              className={styles.input}
+              value={aboutPage.quoteCite}
+              onChange={(e) => updateAboutPage('quoteCite', e.target.value)}
+            />
+          </Field>
+
+          <div className={styles.grid2}>
+            <Field label="Beginning label">
+              <input
+                className={styles.input}
+                value={aboutPage.beginningLabel}
+                onChange={(e) => updateAboutPage('beginningLabel', e.target.value)}
+              />
+            </Field>
+            <Field label="Beginning title">
+              <input
+                className={styles.input}
+                value={aboutPage.beginningTitle}
+                onChange={(e) => updateAboutPage('beginningTitle', e.target.value)}
+              />
+            </Field>
+          </div>
+          <Field label="Beginning paragraph 1">
+            <textarea
+              className={styles.textarea}
+              value={aboutPage.beginningBody1}
+              onChange={(e) => updateAboutPage('beginningBody1', e.target.value)}
+            />
+          </Field>
+          <Field label="Beginning paragraph 2">
+            <textarea
+              className={styles.textarea}
+              value={aboutPage.beginningBody2}
+              onChange={(e) => updateAboutPage('beginningBody2', e.target.value)}
+            />
+          </Field>
+          <Field label="Beginning image" full>
+            <ImagePicker
+              value={aboutPage.beginningImageUrl}
+              onChange={(v) => updateAboutPage('beginningImageUrl', v)}
+              presets={MEDIA_PRESETS}
+              tall
+              uploading={uploading}
+              onUpload={(file) =>
+                handleSingleUpload(file, (url) => updateAboutPage('beginningImageUrl', url))
+              }
+            />
+          </Field>
+          <Field label="Beginning image alt">
+            <input
+              className={styles.input}
+              value={aboutPage.beginningImageAlt}
+              onChange={(e) => updateAboutPage('beginningImageAlt', e.target.value)}
+            />
+          </Field>
+
+          <div className={styles.grid2}>
+            <Field label="Values label">
+              <input
+                className={styles.input}
+                value={aboutPage.valuesLabel}
+                onChange={(e) => updateAboutPage('valuesLabel', e.target.value)}
+              />
+            </Field>
+            <Field label="Values title">
+              <input
+                className={styles.input}
+                value={aboutPage.valuesTitle}
+                onChange={(e) => updateAboutPage('valuesTitle', e.target.value)}
+              />
+            </Field>
+          </div>
+          <div className={styles.grid2}>
+            {(aboutPage.values || DEFAULT_ABOUT.values).map((item, index) => (
+              <Field key={`about-value-${index}`} label={`Value ${index + 1}`}>
+                <input
+                  className={styles.input}
+                  value={item.num}
+                  onChange={(e) => updateAboutValue(index, 'num', e.target.value)}
+                  placeholder="Number (e.g. 01)"
+                  style={{ marginBottom: 8 }}
+                />
+                <input
+                  className={styles.input}
+                  value={item.title}
+                  onChange={(e) => updateAboutValue(index, 'title', e.target.value)}
+                  placeholder="Title"
+                  style={{ marginBottom: 8 }}
+                />
+                <textarea
+                  className={styles.textarea}
+                  value={item.desc}
+                  onChange={(e) => updateAboutValue(index, 'desc', e.target.value)}
+                  placeholder="Description"
+                />
+              </Field>
+            ))}
+          </div>
+
+          <Field label="CTA title">
+            <input
+              className={styles.input}
+              value={aboutPage.ctaTitle}
+              onChange={(e) => updateAboutPage('ctaTitle', e.target.value)}
+            />
+          </Field>
+          <Field label="CTA body">
+            <textarea
+              className={styles.textarea}
+              value={aboutPage.ctaBody}
+              onChange={(e) => updateAboutPage('ctaBody', e.target.value)}
+            />
+          </Field>
+          <div className={styles.grid2}>
+            <Field label="CTA button label">
+              <input
+                className={styles.input}
+                value={aboutPage.ctaLabel}
+                onChange={(e) => updateAboutPage('ctaLabel', e.target.value)}
+              />
+            </Field>
+            <Field label="CTA button URL">
+              <input
+                className={styles.input}
+                value={aboutPage.ctaUrl}
+                onChange={(e) => updateAboutPage('ctaUrl', e.target.value)}
+              />
+            </Field>
+          </div>
+
+          <div className={styles.grid2}>
+            {(aboutPage.trustItems || DEFAULT_ABOUT.trustItems).map((item, index) => (
+              <Field key={`about-trust-${index}`} label={`Trust item ${index + 1}`}>
+                <input
+                  className={styles.input}
+                  value={item.title}
+                  onChange={(e) => updateTrustItem(index, 'title', e.target.value)}
+                  placeholder="Title"
+                  style={{ marginBottom: 8 }}
+                />
+                <input
+                  className={styles.input}
+                  value={item.desc}
+                  onChange={(e) => updateTrustItem(index, 'desc', e.target.value)}
+                  placeholder="Description"
+                />
+              </Field>
             ))}
           </div>
         </section>

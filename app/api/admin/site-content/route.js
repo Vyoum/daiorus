@@ -31,6 +31,7 @@ export async function PUT(request) {
       curatedSelects: body?.curatedSelects || null,
       philosophy: body?.philosophy || null,
       process: body?.process || null,
+      about: body?.about || null,
       social: body?.social || null,
     });
 

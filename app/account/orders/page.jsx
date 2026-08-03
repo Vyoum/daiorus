@@ -31,6 +31,16 @@ export default async function AccountOrdersPage() {
         </p>
       </header>
 
+      <aside className={styles.returnNotice} aria-label="Return instructions">
+        <h2 className={styles.returnNoticeTitle}>Need to return an order?</h2>
+        <p className={styles.returnNoticeText}>
+          Email the Daiorus team at{' '}
+          <a href="mailto:sales@daiorus.com?subject=Return%20request">sales@daiorus.com</a>
+          {' '}with your order number and clear photos or videos of the product. Our team will
+          guide you through the return.
+        </p>
+      </aside>
+
       {orders.length === 0 ? (
         <div className={styles.empty}>
           <h2 className={styles.emptyTitle}>No orders yet</h2>

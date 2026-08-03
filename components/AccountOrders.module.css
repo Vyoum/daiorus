@@ -22,6 +22,35 @@
   max-width: 52ch;
 }
 
+.returnNotice {
+  background: #f7f4ee;
+  border: 1px solid rgba(28, 24, 17, 0.08);
+  border-radius: 10px;
+  padding: 18px 22px;
+  margin-bottom: 24px;
+}
+
+.returnNoticeTitle {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: 400;
+  color: var(--text-dark);
+  margin-bottom: 8px;
+}
+
+.returnNoticeText {
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.65;
+  max-width: 62ch;
+}
+
+.returnNoticeText a {
+  color: var(--text-dark);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .empty {
   background: #fff;
   border: 1px solid rgba(28, 24, 17, 0.08);
