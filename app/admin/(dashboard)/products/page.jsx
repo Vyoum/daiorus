@@ -55,91 +55,93 @@ export default async function ProductsPage() {
       </div>
 
       <div className={styles.tableContainer}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th className={styles.th} style={{ width: 40 }}>
-                <input type="checkbox" className={styles.checkbox} aria-label="Select all" />
-              </th>
-              <th className={styles.th}>Product</th>
-              <th className={styles.th}>SKU</th>
-              <th className={styles.th}>Category</th>
-              <th className={styles.th}>Price</th>
-              <th className={styles.th}>Stock</th>
-              <th className={styles.th}>Status</th>
-              <th className={styles.th}>Visibility</th>
-              <th className={styles.th}>Last Updated</th>
-              <th className={styles.th}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.length === 0 ? (
-              <tr className={styles.tr}>
-                <td className={styles.td} colSpan={10} style={{ textAlign: 'center', padding: 40 }}>
-                  No products in the database yet.
-                </td>
+        <div className={styles.tableScroll}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th className={styles.th} style={{ width: 40 }}>
+                  <input type="checkbox" className={styles.checkbox} aria-label="Select all" />
+                </th>
+                <th className={styles.th}>Product</th>
+                <th className={`${styles.th} ${styles.hideSm}`}>SKU</th>
+                <th className={styles.th}>Category</th>
+                <th className={styles.th}>Price</th>
+                <th className={styles.th}>Stock</th>
+                <th className={styles.th}>Status</th>
+                <th className={`${styles.th} ${styles.hideMd}`}>Visibility</th>
+                <th className={`${styles.th} ${styles.hideMd}`}>Last Updated</th>
+                <th className={`${styles.th} ${styles.actionsTh}`}>Actions</th>
               </tr>
-            ) : (
-              products.map((product) => (
-                <tr key={product.id} className={styles.tr}>
-                  <td className={styles.td}>
-                    <input type="checkbox" className={styles.checkbox} aria-label={`Select ${product.name}`} />
-                  </td>
-                  <td className={styles.td}>
-                    <div className={styles.productCell}>
-                      <div className={styles.productImage}>
-                        {product.imageUrl ? (
-                          <img
-                            src={product.imageUrl}
-                            alt=""
-                            style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 6 }}
-                          />
-                        ) : null}
-                      </div>
-                      <div className={styles.productInfo}>
-                        <span className={styles.productName}>{product.name}</span>
-                        <span className={styles.productDesc}>{product.material || product.slug}</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td className={styles.td}>{product.sku}</td>
-                  <td className={styles.td}>{product.category}</td>
-                  <td className={styles.td}>
-                    <span className={styles.price}>{formatINR(product.priceInr)}</span>
-                  </td>
-                  <td className={styles.td}>
-                    <div className={styles.stockCell}>
-                      <span
-                        className={styles.stockValue}
-                        style={product.isLow ? { color: 'var(--admin-danger)' } : undefined}
-                      >
-                        {product.quantity}
-                      </span>
-                      <div className={styles.stockBarBg}>
-                        <div className={styles.stockBarFill} style={{ width: `${product.stockPct}%` }} />
-                      </div>
-                    </div>
-                  </td>
-                  <td className={styles.td}>
-                    <span className={styles.badge}>
-                      <span className={styles.badgeDot} />
-                      {productStatusLabel(product.status)}
-                    </span>
-                  </td>
-                  <td className={styles.td}>
-                    <Eye className={styles.visibilityIcon} size={18} />
-                  </td>
-                  <td className={styles.td}>
-                    <div className={styles.lastUpdated}>{formatDateTime(product.updatedAt)}</div>
-                  </td>
-                  <td className={styles.td}>
-                    <ProductRowActions productId={product.id} productName={product.name} />
+            </thead>
+            <tbody>
+              {products.length === 0 ? (
+                <tr className={styles.tr}>
+                  <td className={styles.td} colSpan={10} style={{ textAlign: 'center', padding: 40 }}>
+                    No products in the database yet.
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                products.map((product) => (
+                  <tr key={product.id} className={styles.tr}>
+                    <td className={styles.td}>
+                      <input type="checkbox" className={styles.checkbox} aria-label={`Select ${product.name}`} />
+                    </td>
+                    <td className={styles.td}>
+                      <div className={styles.productCell}>
+                        <div className={styles.productImage}>
+                          {product.imageUrl ? (
+                            <img
+                              src={product.imageUrl}
+                              alt=""
+                              style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 6 }}
+                            />
+                          ) : null}
+                        </div>
+                        <div className={styles.productInfo}>
+                          <span className={styles.productName}>{product.name}</span>
+                          <span className={styles.productDesc}>{product.material || product.slug}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className={`${styles.td} ${styles.hideSm}`}>{product.sku}</td>
+                    <td className={styles.td}>{product.category}</td>
+                    <td className={styles.td}>
+                      <span className={styles.price}>{formatINR(product.priceInr)}</span>
+                    </td>
+                    <td className={styles.td}>
+                      <div className={styles.stockCell}>
+                        <span
+                          className={styles.stockValue}
+                          style={product.isLow ? { color: 'var(--admin-danger)' } : undefined}
+                        >
+                          {product.quantity}
+                        </span>
+                        <div className={styles.stockBarBg}>
+                          <div className={styles.stockBarFill} style={{ width: `${product.stockPct}%` }} />
+                        </div>
+                      </div>
+                    </td>
+                    <td className={styles.td}>
+                      <span className={styles.badge}>
+                        <span className={styles.badgeDot} />
+                        {productStatusLabel(product.status)}
+                      </span>
+                    </td>
+                    <td className={`${styles.td} ${styles.hideMd}`}>
+                      <Eye className={styles.visibilityIcon} size={18} />
+                    </td>
+                    <td className={`${styles.td} ${styles.hideMd}`}>
+                      <div className={styles.lastUpdated}>{formatDateTime(product.updatedAt)}</div>
+                    </td>
+                    <td className={`${styles.td} ${styles.actionsTd}`}>
+                      <ProductRowActions productId={product.id} productName={product.name} />
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
 
         <div className={styles.pagination}>
           <span className={styles.paginationText}>

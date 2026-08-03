@@ -37,9 +37,10 @@ export default function ProductRowActions({ productId, productName }) {
         href={`/admin/products/${productId}/edit`}
         className={styles.editBtn}
         aria-label={`Edit ${productName}`}
+        title="Edit"
       >
         <Pencil size={14} />
-        Edit
+        <span className={styles.btnLabel}>Edit</span>
       </Link>
       <button
         type="button"
@@ -47,9 +48,10 @@ export default function ProductRowActions({ productId, productName }) {
         onClick={handleDelete}
         disabled={deleting}
         aria-label={`Delete ${productName}`}
+        title="Delete"
       >
         <Trash2 size={14} />
-        {deleting ? 'Deleting…' : 'Delete'}
+        <span className={styles.btnLabel}>{deleting ? 'Deleting…' : 'Delete'}</span>
       </button>
     </div>
   );
