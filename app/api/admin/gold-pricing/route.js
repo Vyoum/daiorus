@@ -42,8 +42,19 @@ export async function POST(request) {
     const body = await request.json().catch(() => ({}));
     if (body?.action === 'fetch-latest') {
       const settings = await fetchAndSaveLatestGoldRate();
-      const result = await recalculateAllGoldPricedProducts();
-      return NextResponse.json({ ...result, settings });
+      try {
+        const result = await recalculateAllGoldPricedProducts();
+        return NextResponse.json({ ...result, settings });
+      } catch (recalcErr) {
+        console.error('[admin:gold-pricing:recalculate]', recalcErr?.message || recalcErr);
+        return NextResponse.json({
+          settings,
+          updated: 0,
+          skipped: 0,
+          total: 0,
+          warning: recalcErr?.message || 'Rate saved, but product recalculation failed.',
+        });
+      }
     }
 
     if (body?.action === 'recalculate') {

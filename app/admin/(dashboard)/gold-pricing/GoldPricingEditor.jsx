@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Coins } from 'lucide-react';
 import { formatINR } from '../../../../lib/admin/format';
 import { calculateGoldValue } from '../../../../lib/gold-pricing-calc';
+import { DEFAULT_INDIA_PREMIUM_PCT } from '../../../../lib/gold-pricing-defaults';
 import styles from './gold-pricing.module.css';
 
 function formatDateTime(value) {
@@ -24,6 +25,12 @@ export default function GoldPricingEditor({ initialSettings }) {
   const router = useRouter();
   const [rate24kPerGram, setRate24kPerGram] = useState(
     initialSettings?.rate24kPerGram ? String(initialSettings.rate24kPerGram) : '',
+  );
+  const [spotRate24kPerGram, setSpotRate24kPerGram] = useState(
+    initialSettings?.spotRate24kPerGram ? String(initialSettings.spotRate24kPerGram) : '',
+  );
+  const [indiaPremiumPct, setIndiaPremiumPct] = useState(
+    String(initialSettings?.indiaPremiumPct ?? DEFAULT_INDIA_PREMIUM_PCT),
   );
   const [updatedAt, setUpdatedAt] = useState(initialSettings?.updatedAt || null);
   const [source, setSource] = useState(initialSettings?.source || 'manual');
@@ -51,6 +58,17 @@ export default function GoldPricingEditor({ initialSettings }) {
     };
   }, [rate24kPerGram]);
 
+  const applySettings = (settings) => {
+    if (!settings) return;
+    setRate24kPerGram(settings.rate24kPerGram ? String(settings.rate24kPerGram) : '');
+    setSpotRate24kPerGram(
+      settings.spotRate24kPerGram ? String(settings.spotRate24kPerGram) : '',
+    );
+    setIndiaPremiumPct(String(settings.indiaPremiumPct ?? DEFAULT_INDIA_PREMIUM_PCT));
+    setUpdatedAt(settings.updatedAt || null);
+    setSource(settings.source || 'manual');
+  };
+
   const saveSettings = async () => {
     if (saving) return;
     setSaving(true);
@@ -64,6 +82,8 @@ export default function GoldPricingEditor({ initialSettings }) {
         body: JSON.stringify({
           settings: {
             rate24kPerGram: Number(rate24kPerGram) || 0,
+            spotRate24kPerGram: Number(spotRate24kPerGram) || 0,
+            indiaPremiumPct: Number(indiaPremiumPct) || 0,
             source: 'manual',
           },
         }),
@@ -71,8 +91,7 @@ export default function GoldPricingEditor({ initialSettings }) {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Could not save gold pricing');
 
-      setUpdatedAt(data.settings?.updatedAt || new Date().toISOString());
-      setSource(data.settings?.source || 'manual');
+      applySettings(data.settings);
       setSuccess('Gold rate saved.');
       router.refresh();
     } catch (err) {
@@ -89,6 +108,24 @@ export default function GoldPricingEditor({ initialSettings }) {
     setSuccess('');
 
     try {
+      // Persist premium first so fetch uses the value currently in the form
+      const premiumRes = await fetch('/api/admin/gold-pricing', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          settings: {
+            rate24kPerGram: Number(rate24kPerGram) || 0,
+            spotRate24kPerGram: Number(spotRate24kPerGram) || 0,
+            indiaPremiumPct: Number(indiaPremiumPct) || DEFAULT_INDIA_PREMIUM_PCT,
+            source,
+          },
+        }),
+      });
+      const premiumData = await premiumRes.json().catch(() => ({}));
+      if (!premiumRes.ok) {
+        throw new Error(premiumData.error || 'Could not save India premium before fetch');
+      }
+
       const res = await fetch('/api/admin/gold-pricing', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -97,11 +134,12 @@ export default function GoldPricingEditor({ initialSettings }) {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Could not fetch the latest gold rate');
 
-      setRate24kPerGram(String(data.settings.rate24kPerGram));
-      setUpdatedAt(data.settings.updatedAt);
-      setSource(data.settings.source || 'goldapi.io');
+      applySettings(data.settings);
+      const spot = data.settings?.spotRate24kPerGram;
+      const final = data.settings?.rate24kPerGram;
+      const pct = data.settings?.indiaPremiumPct;
       setSuccess(
-        `Latest rate saved and ${data.updated} product${data.updated === 1 ? '' : 's'} updated.`,
+        `GoldAPI spot ₹${Number(spot).toLocaleString('en-IN')}/g + ${pct}% India premium → ₹${Number(final).toLocaleString('en-IN')}/g. Updated ${data.updated} product${data.updated === 1 ? '' : 's'}.`,
       );
       router.refresh();
     } catch (err) {
@@ -145,8 +183,8 @@ export default function GoldPricingEditor({ initialSettings }) {
         <div>
           <h1 className={styles.title}>Gold Pricing</h1>
           <p className={styles.subtitle}>
-            Update today’s 24K rate. Only each product’s net-gold value changes; its fixed
-            non-gold amount remains untouched.
+            Fetch from GoldAPI (international spot in INR), then apply an India premium so the
+            rate matches jewellery-market levels. Only each product’s net-gold value changes.
           </p>
         </div>
         <div className={styles.headerActions}>
@@ -193,7 +231,7 @@ export default function GoldPricingEditor({ initialSettings }) {
 
         <div className={styles.grid2}>
           <label className={styles.field}>
-            <span>24K gold rate (INR per gram)</span>
+            <span>24K India rate used for pricing (INR / gram)</span>
             <div className={styles.prefixInput}>
               <span>₹</span>
               <input
@@ -203,15 +241,40 @@ export default function GoldPricingEditor({ initialSettings }) {
                 className={styles.input}
                 value={rate24kPerGram}
                 onChange={(e) => setRate24kPerGram(e.target.value)}
-                placeholder="7500"
+                placeholder="15090"
               />
+            </div>
+          </label>
+          <label className={styles.field}>
+            <span>India premium on GoldAPI spot (%)</span>
+            <div className={styles.prefixInput}>
+              <input
+                type="number"
+                min="0"
+                max="50"
+                step="0.1"
+                className={styles.input}
+                value={indiaPremiumPct}
+                onChange={(e) => setIndiaPremiumPct(e.target.value)}
+                placeholder="14"
+              />
+              <span>%</span>
             </div>
           </label>
         </div>
 
-        <p className={styles.formula}>
-          Product price = current net-gold value + the product’s fixed non-gold amount
-        </p>
+        {spotRate24kPerGram ? (
+          <p className={styles.formula}>
+            Last GoldAPI spot: {formatINR(Number(spotRate24kPerGram))}/g 24K · Final rate =
+            spot × (1 + India premium). GoldAPI does not publish IBJA/city jewellery rates —
+            tune the premium if your local rate drifts.
+          </p>
+        ) : (
+          <p className={styles.formula}>
+            Product price = current net-gold value + the product’s fixed non-gold amount. Fetch
+            uses GoldAPI spot + India premium (default {DEFAULT_INDIA_PREMIUM_PCT}%).
+          </p>
+        )}
       </section>
 
       {preview?.sample18k4g ? (
