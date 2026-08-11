@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { Coins } from 'lucide-react';
 import { formatINR } from '../../../../lib/admin/format';
 import { calculateGoldValue } from '../../../../lib/gold-pricing-calc';
-import { DEFAULT_INDIA_PREMIUM_PCT } from '../../../../lib/gold-pricing-defaults';
 import styles from './gold-pricing.module.css';
 
 function formatDateTime(value) {
@@ -21,17 +20,21 @@ function formatDateTime(value) {
   });
 }
 
+function formatSourceLabel(source) {
+  if (source === 'ibja') return 'IBJA (ibjarates.com)';
+  if (source === 'manual') return 'Manual';
+  return source || 'Manual';
+}
+
 export default function GoldPricingEditor({ initialSettings }) {
   const router = useRouter();
   const [rate24kPerGram, setRate24kPerGram] = useState(
     initialSettings?.rate24kPerGram ? String(initialSettings.rate24kPerGram) : '',
   );
-  const [spotRate24kPerGram, setSpotRate24kPerGram] = useState(
-    initialSettings?.spotRate24kPerGram ? String(initialSettings.spotRate24kPerGram) : '',
+  const [ibjaRate999Per10g, setIbjaRate999Per10g] = useState(
+    initialSettings?.ibjaRate999Per10g ? String(initialSettings.ibjaRate999Per10g) : '',
   );
-  const [indiaPremiumPct, setIndiaPremiumPct] = useState(
-    String(initialSettings?.indiaPremiumPct ?? DEFAULT_INDIA_PREMIUM_PCT),
-  );
+  const [ibjaSession, setIbjaSession] = useState(initialSettings?.ibjaSession || null);
   const [updatedAt, setUpdatedAt] = useState(initialSettings?.updatedAt || null);
   const [source, setSource] = useState(initialSettings?.source || 'manual');
   const [saving, setSaving] = useState(false);
@@ -61,10 +64,10 @@ export default function GoldPricingEditor({ initialSettings }) {
   const applySettings = (settings) => {
     if (!settings) return;
     setRate24kPerGram(settings.rate24kPerGram ? String(settings.rate24kPerGram) : '');
-    setSpotRate24kPerGram(
-      settings.spotRate24kPerGram ? String(settings.spotRate24kPerGram) : '',
+    setIbjaRate999Per10g(
+      settings.ibjaRate999Per10g ? String(settings.ibjaRate999Per10g) : '',
     );
-    setIndiaPremiumPct(String(settings.indiaPremiumPct ?? DEFAULT_INDIA_PREMIUM_PCT));
+    setIbjaSession(settings.ibjaSession || null);
     setUpdatedAt(settings.updatedAt || null);
     setSource(settings.source || 'manual');
   };
@@ -82,8 +85,8 @@ export default function GoldPricingEditor({ initialSettings }) {
         body: JSON.stringify({
           settings: {
             rate24kPerGram: Number(rate24kPerGram) || 0,
-            spotRate24kPerGram: Number(spotRate24kPerGram) || 0,
-            indiaPremiumPct: Number(indiaPremiumPct) || 0,
+            ibjaRate999Per10g: Number(ibjaRate999Per10g) || 0,
+            ibjaSession: ibjaSession || null,
             source: 'manual',
           },
         }),
@@ -108,24 +111,6 @@ export default function GoldPricingEditor({ initialSettings }) {
     setSuccess('');
 
     try {
-      // Persist premium first so fetch uses the value currently in the form
-      const premiumRes = await fetch('/api/admin/gold-pricing', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          settings: {
-            rate24kPerGram: Number(rate24kPerGram) || 0,
-            spotRate24kPerGram: Number(spotRate24kPerGram) || 0,
-            indiaPremiumPct: Number(indiaPremiumPct) || DEFAULT_INDIA_PREMIUM_PCT,
-            source,
-          },
-        }),
-      });
-      const premiumData = await premiumRes.json().catch(() => ({}));
-      if (!premiumRes.ok) {
-        throw new Error(premiumData.error || 'Could not save India premium before fetch');
-      }
-
       const res = await fetch('/api/admin/gold-pricing', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -135,11 +120,11 @@ export default function GoldPricingEditor({ initialSettings }) {
       if (!res.ok) throw new Error(data.error || 'Could not fetch the latest gold rate');
 
       applySettings(data.settings);
-      const spot = data.settings?.spotRate24kPerGram;
+      const per10g = data.settings?.ibjaRate999Per10g;
+      const session = data.settings?.ibjaSession;
       const final = data.settings?.rate24kPerGram;
-      const pct = data.settings?.indiaPremiumPct;
       setSuccess(
-        `GoldAPI spot ₹${Number(spot).toLocaleString('en-IN')}/g + ${pct}% India premium → ₹${Number(final).toLocaleString('en-IN')}/g. Updated ${data.updated} product${data.updated === 1 ? '' : 's'}.`,
+        `IBJA Gold 999 ${session || ''} ₹${Number(per10g).toLocaleString('en-IN')}/10g → ₹${Number(final).toLocaleString('en-IN')}/g. Updated ${data.updated ?? 0} product${data.updated === 1 ? '' : 's'}.${data.warning ? ` ${data.warning}` : ''}`,
       );
       router.refresh();
     } catch (err) {
@@ -183,8 +168,8 @@ export default function GoldPricingEditor({ initialSettings }) {
         <div>
           <h1 className={styles.title}>Gold Pricing</h1>
           <p className={styles.subtitle}>
-            Fetch from GoldAPI (international spot in INR), then apply an India premium so the
-            rate matches jewellery-market levels. Only each product’s net-gold value changes.
+            Fetch today’s IBJA Gold 999 benchmark rate (India market) or enter it manually.
+            Only each product’s net-gold value changes; fixed non-gold amounts stay the same.
           </p>
         </div>
         <div className={styles.headerActions}>
@@ -194,7 +179,7 @@ export default function GoldPricingEditor({ initialSettings }) {
             onClick={fetchLatest}
             disabled={fetching || recalculating || saving}
           >
-            {fetching ? 'Fetching…' : 'Fetch latest rate'}
+            {fetching ? 'Fetching…' : 'Fetch IBJA rate'}
           </button>
           <button
             type="button"
@@ -224,14 +209,15 @@ export default function GoldPricingEditor({ initialSettings }) {
           <div>
             <h2 className={styles.cardTitle}>Today&apos;s gold rate</h2>
             <p className={styles.cardHint}>
-              Last updated: {formatDateTime(updatedAt)} · Source: {source}
+              Last updated: {formatDateTime(updatedAt)} · Source: {formatSourceLabel(source)}
+              {ibjaSession ? ` · IBJA ${ibjaSession} session` : ''}
             </p>
           </div>
         </div>
 
         <div className={styles.grid2}>
           <label className={styles.field}>
-            <span>24K India rate used for pricing (INR / gram)</span>
+            <span>24K gold rate (INR per gram)</span>
             <div className={styles.prefixInput}>
               <span>₹</span>
               <input
@@ -241,40 +227,33 @@ export default function GoldPricingEditor({ initialSettings }) {
                 className={styles.input}
                 value={rate24kPerGram}
                 onChange={(e) => setRate24kPerGram(e.target.value)}
-                placeholder="15090"
+                placeholder="15249"
               />
             </div>
           </label>
-          <label className={styles.field}>
-            <span>India premium on GoldAPI spot (%)</span>
-            <div className={styles.prefixInput}>
-              <input
-                type="number"
-                min="0"
-                max="50"
-                step="0.1"
-                className={styles.input}
-                value={indiaPremiumPct}
-                onChange={(e) => setIndiaPremiumPct(e.target.value)}
-                placeholder="14"
-              />
-              <span>%</span>
-            </div>
-          </label>
+          {ibjaRate999Per10g ? (
+            <label className={styles.field}>
+              <span>IBJA Gold 999 (INR per 10g)</span>
+              <div className={styles.prefixInput}>
+                <span>₹</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  className={styles.input}
+                  value={ibjaRate999Per10g}
+                  readOnly
+                  aria-readonly="true"
+                />
+              </div>
+            </label>
+          ) : null}
         </div>
 
-        {spotRate24kPerGram ? (
-          <p className={styles.formula}>
-            Last GoldAPI spot: {formatINR(Number(spotRate24kPerGram))}/g 24K · Final rate =
-            spot × (1 + India premium). GoldAPI does not publish IBJA/city jewellery rates —
-            tune the premium if your local rate drifts.
-          </p>
-        ) : (
-          <p className={styles.formula}>
-            Product price = current net-gold value + the product’s fixed non-gold amount. Fetch
-            uses GoldAPI spot + India premium (default {DEFAULT_INDIA_PREMIUM_PCT}%).
-          </p>
-        )}
+        <p className={styles.formula}>
+          Fetch reads ibjarates.com (IBJA Gold 999, per 10g) and saves ÷10 as your 24K per-gram
+          rate. Rates exclude GST and making charges. You can still override manually above.
+        </p>
       </section>
 
       {preview?.sample18k4g ? (
