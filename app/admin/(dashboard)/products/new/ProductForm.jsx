@@ -281,11 +281,12 @@ export default function ProductForm({ categories = [], product = null }) {
   const taxAmountInr =
     Number.isFinite(taxPctNum) && taxPctNum >= 0
       ? Math.round(
-          ((goldPreviewValue + diamondCostNum + makingNum) * taxPctNum) / 100,
+          ((goldPreviewValue + diamondCostNum + stoneCostNum + makingNum) * taxPctNum) /
+            100,
         )
       : 0;
   const breakupPreviewTotal =
-    goldPreviewValue + diamondCostNum + makingNum + taxAmountInr;
+    goldPreviewValue + diamondCostNum + stoneCostNum + makingNum + taxAmountInr;
 
   const inferredGoldPricing = useMemo(() => {
     if (!goldSettings?.rate24kPerGram || !goldWeightGrams || !materialValue) return null;
@@ -376,6 +377,9 @@ export default function ProductForm({ categories = [], product = null }) {
             diamondCount: diamondCount === '' ? null : Number(diamondCount),
             diamondCarat: diamondCarat === '' ? null : Number(diamondCarat),
             diamondCostInr: diamondCostInr === '' ? null : Number(diamondCostInr),
+            stoneCount: stoneCount === '' ? null : Number(stoneCount),
+            stoneCarat: stoneCarat === '' ? null : Number(stoneCarat),
+            stoneCostInr: stoneCostInr === '' ? null : Number(stoneCostInr),
             heightMm: heightMm === '' ? null : Number(heightMm),
             widthMm: widthMm === '' ? null : Number(widthMm),
             metalColor: metalColor || null,
@@ -708,7 +712,7 @@ export default function ProductForm({ categories = [], product = null }) {
               </label>
             </div>
 
-            <p className={styles.sectionLabel}>Diamond / stone details</p>
+            <p className={styles.sectionLabel}>Diamond details</p>
             <div className={styles.row2}>
               <label className={styles.field}>
                 <span>Total diamond weight (Ct)</span>
@@ -738,7 +742,7 @@ export default function ProductForm({ categories = [], product = null }) {
               </label>
             </div>
             <label className={styles.field}>
-              <span>Diamond / stone cost (INR)</span>
+              <span>Diamond cost (INR)</span>
               <div className={styles.prefixInput}>
                 <span>₹</span>
                 <input
@@ -753,6 +757,54 @@ export default function ProductForm({ categories = [], product = null }) {
               </div>
               <span className={styles.fieldHint}>
                 Shown as the Diamond line in price breakup.
+              </span>
+            </label>
+
+            <p className={styles.sectionLabel}>Stone details</p>
+            <div className={styles.row2}>
+              <label className={styles.field}>
+                <span>Total stone weight (Ct)</span>
+                <input
+                  className={styles.input}
+                  type="number"
+                  min="0"
+                  step="0.001"
+                  inputMode="decimal"
+                  value={stoneCarat}
+                  onChange={(e) => setStoneCarat(e.target.value)}
+                  placeholder="e.g. 1.25"
+                />
+              </label>
+              <label className={styles.field}>
+                <span>Total no. of stones</span>
+                <input
+                  className={styles.input}
+                  type="number"
+                  min="0"
+                  step="1"
+                  inputMode="numeric"
+                  value={stoneCount}
+                  onChange={(e) => setStoneCount(e.target.value)}
+                  placeholder="e.g. 8"
+                />
+              </label>
+            </div>
+            <label className={styles.field}>
+              <span>Stone cost (INR)</span>
+              <div className={styles.prefixInput}>
+                <span>₹</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  className={styles.input}
+                  value={stoneCostInr}
+                  onChange={(e) => setStoneCostInr(e.target.value)}
+                  placeholder="e.g. 12000"
+                />
+              </div>
+              <span className={styles.fieldHint}>
+                Shown as the Stone line in price breakup (gemstones, pearls, etc.).
               </span>
             </label>
 
@@ -1002,7 +1054,7 @@ export default function ProductForm({ categories = [], product = null }) {
                   <span>%</span>
                 </div>
                 <span className={styles.fieldHint}>
-                  Defaults to 3%. Applied on Gold + Diamond + Making.
+                  Defaults to 3%. Applied on Gold + Diamond + Stone + Making.
                   {breakupPreviewTotal > 0
                     ? ` Breakup total ≈ ${formatInr(breakupPreviewTotal)} (GST ${formatInr(taxAmountInr)}).`
                     : ''}
