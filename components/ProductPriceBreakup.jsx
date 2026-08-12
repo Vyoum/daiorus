@@ -26,6 +26,10 @@ export default function ProductPriceBreakup({ product }) {
             </div>
             {line.muted ? (
               <span className={styles.mutedAmount}>—</span>
+            ) : line.amount < 0 ? (
+              <span className={styles.amount}>
+                −<Price amount={Math.abs(line.amount)} />
+              </span>
             ) : (
               <Price amount={line.amount} className={styles.amount} />
             )}
@@ -36,9 +40,6 @@ export default function ProductPriceBreakup({ product }) {
       <div className={styles.totalRow}>
         <span className={styles.totalLabel}>Total</span>
         <div className={styles.totalPrices}>
-          {product.compareAt && product.compareAt > breakup.grandTotal ? (
-            <Price amount={product.compareAt} className={styles.compare} />
-          ) : null}
           <Price amount={breakup.grandTotal} className={styles.totalAmount} />
         </div>
       </div>

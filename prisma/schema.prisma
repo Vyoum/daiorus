@@ -129,6 +129,7 @@ model Product {
   diamondCarat            Float?
   diamondCostInr          Int?
   diamondQuality          String?
+  diamondType             String?
   stoneCount              Int?
   stoneCarat              Float?
   stoneCostInr            Int?
@@ -140,6 +141,7 @@ model Product {
   tag                     String?
   priceInr                Int
   compareAtInr            Int?
+  discountInr             Int?
   imageUrl                String?
   images                  String[]      @default([])
   status                  ProductStatus @default(ACTIVE)

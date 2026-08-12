@@ -128,6 +128,11 @@ export default function ProductForm({ categories = [], product = null }) {
   const [compareAtInr, setCompareAtInr] = useState(
     product?.compareAtInr != null ? String(product.compareAtInr) : '',
   );
+  const [discountInr, setDiscountInr] = useState(
+    product?.discountInr != null && product.discountInr > 0
+      ? String(product.discountInr)
+      : '',
+  );
   const [makingChargeInr, setMakingChargeInr] = useState(
     product?.makingChargeInr != null ? String(product.makingChargeInr) : '',
   );
@@ -165,6 +170,7 @@ export default function ProductForm({ categories = [], product = null }) {
     product?.diamondCostInr != null ? String(product.diamondCostInr) : '',
   );
   const [diamondQuality, setDiamondQuality] = useState(product?.diamondQuality || '');
+  const [diamondType, setDiamondType] = useState(product?.diamondType || '');
   const [stoneCount, setStoneCount] = useState(
     product?.stoneCount != null ? String(product.stoneCount) : '',
   );
@@ -291,6 +297,11 @@ export default function ProductForm({ categories = [], product = null }) {
       : 0;
   const breakupPreviewTotal =
     goldPreviewValue + diamondCostNum + stoneCostNum + makingNum + taxAmountInr;
+  const discountNum = Number(discountInr) || 0;
+  const afterDiscountPreview =
+    breakupPreviewTotal > 0 && discountNum > 0
+      ? Math.max(0, breakupPreviewTotal - discountNum)
+      : null;
 
   const inferredGoldPricing = useMemo(() => {
     if (!goldSettings?.rate24kPerGram || !goldWeightGrams || !materialValue) return null;
@@ -372,6 +383,7 @@ export default function ProductForm({ categories = [], product = null }) {
             imageUrl: images.find((url) => url && !url.startsWith('blob:')) || '',
             priceInr: priceToSave,
             compareAtInr: compareToSave,
+            discountInr: discountInr === '' ? null : Number(discountInr),
             quantity: Number(quantity) || 0,
             description: combinedDescription,
             status: nextStatus,
@@ -382,6 +394,7 @@ export default function ProductForm({ categories = [], product = null }) {
             diamondCarat: diamondCarat === '' ? null : Number(diamondCarat),
             diamondCostInr: diamondCostInr === '' ? null : Number(diamondCostInr),
             diamondQuality: diamondQuality || null,
+            diamondType: diamondType || null,
             stoneCount: stoneCount === '' ? null : Number(stoneCount),
             stoneCarat: stoneCarat === '' ? null : Number(stoneCarat),
             stoneCostInr: stoneCostInr === '' ? null : Number(stoneCostInr),
@@ -778,19 +791,34 @@ export default function ProductForm({ categories = [], product = null }) {
                 Shown as the Diamond line in price breakup.
               </span>
             </label>
-            <label className={styles.field}>
-              <span>Diamond quality</span>
-              <input
-                className={styles.input}
-                type="text"
-                value={diamondQuality}
-                onChange={(e) => setDiamondQuality(e.target.value)}
-                placeholder="e.g. VS1 / G colour, SI clarity"
-              />
-              <span className={styles.fieldHint}>
-                Free text — clarity, colour grade, or any quality note.
-              </span>
-            </label>
+            <div className={styles.row2}>
+              <label className={styles.field}>
+                <span>Diamond quality</span>
+                <input
+                  className={styles.input}
+                  type="text"
+                  value={diamondQuality}
+                  onChange={(e) => setDiamondQuality(e.target.value)}
+                  placeholder="e.g. VS1 / G colour, SI clarity"
+                />
+                <span className={styles.fieldHint}>
+                  Free text — clarity, colour grade, or any quality note.
+                </span>
+              </label>
+              <label className={styles.field}>
+                <span>Diamond type</span>
+                <input
+                  className={styles.input}
+                  type="text"
+                  value={diamondType}
+                  onChange={(e) => setDiamondType(e.target.value)}
+                  placeholder="e.g. Natural, Lab-grown, Solitaire"
+                />
+                <span className={styles.fieldHint}>
+                  Free text — diamond type or cut category.
+                </span>
+              </label>
+            </div>
 
             <p className={styles.sectionLabel}>Stone details</p>
             <div className={styles.row2}>
@@ -1092,6 +1120,41 @@ export default function ProductForm({ categories = [], product = null }) {
                     : ''}
                 </span>
               </label>
+            </div>
+
+            <div className={styles.row2}>
+              <label className={styles.field}>
+                <span>Discount (INR)</span>
+                <div className={styles.prefixInput}>
+                  <span>₹</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    className={styles.input}
+                    value={discountInr}
+                    onChange={(e) => setDiscountInr(e.target.value)}
+                    placeholder="None"
+                  />
+                </div>
+                <span className={styles.fieldHint}>
+                  Flat discount shown in the price breakup. Clear the field to remove.
+                  {afterDiscountPreview != null
+                    ? ` List total ${formatInr(breakupPreviewTotal)} → after discount ${formatInr(afterDiscountPreview)}.`
+                    : ''}
+                </span>
+              </label>
+              <div className={styles.field}>
+                {discountNum > 0 ? (
+                  <button
+                    type="button"
+                    className={styles.secondaryBtn}
+                    onClick={() => setDiscountInr('')}
+                  >
+                    Remove discount
+                  </button>
+                ) : null}
+              </div>
             </div>
 
             <label className={styles.field}>
