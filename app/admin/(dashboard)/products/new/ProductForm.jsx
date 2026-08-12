@@ -164,6 +164,7 @@ export default function ProductForm({ categories = [], product = null }) {
   const [diamondCostInr, setDiamondCostInr] = useState(
     product?.diamondCostInr != null ? String(product.diamondCostInr) : '',
   );
+  const [diamondQuality, setDiamondQuality] = useState(product?.diamondQuality || '');
   const [stoneCount, setStoneCount] = useState(
     product?.stoneCount != null ? String(product.stoneCount) : '',
   );
@@ -178,6 +179,9 @@ export default function ProductForm({ categories = [], product = null }) {
   );
   const [widthMm, setWidthMm] = useState(
     product?.widthMm != null ? String(product.widthMm) : '',
+  );
+  const [lengthMm, setLengthMm] = useState(
+    product?.lengthMm != null ? String(product.lengthMm) : '',
   );
   const [metalColor, setMetalColor] = useState(product?.metalColor || '');
   const [productInfo, setProductInfo] = useState(product?.productInfo || '');
@@ -377,11 +381,13 @@ export default function ProductForm({ categories = [], product = null }) {
             diamondCount: diamondCount === '' ? null : Number(diamondCount),
             diamondCarat: diamondCarat === '' ? null : Number(diamondCarat),
             diamondCostInr: diamondCostInr === '' ? null : Number(diamondCostInr),
+            diamondQuality: diamondQuality || null,
             stoneCount: stoneCount === '' ? null : Number(stoneCount),
             stoneCarat: stoneCarat === '' ? null : Number(stoneCarat),
             stoneCostInr: stoneCostInr === '' ? null : Number(stoneCostInr),
             heightMm: heightMm === '' ? null : Number(heightMm),
             widthMm: widthMm === '' ? null : Number(widthMm),
+            lengthMm: lengthMm === '' ? null : Number(lengthMm),
             metalColor: metalColor || null,
             productInfo: productInfo || null,
             goldPricingEnabled,
@@ -675,6 +681,19 @@ export default function ProductForm({ categories = [], product = null }) {
                 />
               </label>
             </div>
+            <label className={styles.field}>
+              <span>Length (mm)</span>
+              <input
+                className={styles.input}
+                type="number"
+                min="0"
+                step="0.01"
+                inputMode="decimal"
+                value={lengthMm}
+                onChange={(e) => setLengthMm(e.target.value)}
+                placeholder="e.g. 18.50"
+              />
+            </label>
 
             <p className={styles.sectionLabel}>Metal details</p>
             <div className={styles.row2}>
@@ -757,6 +776,19 @@ export default function ProductForm({ categories = [], product = null }) {
               </div>
               <span className={styles.fieldHint}>
                 Shown as the Diamond line in price breakup.
+              </span>
+            </label>
+            <label className={styles.field}>
+              <span>Diamond quality</span>
+              <input
+                className={styles.input}
+                type="text"
+                value={diamondQuality}
+                onChange={(e) => setDiamondQuality(e.target.value)}
+                placeholder="e.g. VS1 / G colour, SI clarity"
+              />
+              <span className={styles.fieldHint}>
+                Free text — clarity, colour grade, or any quality note.
               </span>
             </label>
 

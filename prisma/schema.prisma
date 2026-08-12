@@ -128,11 +128,13 @@ model Product {
   diamondCount            Int?
   diamondCarat            Float?
   diamondCostInr          Int?
+  diamondQuality          String?
   stoneCount              Int?
   stoneCarat              Float?
   stoneCostInr            Int?
   heightMm                Float?
   widthMm                 Float?
+  lengthMm                Float?
   metalColor              String?
   productInfo             String?
   tag                     String?
