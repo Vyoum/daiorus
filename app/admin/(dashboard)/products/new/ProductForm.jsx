@@ -164,6 +164,15 @@ export default function ProductForm({ categories = [], product = null }) {
   const [diamondCostInr, setDiamondCostInr] = useState(
     product?.diamondCostInr != null ? String(product.diamondCostInr) : '',
   );
+  const [stoneCount, setStoneCount] = useState(
+    product?.stoneCount != null ? String(product.stoneCount) : '',
+  );
+  const [stoneCarat, setStoneCarat] = useState(
+    product?.stoneCarat != null ? String(product.stoneCarat) : '',
+  );
+  const [stoneCostInr, setStoneCostInr] = useState(
+    product?.stoneCostInr != null ? String(product.stoneCostInr) : '',
+  );
   const [heightMm, setHeightMm] = useState(
     product?.heightMm != null ? String(product.heightMm) : '',
   );
@@ -202,6 +211,7 @@ export default function ProductForm({ categories = [], product = null }) {
   const taxPctNum = Number(taxPct);
   const makingNum = Number(makingChargeInr) || 0;
   const diamondCostNum = Number(diamondCostInr) || 0;
+  const stoneCostNum = Number(stoneCostInr) || 0;
 
   const intlPreview = useMemo(() => {
     if (!overseasEnabled || basePrice <= 0) return null;

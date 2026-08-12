@@ -128,6 +128,9 @@ model Product {
   diamondCount            Int?
   diamondCarat            Float?
   diamondCostInr          Int?
+  stoneCount              Int?
+  stoneCarat              Float?
+  stoneCostInr            Int?
   heightMm                Float?
   widthMm                 Float?
   metalColor              String?
