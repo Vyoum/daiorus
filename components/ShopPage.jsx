@@ -295,7 +295,7 @@ export default function ShopPage({ initialProducts = [] }) {
       <div className="shop-hero">
         <h1>All Jewellery</h1>
         <p>
-          Explore the full Daiorus collection — earrings, pendants, bracelets,
+          Explore the full Daiorus collection — earrings, pendants, necklaces, bracelets,
           and piercings.
         </p>
       </div>
