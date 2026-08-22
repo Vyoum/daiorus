@@ -19,7 +19,6 @@ import {
   calculateGoldProductPrice,
   inferFixedNonGoldPrice,
 } from '@/lib/gold-pricing-calc';
-import { buildPriceBreakup } from '@/lib/price-breakup';
 import styles from './product-form.module.css';
 
 function formatInr(n) {
@@ -223,7 +222,6 @@ export default function ProductForm({ categories = [], product = null }) {
   const makingNum = Number(makingChargeInr) || 0;
   const diamondCostNum = Number(diamondCostInr) || 0;
   const stoneCostNum = Number(stoneCostInr) || 0;
-  const discountNum = Number(discountInr) || 0;
 
   const intlPreview = useMemo(() => {
     if (!overseasEnabled || basePrice <= 0) return null;
@@ -290,65 +288,20 @@ export default function ProductForm({ categories = [], product = null }) {
   ]);
 
   const goldPreviewValue = goldBreakdown?.goldValue || 0;
-
-  const pricingPreview = useMemo(() => {
-    if (!goldSettings?.rate24kPerGram && !goldPreviewValue && !makingNum && !diamondCostNum && !stoneCostNum) {
-      return null;
-    }
-    return buildPriceBreakup({
-      priceInr: basePrice,
-      material: materialValue,
-      goldWeightGrams: goldWeightGrams === '' ? null : Number(goldWeightGrams),
-      goldPricingEnabled,
-      goldRate24kAtPricingInr: goldSettings?.rate24kPerGram ?? null,
-      currentRate24kPerGram: goldSettings?.rate24kPerGram ?? null,
-      makingChargeInr: makingNum || null,
-      taxPct: taxPctNum,
-      discountInr: discountNum || null,
-      diamondCostInr: diamondCostNum || null,
-      stoneCostInr: stoneCostNum || null,
-      diamondCarat: diamondCarat === '' ? null : Number(diamondCarat),
-      diamondCount: diamondCount === '' ? null : Number(diamondCount),
-      diamondQuality,
-      diamondType,
-      stoneCarat: stoneCarat === '' ? null : Number(stoneCarat),
-      stoneCount: stoneCount === '' ? null : Number(stoneCount),
-    });
-  }, [
-    basePrice,
-    diamondCarat,
-    diamondCostNum,
-    diamondCount,
-    diamondQuality,
-    diamondType,
-    discountNum,
-    goldPreviewValue,
-    goldPricingEnabled,
-    goldSettings?.rate24kPerGram,
-    goldWeightGrams,
-    makingNum,
-    materialValue,
-    stoneCarat,
-    stoneCostNum,
-    stoneCount,
-    taxPctNum,
-  ]);
-
-  const breakupPreviewTotal = pricingPreview?.grandTotal ?? 0;
-  const hasPricingComponents =
-    (pricingPreview?.goldValue || 0) +
-      (pricingPreview?.diamondCost || 0) +
-      (pricingPreview?.stoneCost || 0) +
-      (pricingPreview?.makingCharge || 0) >
-    0;
+  const taxAmountInr =
+    Number.isFinite(taxPctNum) && taxPctNum >= 0
+      ? Math.round(
+          ((goldPreviewValue + diamondCostNum + stoneCostNum + makingNum) * taxPctNum) /
+            100,
+        )
+      : 0;
+  const breakupPreviewTotal =
+    goldPreviewValue + diamondCostNum + stoneCostNum + makingNum + taxAmountInr;
+  const discountNum = Number(discountInr) || 0;
   const afterDiscountPreview =
-    hasPricingComponents && breakupPreviewTotal > 0 ? breakupPreviewTotal : null;
-
-  useEffect(() => {
-    if (hasPricingComponents && breakupPreviewTotal > 0) {
-      setPriceInr(String(breakupPreviewTotal));
-    }
-  }, [breakupPreviewTotal, hasPricingComponents]);
+    breakupPreviewTotal > 0 && discountNum > 0
+      ? Math.max(0, breakupPreviewTotal - discountNum)
+      : null;
 
   const inferredGoldPricing = useMemo(() => {
     if (!goldSettings?.rate24kPerGram || !goldWeightGrams || !materialValue) return null;
@@ -372,6 +325,18 @@ export default function ProductForm({ categories = [], product = null }) {
       setGoldPricingEnabled(true);
     }
   }, [goldWeightGrams, isEdit, materialValue, goldSettings?.rate24kPerGram]);
+
+  useEffect(() => {
+    if (
+      !goldPricingEnabled ||
+      rebaseGoldPricing ||
+      !goldBreakdown?.priceInr ||
+      fixedNonGoldPriceInr == null
+    ) {
+      return;
+    }
+    setPriceInr(String(goldBreakdown.priceInr));
+  }, [fixedNonGoldPriceInr, goldBreakdown, goldPricingEnabled, rebaseGoldPricing]);
 
   const discard = () => {
     router.push('/admin/products');
@@ -1081,7 +1046,7 @@ export default function ProductForm({ categories = [], product = null }) {
 
             <div className={styles.row2}>
               <label className={styles.field}>
-                <span>{hasPricingComponents ? 'Total Price (INR)' : 'Base Price (INR)'}</span>
+                <span>Base Price (INR)</span>
                 <div className={styles.prefixInput}>
                   <span>₹</span>
                   <input
@@ -1094,16 +1059,9 @@ export default function ProductForm({ categories = [], product = null }) {
                       setPriceInr(e.target.value);
                       if (goldPricingEnabled) setRebaseGoldPricing(true);
                     }}
-                    readOnly={hasPricingComponents}
                     placeholder="0"
                   />
                 </div>
-                {hasPricingComponents ? (
-                  <span className={styles.fieldHint}>
-                    Calculated from Gold + Diamond + Stone + Making + GST
-                    {discountNum > 0 ? ' − Discount' : ''}.
-                  </span>
-                ) : null}
               </label>
               <label className={styles.field}>
                 <span>Sale / Compare-at Price (Optional)</span>
@@ -1158,7 +1116,7 @@ export default function ProductForm({ categories = [], product = null }) {
                 <span className={styles.fieldHint}>
                   Defaults to 3%. Applied on Gold + Diamond + Stone + Making.
                   {breakupPreviewTotal > 0
-                    ? ` Breakup total ${formatInr(breakupPreviewTotal)} (GST ${formatInr(pricingPreview?.taxAmount || 0)}).`
+                    ? ` Breakup total ≈ ${formatInr(breakupPreviewTotal)} (GST ${formatInr(taxAmountInr)}).`
                     : ''}
                 </span>
               </label>
@@ -1181,8 +1139,8 @@ export default function ProductForm({ categories = [], product = null }) {
                 </div>
                 <span className={styles.fieldHint}>
                   Flat discount shown in the price breakup. Clear the field to remove.
-                  {afterDiscountPreview != null && discountNum > 0
-                    ? ` Total after discount ${formatInr(afterDiscountPreview)}.`
+                  {afterDiscountPreview != null
+                    ? ` List total ${formatInr(breakupPreviewTotal)} → after discount ${formatInr(afterDiscountPreview)}.`
                     : ''}
                 </span>
               </label>
