@@ -1081,7 +1081,7 @@ export default function ProductForm({ categories = [], product = null }) {
 
             <div className={styles.row2}>
               <label className={styles.field}>
-                <span>{hasPricingComponents ? 'Total Price (INR)' : 'Base Price (INR)'}</span>
+                <span>{hasPricingComponents ? 'Total Price (INR)' : 'Price (INR)'}</span>
                 <div className={styles.prefixInput}>
                   <span>₹</span>
                   <input
@@ -1095,7 +1095,6 @@ export default function ProductForm({ categories = [], product = null }) {
                       if (goldPricingEnabled) setRebaseGoldPricing(true);
                     }}
                     readOnly={hasPricingComponents}
-                    placeholder="0"
                   />
                 </div>
                 {hasPricingComponents ? (
