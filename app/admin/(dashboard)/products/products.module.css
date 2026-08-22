@@ -297,6 +297,31 @@
   font-weight: 600;
 }
 
+.priceCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 108px;
+}
+
+.comparePrice {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--admin-text-muted);
+}
+
+.savings {
+  font-size: 11px;
+  font-weight: 650;
+  color: #047857;
+}
+
+.priceMeta {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--admin-text-secondary);
+}
+
 .stockCell {
   display: flex;
   flex-direction: column;
