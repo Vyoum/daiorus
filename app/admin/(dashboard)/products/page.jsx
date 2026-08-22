@@ -99,39 +99,14 @@ export default async function ProductsPage() {
                         </div>
                         <div className={styles.productInfo}>
                           <span className={styles.productName}>{product.name}</span>
-                          <span className={styles.productDesc}>
-                            {product.specSummary || product.material || product.slug}
-                          </span>
+                          <span className={styles.productDesc}>{product.material || product.slug}</span>
                         </div>
                       </div>
                     </td>
                     <td className={`${styles.td} ${styles.hideSm}`}>{product.sku}</td>
                     <td className={styles.td}>{product.category}</td>
                     <td className={styles.td}>
-                      <div className={styles.priceCell}>
-                        <span className={styles.price}>{formatINR(product.priceInr)}</span>
-                        {product.compareAtInr != null &&
-                        product.compareAtInr > product.priceInr ? (
-                          <s className={styles.comparePrice}>
-                            {formatINR(product.compareAtInr)}
-                          </s>
-                        ) : null}
-                        {product.discountInr > 0 ? (
-                          <span className={styles.savings}>
-                            Save {formatINR(product.discountInr)}
-                          </span>
-                        ) : product.compareAtInr != null &&
-                          product.compareAtInr > product.priceInr ? (
-                          <span className={styles.savings}>
-                            Save {formatINR(product.compareAtInr - product.priceInr)}
-                          </span>
-                        ) : null}
-                        {product.diamondCostInr > 0 ? (
-                          <span className={styles.priceMeta}>
-                            Diamond {formatINR(product.diamondCostInr)}
-                          </span>
-                        ) : null}
-                      </div>
+                      <span className={styles.price}>{formatINR(product.priceInr)}</span>
                     </td>
                     <td className={styles.td}>
                       <div className={styles.stockCell}>

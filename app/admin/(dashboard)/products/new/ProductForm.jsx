@@ -20,96 +20,11 @@ import {
   inferFixedNonGoldPrice,
 } from '@/lib/gold-pricing-calc';
 import { buildPriceBreakup } from '@/lib/price-breakup';
-import { getProductSpecLines } from '@/lib/product-specs';
 import styles from './product-form.module.css';
 
 function formatInr(n) {
   const value = Number(n) || 0;
   return `₹${value.toLocaleString('en-IN')}`;
-}
-
-function optionalNumber(value) {
-  if (value === '' || value == null) return null;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-function AdminSpecsPreview({ lines }) {
-  if (!lines.length) {
-    return (
-      <p className={styles.previewEmpty}>
-        Product details (metal, weight, diamonds, stones) appear here as you fill them in.
-      </p>
-    );
-  }
-
-  return (
-    <dl className={styles.specPreviewList}>
-      {lines.map((line) => (
-        <div key={line.label} className={styles.specPreviewRow}>
-          <dt>{line.label}</dt>
-          <dd>{line.value}</dd>
-        </div>
-      ))}
-    </dl>
-  );
-}
-
-function AdminBreakupPreview({ breakup, compareAtInr }) {
-  const compareAt = Number(compareAtInr) || 0;
-  const total = breakup?.grandTotal || 0;
-  const compareSavings = compareAt > total ? compareAt - total : 0;
-  const discountLine = breakup?.lines?.find((line) => line.key === 'discount');
-  const discountSavings = discountLine ? Math.abs(Number(discountLine.amount) || 0) : 0;
-
-  if (!breakup?.hasBreakup) {
-    return (
-      <p className={styles.previewEmpty}>
-        Add gold, diamond cost, stones, making, or discount to see the storefront price breakup.
-      </p>
-    );
-  }
-
-  return (
-    <div className={styles.breakupPreview}>
-      <ul className={styles.breakupList}>
-        {breakup.lines.map((line) => (
-          <li
-            key={line.key}
-            className={`${styles.breakupRow} ${line.muted ? styles.breakupMuted : ''}`}
-          >
-            <div className={styles.breakupLabelBlock}>
-              <span>{line.label}</span>
-              {line.detail ? <small>{line.detail}</small> : null}
-            </div>
-            <strong>
-              {line.muted
-                ? '—'
-                : line.amount < 0
-                  ? `−${formatInr(Math.abs(line.amount))}`
-                  : formatInr(line.amount)}
-            </strong>
-          </li>
-        ))}
-      </ul>
-      <div className={styles.breakupTotal}>
-        <span>Total</span>
-        <div className={styles.breakupTotalPrices}>
-          {compareSavings > 0 ? (
-            <s className={styles.breakupCompare}>{formatInr(compareAt)}</s>
-          ) : null}
-          <strong>{formatInr(total)}</strong>
-        </div>
-      </div>
-      {discountSavings > 0 || compareSavings > 0 ? (
-        <p className={styles.breakupSavings}>
-          {discountSavings > 0 ? `Discount ${formatInr(discountSavings)}` : null}
-          {discountSavings > 0 && compareSavings > 0 ? ' · ' : null}
-          {compareSavings > 0 ? `Saves ${formatInr(compareSavings)} vs compare-at` : null}
-        </p>
-      ) : null}
-    </div>
-  );
 }
 
 const MATERIAL_PRESETS = GOLD_KARAT_OPTIONS;
@@ -181,20 +96,14 @@ function ChipList({ values, onChange, placeholder }) {
   );
 }
 
-export default function ProductForm({
-  categories = [],
-  product = null,
-  justSaved = false,
-}) {
+export default function ProductForm({ categories = [], product = null }) {
   const router = useRouter();
   const fileInputRef = useRef(null);
   const isEdit = Boolean(product?.id);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(
-    justSaved ? 'Product saved. Specs and price breakup below match the storefront.' : '',
-  );
+  const [success, setSuccess] = useState('');
 
   const [name, setName] = useState(product?.name || '');
   const [sku, setSku] = useState(product?.sku || '');
@@ -308,11 +217,6 @@ export default function ProductForm({
     };
   }, []);
 
-  useEffect(() => {
-    if (!justSaved || !product?.id) return;
-    router.replace(`/admin/products/${product.id}/edit`, { scroll: false });
-  }, [justSaved, product?.id, router]);
-
   const basePrice = Number(priceInr) || 0;
   const surchargeNum = Number(surchargeValue) || 0;
   const taxPctNum = Number(taxPct);
@@ -385,13 +289,16 @@ export default function ProductForm({
     rebaseGoldPricing,
   ]);
 
-  const previewProduct = useMemo(
-    () => ({
-      sku,
+  const goldPreviewValue = goldBreakdown?.goldValue || 0;
+
+  const pricingPreview = useMemo(() => {
+    if (!goldSettings?.rate24kPerGram && !goldPreviewValue && !makingNum && !diamondCostNum && !stoneCostNum) {
+      return null;
+    }
+    return buildPriceBreakup({
+      priceInr: basePrice,
       material: materialValue,
-      metalColor,
-      weightGrams: optionalNumber(weightGrams),
-      goldWeightGrams: optionalNumber(goldWeightGrams),
+      goldWeightGrams: goldWeightGrams === '' ? null : Number(goldWeightGrams),
       goldPricingEnabled,
       goldRate24kAtPricingInr: goldSettings?.rate24kPerGram ?? null,
       currentRate24kPerGram: goldSettings?.rate24kPerGram ?? null,
@@ -400,64 +307,32 @@ export default function ProductForm({
       discountInr: discountNum || null,
       diamondCostInr: diamondCostNum || null,
       stoneCostInr: stoneCostNum || null,
-      diamondCarat: optionalNumber(diamondCarat),
-      diamondCount: optionalNumber(diamondCount),
+      diamondCarat: diamondCarat === '' ? null : Number(diamondCarat),
+      diamondCount: diamondCount === '' ? null : Number(diamondCount),
       diamondQuality,
       diamondType,
-      stoneCarat: optionalNumber(stoneCarat),
-      stoneCount: optionalNumber(stoneCount),
-      heightMm: optionalNumber(heightMm),
-      widthMm: optionalNumber(widthMm),
-      lengthMm: optionalNumber(lengthMm),
-      productInfo,
-      priceInr: basePrice,
-      compareAtInr: optionalNumber(compareAtInr),
-    }),
-    [
-      basePrice,
-      compareAtInr,
-      diamondCarat,
-      diamondCostNum,
-      diamondCount,
-      diamondQuality,
-      diamondType,
-      discountNum,
-      goldPricingEnabled,
-      goldSettings?.rate24kPerGram,
-      goldWeightGrams,
-      heightMm,
-      lengthMm,
-      makingNum,
-      materialValue,
-      metalColor,
-      productInfo,
-      sku,
-      stoneCarat,
-      stoneCostNum,
-      stoneCount,
-      taxPctNum,
-      weightGrams,
-      widthMm,
-    ],
-  );
-
-  const pricingPreview = useMemo(
-    () => buildPriceBreakup(previewProduct),
-    [previewProduct],
-  );
-  const specLines = useMemo(() => {
-    const lines = getProductSpecLines(previewProduct);
-    if (diamondCostNum > 0) {
-      lines.push({ label: 'Diamond cost', value: formatInr(diamondCostNum) });
-    }
-    if (stoneCostNum > 0) {
-      lines.push({ label: 'Stone cost', value: formatInr(stoneCostNum) });
-    }
-    if (discountNum > 0) {
-      lines.push({ label: 'Discount / savings', value: formatInr(discountNum) });
-    }
-    return lines;
-  }, [diamondCostNum, discountNum, previewProduct, stoneCostNum]);
+      stoneCarat: stoneCarat === '' ? null : Number(stoneCarat),
+      stoneCount: stoneCount === '' ? null : Number(stoneCount),
+    });
+  }, [
+    basePrice,
+    diamondCarat,
+    diamondCostNum,
+    diamondCount,
+    diamondQuality,
+    diamondType,
+    discountNum,
+    goldPreviewValue,
+    goldPricingEnabled,
+    goldSettings?.rate24kPerGram,
+    goldWeightGrams,
+    makingNum,
+    materialValue,
+    stoneCarat,
+    stoneCostNum,
+    stoneCount,
+    taxPctNum,
+  ]);
 
   const breakupPreviewTotal = pricingPreview?.grandTotal ?? 0;
   const hasPricingComponents =
@@ -575,20 +450,16 @@ export default function ProductForm({
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Could not save product');
 
-      const savedId = data.id || product?.id;
       setSuccess(
         nextStatus === 'ACTIVE'
           ? isEdit
-            ? 'Product updated. Specs and price breakup now match the storefront.'
-            : 'Product published. Specs and price breakup now match the storefront.'
+            ? 'Product updated and published.'
+            : 'Product published successfully.'
           : isEdit
-            ? 'Draft saved. Specs and price breakup now match the storefront.'
-            : 'Draft saved. Specs and price breakup now match the storefront.',
+            ? 'Product updates saved as draft.'
+            : 'Product saved as draft.',
       );
-
-      if (savedId && (!isEdit || savedId !== product?.id)) {
-        router.push(`/admin/products/${savedId}/edit?saved=1`);
-      }
+      router.push('/admin/products');
       router.refresh();
     } catch (err) {
       setError(err.message || 'Could not save product');
@@ -1208,14 +1079,6 @@ export default function ProductForm({
               </div>
             ) : null}
 
-            <div className={styles.storefrontPreviewCard}>
-              <p className={styles.sectionLabel}>Price breakup (storefront)</p>
-              <AdminBreakupPreview
-                breakup={pricingPreview}
-                compareAtInr={compareAtInr}
-              />
-            </div>
-
             <div className={styles.row2}>
               <label className={styles.field}>
                 <span>{hasPricingComponents ? 'Total Price (INR)' : 'Base Price (INR)'}</span>
@@ -1503,20 +1366,6 @@ export default function ProductForm({
             >
               {saving ? 'Saving…' : isEdit ? 'Save Changes' : 'Save Product'}
             </button>
-          </section>
-
-          <section className={styles.card}>
-            <h2 className={styles.cardTitle}>Storefront preview</h2>
-            <p className={styles.hint}>
-              Same product details, diamond cost, and savings customers see on the product page.
-            </p>
-            <p className={styles.sectionLabel}>Product details</p>
-            <AdminSpecsPreview lines={specLines} />
-            <p className={styles.sectionLabel}>Price breakup</p>
-            <AdminBreakupPreview
-              breakup={pricingPreview}
-              compareAtInr={compareAtInr}
-            />
           </section>
 
           <section className={styles.card}>
