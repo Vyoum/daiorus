@@ -126,9 +126,6 @@ export default function ProductForm({ categories = [], product = null }) {
   const [priceInr, setPriceInr] = useState(
     product?.priceInr != null ? String(product.priceInr) : '',
   );
-  const [compareAtInr, setCompareAtInr] = useState(
-    product?.compareAtInr != null ? String(product.compareAtInr) : '',
-  );
   const [discountInr, setDiscountInr] = useState(
     product?.discountInr != null && product.discountInr > 0
       ? String(product.discountInr)
@@ -217,7 +214,6 @@ export default function ProductForm({ categories = [], product = null }) {
     };
   }, []);
 
-  const basePrice = Number(priceInr) || 0;
   const surchargeNum = Number(surchargeValue) || 0;
   const taxPctNum = Number(taxPct);
   const makingNum = Number(makingChargeInr) || 0;
@@ -225,15 +221,6 @@ export default function ProductForm({ categories = [], product = null }) {
   const stoneCostNum = Number(stoneCostInr) || 0;
   const discountNum = Number(discountInr) || 0;
 
-  const intlPreview = useMemo(() => {
-    if (!overseasEnabled || basePrice <= 0) return null;
-    if (surchargeType === 'percentage') {
-      const intl = Math.round(basePrice * (1 + surchargeNum / 100));
-      return { label: `+${surchargeNum}%`, intl };
-    }
-    const intl = Math.round(basePrice + surchargeNum);
-    return { label: `+${formatInr(surchargeNum)}`, intl };
-  }, [overseasEnabled, basePrice, surchargeNum, surchargeType]);
 
   const visibility = status === 'ACTIVE' ? 'Visible' : 'Hidden';
   const pageTitle = seoTitle || name || 'New product';
@@ -296,7 +283,7 @@ export default function ProductForm({ categories = [], product = null }) {
       return null;
     }
     return buildPriceBreakup({
-      priceInr: basePrice,
+      priceInr: Number(priceInr) || 0,
       material: materialValue,
       goldWeightGrams: goldWeightGrams === '' ? null : Number(goldWeightGrams),
       goldPricingEnabled,
@@ -315,7 +302,7 @@ export default function ProductForm({ categories = [], product = null }) {
       stoneCount: stoneCount === '' ? null : Number(stoneCount),
     });
   }, [
-    basePrice,
+    priceInr,
     diamondCarat,
     diamondCostNum,
     diamondCount,
@@ -344,11 +331,20 @@ export default function ProductForm({ categories = [], product = null }) {
   const afterDiscountPreview =
     hasPricingComponents && breakupPreviewTotal > 0 ? breakupPreviewTotal : null;
 
-  useEffect(() => {
-    if (hasPricingComponents && breakupPreviewTotal > 0) {
-      setPriceInr(String(breakupPreviewTotal));
+  const basePrice =
+    hasPricingComponents && breakupPreviewTotal > 0
+      ? breakupPreviewTotal
+      : Number(priceInr) || 0;
+
+  const intlPreview = useMemo(() => {
+    if (!overseasEnabled || basePrice <= 0) return null;
+    if (surchargeType === 'percentage') {
+      const intl = Math.round(basePrice * (1 + surchargeNum / 100));
+      return { label: `+${surchargeNum}%`, intl };
     }
-  }, [breakupPreviewTotal, hasPricingComponents]);
+    const intl = Math.round(basePrice + surchargeNum);
+    return { label: `+${formatInr(surchargeNum)}`, intl };
+  }, [overseasEnabled, basePrice, surchargeNum, surchargeType]);
 
   const inferredGoldPricing = useMemo(() => {
     if (!goldSettings?.rate24kPerGram || !goldWeightGrams || !materialValue) return null;
@@ -383,20 +379,6 @@ export default function ProductForm({ categories = [], product = null }) {
     setSaving(true);
 
     try {
-      const base = basePrice;
-      const sale = compareAtInr === '' ? null : Number(compareAtInr);
-      let priceToSave = base;
-      let compareToSave = null;
-      if (sale != null && Number.isFinite(sale) && sale > 0) {
-        if (sale < base) {
-          priceToSave = sale;
-          compareToSave = base;
-        } else if (sale > base) {
-          priceToSave = base;
-          compareToSave = sale;
-        }
-      }
-
       const netGold = goldWeightGrams === '' ? null : Number(goldWeightGrams);
       if (netGold != null && Number.isFinite(netGold) && netGold > 0 && !parseGoldKarat(materialValue)) {
         throw new Error(
@@ -416,8 +398,8 @@ export default function ProductForm({ categories = [], product = null }) {
             material: materialValue,
             images: images.filter((url) => url && !url.startsWith('blob:')),
             imageUrl: images.find((url) => url && !url.startsWith('blob:')) || '',
-            priceInr: priceToSave,
-            compareAtInr: compareToSave,
+            priceInr: basePrice,
+            compareAtInr: null,
             discountInr: discountInr === '' ? null : Number(discountInr),
             quantity: Number(quantity) || 0,
             description: combinedDescription,
@@ -1078,48 +1060,6 @@ export default function ProductForm({ categories = [], product = null }) {
                 ) : null}
               </div>
             ) : null}
-
-            <div className={styles.row2}>
-              <label className={styles.field}>
-                <span>{hasPricingComponents ? 'Total Price (INR)' : 'Price (INR)'}</span>
-                <div className={styles.prefixInput}>
-                  <span>₹</span>
-                  <input
-                    type="number"
-                    min="0"
-                    step="1"
-                    className={styles.input}
-                    value={priceInr}
-                    onChange={(e) => {
-                      setPriceInr(e.target.value);
-                      if (goldPricingEnabled) setRebaseGoldPricing(true);
-                    }}
-                    readOnly={hasPricingComponents}
-                  />
-                </div>
-                {hasPricingComponents ? (
-                  <span className={styles.fieldHint}>
-                    Calculated from Gold + Diamond + Stone + Making + GST
-                    {discountNum > 0 ? ' − Discount' : ''}.
-                  </span>
-                ) : null}
-              </label>
-              <label className={styles.field}>
-                <span>Sale / Compare-at Price (Optional)</span>
-                <div className={styles.prefixInput}>
-                  <span>₹</span>
-                  <input
-                    type="number"
-                    min="0"
-                    step="1"
-                    className={styles.input}
-                    value={compareAtInr}
-                    onChange={(e) => setCompareAtInr(e.target.value)}
-                    placeholder="0"
-                  />
-                </div>
-              </label>
-            </div>
 
             <div className={styles.row2}>
               <label className={styles.field}>
