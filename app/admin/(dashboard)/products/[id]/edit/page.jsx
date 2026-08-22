@@ -17,8 +17,9 @@ export async function generateMetadata({ params }) {
   };
 }
 
-export default async function EditProductPage({ params }) {
+export default async function EditProductPage({ params, searchParams }) {
   const { id } = await params;
+  const query = await searchParams;
   const [categories, product] = await Promise.all([
     getAdminCategories(),
     getAdminProduct(id),
@@ -28,8 +29,10 @@ export default async function EditProductPage({ params }) {
 
   return (
     <ProductForm
+      key={product.id}
       categories={Array.isArray(categories) ? categories : []}
       product={product}
+      justSaved={query?.saved === '1' || query?.saved === true}
     />
   );
 }
