@@ -322,7 +322,7 @@ model Coupon {
 
 model Newsletter {
   id        String   @id @default(cuid())
-  email     String   @unique
+  phone     String   @unique
   source    String   @default("inner_circle")
   createdAt DateTime @default(now())
 

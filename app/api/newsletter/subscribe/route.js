@@ -1,27 +1,37 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
-function normalizeEmail(value) {
-  return String(value || '').trim().toLowerCase();
+/** Digits only; keeps leading country code if present. */
+function normalizePhone(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const hasPlus = raw.startsWith('+');
+  const digits = raw.replace(/\D/g, '');
+  if (!digits) return '';
+  return hasPlus ? `+${digits}` : digits;
 }
 
-function isValidEmail(email) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+function isValidPhone(phone) {
+  const digits = String(phone || '').replace(/\D/g, '');
+  return digits.length >= 8 && digits.length <= 15;
 }
 
 export async function POST(request) {
   try {
     const body = await request.json();
-    const email = normalizeEmail(body?.email);
+    const phone = normalizePhone(body?.phone);
     const source = String(body?.source || 'inner_circle').trim() || 'inner_circle';
 
-    if (!email || !isValidEmail(email)) {
-      return NextResponse.json({ error: 'Please enter a valid email address.' }, { status: 400 });
+    if (!phone || !isValidPhone(phone)) {
+      return NextResponse.json(
+        { error: 'Please enter a valid phone number.' },
+        { status: 400 },
+      );
     }
 
     await prisma.newsletter.upsert({
-      where: { email },
-      create: { email, source },
+      where: { phone },
+      create: { phone, source },
       update: { source },
     });
 

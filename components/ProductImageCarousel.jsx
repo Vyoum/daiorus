@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import OptimizedImage from './OptimizedImage';
+import { IMAGE_SIZES } from '@/lib/image-delivery';
 import styles from './ProductImageCarousel.module.css';
 
 function Chevron({ dir }) {
@@ -50,13 +52,15 @@ export default function ProductImageCarousel({ images = [], alt = 'Product' }) {
   return (
     <div className={styles.root}>
       <div className={styles.stage}>
-        <img
+        <OptimizedImage
           key={current}
           src={current}
           alt={alt}
+          fill
+          sizes={IMAGE_SIZES.productDetail}
           className={styles.mainImage}
+          priority
           fetchPriority="high"
-          decoding="async"
         />
 
         {multi ? (
@@ -104,7 +108,13 @@ export default function ProductImageCarousel({ images = [], alt = 'Product' }) {
               onClick={() => setIndex(i)}
               aria-label={`Thumbnail ${i + 1}`}
             >
-              <img src={url} alt="" loading="lazy" decoding="async" />
+              <OptimizedImage
+                src={url}
+                alt=""
+                fill
+                sizes={IMAGE_SIZES.productThumb}
+                className={styles.thumbImg}
+              />
             </button>
           ))}
         </div>

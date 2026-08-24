@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import SiteShell from '../../../components/SiteShell';
 import ProductCard from '../../../components/ProductCard';
+import OptimizedImage from '../../../components/OptimizedImage';
+import { IMAGE_SIZES } from '@/lib/image-delivery';
 import { CATEGORIES } from '../../../lib/data';
 import { getStorefrontProductsByCategory } from '../../../lib/storefront/products';
 import {
@@ -39,10 +41,13 @@ export default async function CategoryPage({ params }) {
   return (
     <SiteShell headerOverlay>
       <section className="cat-hero" aria-label={category.name}>
-        <img
+        <OptimizedImage
           src={category.heroImage}
           alt={`${category.name} from DAIORUS`}
+          fill
+          sizes={IMAGE_SIZES.categoryHero}
           className="cat-hero-bg"
+          priority
         />
       </section>
 
@@ -74,7 +79,13 @@ export default async function CategoryPage({ params }) {
             {alsoExplore.map((item) => (
               <Link key={item.slug} href={item.href} className="cat-explore-card">
                 <div className="cat-explore-img-wrap">
-                  <img src={item.image} alt={item.name} className="cat-explore-img" />
+                  <OptimizedImage
+                    src={item.image}
+                    alt={item.name}
+                    fill
+                    sizes={IMAGE_SIZES.category}
+                    className="cat-explore-img"
+                  />
                 </div>
                 <span className="cat-explore-name">{item.name}</span>
               </Link>

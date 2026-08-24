@@ -13,6 +13,8 @@ import { applySurchargeInr } from '../lib/overseas-pricing-defaults';
 import { formatINR } from '../lib/data';
 import { openRazorpayCheckout } from '../lib/razorpay-checkout';
 import ProductSpecs from './ProductSpecs';
+import OptimizedImage from './OptimizedImage';
+import { IMAGE_SIZES } from '@/lib/image-delivery';
 import AddressRegionFields from './AddressRegionFields';
 import { getProductSpecLines } from '../lib/product-specs';
 import styles from './CheckoutPage.module.css';
@@ -444,7 +446,14 @@ export default function CheckoutPage() {
                 {cart.map((item) => (
                   <li key={item.id} className={styles.item}>
                     {item.image ? (
-                      <img src={item.image} alt="" className={styles.itemImg} />
+                      <OptimizedImage
+                        src={item.image}
+                        alt=""
+                        width={64}
+                        height={80}
+                        sizes={IMAGE_SIZES.cartThumb}
+                        className={styles.itemImg}
+                      />
                     ) : (
                       <div className={styles.itemImgPlaceholder} />
                     )}

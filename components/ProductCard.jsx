@@ -2,37 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import Price from './Price';
+import OptimizedImage from './OptimizedImage';
+import { IMAGE_SIZES } from '@/lib/image-delivery';
 import { useCart } from './CartProvider';
 import { useWishlist } from './WishlistProvider';
-
-function ProductMediaImage({ src, alt, priority = false, imageSizes }) {
-  const isLocal = typeof src === 'string' && src.startsWith('/');
-
-  if (isLocal) {
-    return (
-      <Image
-        src={src}
-        alt={alt}
-        fill
-        sizes={imageSizes}
-        className="product-img"
-        priority={priority}
-      />
-    );
-  }
-
-  return (
-    <img
-      src={src}
-      alt={alt}
-      className="product-img"
-      loading={priority ? 'eager' : 'lazy'}
-      decoding="async"
-    />
-  );
-}
 
 export default function ProductCard({
   product,
@@ -106,11 +80,13 @@ export default function ProductCard({
         </svg>
       </button>
 
-      <ProductMediaImage
+      <OptimizedImage
         src={product.image}
         alt={product.name}
+        fill
+        sizes={imageSizes || IMAGE_SIZES.productCard}
+        className="product-img"
         priority={priority}
-        imageSizes={imageSizes}
       />
       {showAddToCart ? (
         <button

@@ -2,11 +2,16 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import prisma from '@/lib/prisma';
+import {
+  optimizeProductImage,
+  optimizedStoragePath,
+} from '@/lib/admin/optimize-image';
 
 export const runtime = 'nodejs';
 
 const BUCKET = 'product-images';
-const MAX_BYTES = 4 * 1024 * 1024; // stay under typical Vercel 4.5MB body limit
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+const MAX_VIDEO_BYTES = 4 * 1024 * 1024;
 const ALLOWED_TYPES = new Set([
   'image/jpeg',
   'image/jpg',
@@ -137,32 +142,47 @@ export async function POST(request) {
       );
     }
 
-    if (file.size > MAX_BYTES) {
+    if (mime.startsWith('video/')) {
+      if (file.size > MAX_VIDEO_BYTES) {
+        return NextResponse.json(
+          {
+            error:
+              'Video must be 4MB or smaller for this uploader. Use the media library direct upload for larger videos.',
+          },
+          { status: 400 },
+        );
+      }
+    } else if (file.size > MAX_IMAGE_BYTES) {
       return NextResponse.json(
         {
-          error:
-            'File must be 4MB or smaller for quick upload. Larger images and videos use the direct uploader automatically — try again.',
+          error: 'Image must be 8MB or smaller before optimization.',
         },
         { status: 400 },
       );
     }
 
-    const ext = fileExtension(file.name) || mime.split('/')[1] || 'jpg';
-    const safeExt = EXT_TO_MIME[ext]
-      ? ext === 'jpeg'
-        ? 'jpg'
-        : ext
-      : mime.startsWith('video/')
-        ? 'mp4'
-        : 'jpg';
     const folder = mime.startsWith('video/') ? 'social' : 'products';
-    const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${safeExt}`;
-    const buffer = Buffer.from(await file.arrayBuffer());
+    const rawBuffer = Buffer.from(await file.arrayBuffer());
+
+    let uploadBuffer = rawBuffer;
+    let uploadMime = mime;
+    let path;
+
+    if (mime.startsWith('image/')) {
+      const optimized = await optimizeProductImage(rawBuffer, mime);
+      uploadBuffer = optimized.buffer;
+      uploadMime = optimized.mime;
+      path = optimizedStoragePath(folder, optimized.ext);
+    } else {
+      const ext = fileExtension(file.name) || 'mp4';
+      const safeExt = ext === 'jpeg' ? 'jpg' : ext;
+      path = optimizedStoragePath(folder, safeExt);
+    }
 
     const { error: uploadError } = await supabase.storage
       .from(BUCKET)
-      .upload(path, buffer, {
-        contentType: mime,
+      .upload(path, uploadBuffer, {
+        contentType: uploadMime,
         upsert: false,
         cacheControl: '31536000',
       });

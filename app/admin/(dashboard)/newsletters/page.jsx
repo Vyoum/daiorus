@@ -16,7 +16,7 @@ export default async function NewslettersPage() {
         <div>
           <h1 className={styles.pageTitle}>Newsletters</h1>
           <p className={styles.pageSubtitle}>
-            Email signups from Join the Inner Circle on the storefront.
+            Phone signups from Join the Inner Circle on the storefront.
           </p>
         </div>
         <div className={styles.statCard}>
@@ -31,7 +31,7 @@ export default async function NewslettersPage() {
         <table className={styles.table}>
           <thead>
             <tr>
-              <th className={styles.th}>Email</th>
+              <th className={styles.th}>Phone</th>
               <th className={styles.th}>Source</th>
               <th className={styles.th}>Subscribed</th>
             </tr>
@@ -47,8 +47,11 @@ export default async function NewslettersPage() {
               subscribers.map((row) => (
                 <tr key={row.id} className={styles.tr}>
                   <td className={styles.td}>
-                    <a href={`mailto:${row.email}`} className={styles.emailLink}>
-                      {row.email}
+                    <a
+                      href={`tel:${String(row.phone || '').replace(/\s/g, '')}`}
+                      className={styles.emailLink}
+                    >
+                      {row.phone}
                     </a>
                   </td>
                   <td className={styles.td}>

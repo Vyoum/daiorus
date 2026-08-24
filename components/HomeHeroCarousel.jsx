@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
+import OptimizedImage from './OptimizedImage';
+import { IMAGE_SIZES } from '@/lib/image-delivery';
 
 export default function HomeHeroCarousel({ images = [], alt = '' }) {
   const slides = (images || []).filter(Boolean);
@@ -27,29 +28,17 @@ export default function HomeHeroCarousel({ images = [], alt = '' }) {
     <>
       {slides.map((src, i) => {
         const active = i === index;
-        const local = src.startsWith('/');
-        if (local) {
-          return (
-            <Image
-              key={src}
-              src={src}
-              alt={active ? alt : ''}
-              fill
-              priority={i === 0}
-              sizes="100vw"
-              className={`ui1-hero-bg ${active ? 'is-active' : ''}`}
-              aria-hidden={!active}
-            />
-          );
-        }
         return (
-          <img
+          <OptimizedImage
             key={src}
             src={src}
             alt={active ? alt : ''}
+            fill
+            priority={i === 0}
+            sizes={IMAGE_SIZES.hero}
             className={`ui1-hero-bg ${active ? 'is-active' : ''}`}
             fetchPriority={i === 0 ? 'high' : 'auto'}
-            decoding="async"
+            style={{ pointerEvents: 'none' }}
             aria-hidden={!active}
           />
         );

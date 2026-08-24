@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import SiteShell from '../../components/SiteShell';
+import OptimizedImage from '../../components/OptimizedImage';
+import { IMAGE_SIZES } from '@/lib/image-delivery';
 import { getAboutPage, getAboutProcess } from '../../lib/site-content';
 import { DEFAULT_ABOUT, DEFAULT_PROCESS } from '../../lib/site-content-defaults';
 
@@ -29,7 +31,14 @@ export default async function AboutPage() {
   return (
     <SiteShell>
       <section className="about-hero">
-        <img src={about.heroImageUrl} alt={about.heroImageAlt} />
+        <OptimizedImage
+          src={about.heroImageUrl}
+          alt={about.heroImageAlt}
+          fill
+          sizes={IMAGE_SIZES.hero}
+          className="about-hero-img"
+          priority
+        />
       </section>
 
       <section className="about-quote">
@@ -38,7 +47,15 @@ export default async function AboutPage() {
       </section>
 
       <section className="about-split">
-        <img src={about.beginningImageUrl} alt={about.beginningImageAlt} />
+        <div className="about-split-media">
+          <OptimizedImage
+            src={about.beginningImageUrl}
+            alt={about.beginningImageAlt}
+            fill
+            sizes={IMAGE_SIZES.editorial}
+            className="about-split-img"
+          />
+        </div>
         <div className="about-split-copy">
           <span className="section-label">{about.beginningLabel}</span>
           <h2 className="section-title">{about.beginningTitle}</h2>
@@ -93,9 +110,33 @@ export default async function AboutPage() {
           </div>
         </div>
         <div className="about-process-mosaic">
-          <img src={processContent.imageUrl1} alt={processContent.imageAlt1} />
-          <img src={processContent.imageUrl2} alt={processContent.imageAlt2} />
-          <img src={processContent.imageUrl3} alt={processContent.imageAlt3} />
+          <div className="about-process-photo">
+            <OptimizedImage
+              src={processContent.imageUrl1}
+              alt={processContent.imageAlt1}
+              fill
+              sizes={IMAGE_SIZES.editorial}
+              className="about-process-img"
+            />
+          </div>
+          <div className="about-process-photo">
+            <OptimizedImage
+              src={processContent.imageUrl2}
+              alt={processContent.imageAlt2}
+              fill
+              sizes={IMAGE_SIZES.editorial}
+              className="about-process-img"
+            />
+          </div>
+          <div className="about-process-photo about-process-photo-wide">
+            <OptimizedImage
+              src={processContent.imageUrl3}
+              alt={processContent.imageAlt3}
+              fill
+              sizes={IMAGE_SIZES.editorial}
+              className="about-process-img"
+            />
+          </div>
         </div>
       </section>
 

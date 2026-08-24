@@ -11,6 +11,8 @@ import { useCurrency } from './CurrencyProvider';
 import { INSTAGRAM_URL, PINTEREST_URL, LINKEDIN_URL } from '../lib/social';
 import { useCart } from './CartProvider';
 import ProductSpecs from './ProductSpecs';
+import OptimizedImage from './OptimizedImage';
+import { IMAGE_SIZES } from '@/lib/image-delivery';
 import { useAuth } from './AuthProvider';
 
 const LoginDrawer = dynamic(() => import('./LoginDrawer'), { ssr: false });
@@ -39,7 +41,7 @@ export default function SiteShell({
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [subscribed, setSubscribed] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
   const [subscribeError, setSubscribeError] = useState('');
@@ -149,7 +151,7 @@ export default function SiteShell({
 
   const handleSubscribe = async (e) => {
     e.preventDefault();
-    const value = email.trim().toLowerCase();
+    const value = phone.trim();
     if (!value || subscribing) return;
 
     setSubscribing(true);
@@ -159,14 +161,14 @@ export default function SiteShell({
       const res = await fetch('/api/newsletter/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: value, source: 'inner_circle' }),
+        body: JSON.stringify({ phone: value, source: 'inner_circle' }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         throw new Error(data.error || 'Could not subscribe');
       }
       setSubscribed(true);
-      setEmail('');
+      setPhone('');
       setTimeout(() => setSubscribed(false), 5000);
     } catch (err) {
       setSubscribeError(err.message || 'Could not subscribe. Please try again.');
@@ -513,7 +515,14 @@ export default function SiteShell({
               <div className="cart-items-list">
                 {cart.map((item) => (
                   <div key={item.id} className="cart-item">
-                    <img src={item.image} alt={item.name} className="cart-item-img" />
+                    <OptimizedImage
+                      src={item.image}
+                      alt={item.name}
+                      width={80}
+                      height={100}
+                      sizes={IMAGE_SIZES.cartThumb}
+                      className="cart-item-img"
+                    />
                     <div className="cart-item-details">
                       <div className="cart-item-meta">
                         <h4 className="cart-item-name">{item.name}</h4>
@@ -589,12 +598,14 @@ export default function SiteShell({
             ) : (
               <form onSubmit={handleSubscribe} className="newsletter-form">
                 <input
-                  type="email"
-                  placeholder="Your email address"
+                  type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  placeholder="Your phone number"
                   required
                   className="newsletter-input"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
                   disabled={subscribing}
                 />
                 <button type="submit" className="newsletter-btn" disabled={subscribing}>

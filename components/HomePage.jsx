@@ -3,6 +3,8 @@ import SiteShell from './SiteShell';
 import ProductCard from './ProductCard';
 import HomeHeroCarousel from './HomeHeroCarousel';
 import BrandIntroSplash from './BrandIntroSplash';
+import OptimizedImage from './OptimizedImage';
+import { IMAGE_SIZES } from '@/lib/image-delivery';
 import { COLLECTIONS } from '../lib/data';
 import { DEFAULT_HERO, DEFAULT_SIGNATURE, DEFAULT_PHILOSOPHY, DEFAULT_SOCIAL } from '../lib/site-content-defaults';
 import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from '../lib/social';
@@ -108,12 +110,12 @@ export default function HomePage({
               {curatedCards.map((col) => (
                 <article key={col.name} className="collection-card">
                   <div className="collection-img-wrapper">
-                    <img
+                    <OptimizedImage
                       src={col.image}
                       alt={col.name}
+                      fill
+                      sizes={IMAGE_SIZES.collection}
                       className="collection-img"
-                      loading="lazy"
-                      decoding="async"
                     />
                   </div>
                   <h3 className="collection-name">{col.name}</h3>
@@ -139,12 +141,12 @@ export default function HomePage({
               {shopCategories.map((cat) => (
                 <Link key={cat.slug} href={cat.href} className="category-card">
                   <div className="category-img-wrapper">
-                    <img
+                    <OptimizedImage
                       src={cat.image}
                       alt={cat.name}
+                      fill
+                      sizes={IMAGE_SIZES.category}
                       className="category-img"
-                      loading="lazy"
-                      decoding="async"
                     />
                   </div>
                   <h3 className="category-name">{cat.name}</h3>
@@ -193,12 +195,12 @@ export default function HomePage({
             </Link>
           </div>
           <div className="editorial-img-block">
-            <img
+            <OptimizedImage
               src={philosophyContent.imageUrl}
               alt={philosophyContent.imageAlt}
+              fill
+              sizes={IMAGE_SIZES.editorial}
               className="editorial-img"
-              loading="lazy"
-              decoding="async"
             />
           </div>
         </section>
@@ -207,24 +209,33 @@ export default function HomePage({
           <div className="ui1-container">
             <div className="vermeil-split">
               <div className="vermeil-images">
-                <img
-                  src={signatureContent.imageUrl1}
-                  alt={signatureContent.imageAlt1}
-                  loading="lazy"
-                  decoding="async"
-                />
-                <img
-                  src={signatureContent.imageUrl2}
-                  alt={signatureContent.imageAlt2}
-                  loading="lazy"
-                  decoding="async"
-                />
-                <img
-                  src={signatureContent.imageUrl3}
-                  alt={signatureContent.imageAlt3}
-                  loading="lazy"
-                  decoding="async"
-                />
+                <div className="vermeil-image-cell">
+                  <OptimizedImage
+                    src={signatureContent.imageUrl1}
+                    alt={signatureContent.imageAlt1}
+                    fill
+                    sizes={IMAGE_SIZES.editorial}
+                    className="vermeil-image"
+                  />
+                </div>
+                <div className="vermeil-image-cell">
+                  <OptimizedImage
+                    src={signatureContent.imageUrl2}
+                    alt={signatureContent.imageAlt2}
+                    fill
+                    sizes={IMAGE_SIZES.editorial}
+                    className="vermeil-image"
+                  />
+                </div>
+                <div className="vermeil-image-cell">
+                  <OptimizedImage
+                    src={signatureContent.imageUrl3}
+                    alt={signatureContent.imageAlt3}
+                    fill
+                    sizes={IMAGE_SIZES.editorial}
+                    className="vermeil-image"
+                  />
+                </div>
               </div>
               <div className="vermeil-copy">
                 <span className="section-label">{signatureContent.label}</span>
@@ -270,12 +281,12 @@ export default function HomePage({
                       aria-label={item.alt || `Social look ${idx + 1}`}
                     />
                   ) : (
-                    <img
+                    <OptimizedImage
                       src={item.url}
                       alt={item.alt || `Instagram look ${idx + 1}`}
+                      fill
+                      sizes={IMAGE_SIZES.instagram}
                       className="instagram-img"
-                      loading="lazy"
-                      decoding="async"
                     />
                   )}
                   <div className="instagram-overlay">
