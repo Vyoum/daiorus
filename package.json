@@ -11,7 +11,9 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "media:to-webp": "node scripts/migrate-storage-to-webp.mjs",
+    "media:to-webp:apply": "node scripts/migrate-storage-to-webp.mjs --apply --delete-old"
   },
   "repository": {
     "type": "git",
