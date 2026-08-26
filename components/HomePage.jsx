@@ -9,6 +9,9 @@ import { COLLECTIONS } from '../lib/data';
 import { DEFAULT_HERO, DEFAULT_SIGNATURE, DEFAULT_PHILOSOPHY, DEFAULT_SOCIAL } from '../lib/site-content-defaults';
 import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from '../lib/social';
 
+/** Temporarily hidden to cut Supabase cached egress (autoplay reels). Set true to show again. */
+const SHOW_HOME_SOCIAL = false;
+
 const MARQUEE = [
   'BIS Hallmarked Gold',
   'Hand Crafted in India',
@@ -249,6 +252,7 @@ export default function HomePage({
           </div>
         </section>
 
+        {SHOW_HOME_SOCIAL ? (
         <section className="ui1-section">
           <div className="ui1-container">
             <div className="instagram-header">
@@ -311,6 +315,7 @@ export default function HomePage({
             </div>
           </div>
         </section>
+        ) : null}
 
         <section className="trust-bar">
           <div className="trust-grid">
